@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { AgentRunStream } from '../components/AgentRunStream';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { useProject } from '../lib/project';
 import { useRun } from '../lib/run';
 
 // Hidden dev screen (command palette: "Dev: run prompt").
 export function DevRun() {
   const run = useRun();
   const [prompt, setPrompt] = useState('list the files in this folder');
-  const [cwd, setCwd] = useState('.');
+  const { project } = useProject();
+  // Default to the open project; never `.` (the engine cwd may be huge).
+  const [cwd, setCwd] = useState(project?.project.path ?? '');
   const [adapter, setAdapter] = useState<'claude' | 'fake'>('claude');
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-8">
@@ -33,9 +36,15 @@ export function DevRun() {
       </label>
       <Button
         variant="primary"
-        disabled={run.running || !prompt}
+        disabled={run.running || !prompt || !cwd.trim()}
         onClick={() =>
-          run.start({ prompt, cwd, adapter, fixture: 'claude-list-files' })
+          run.start({
+            prompt,
+            cwd,
+            adapter,
+            fixture: 'claude-list-files',
+            model: 'haiku', // cheap and quick for the dev screen
+          })
         }
       >
         Run

@@ -7,6 +7,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccountsCard } from '../components/AccountsCard';
 import { Button } from '../components/Button';
+import { Card } from '../components/Card';
 import { type CardState, SetupCard } from '../components/SetupCard';
 import { TerminalPanel } from '../components/TerminalDrawer';
 import { engine } from '../lib/engine';
@@ -28,17 +29,29 @@ export function SetupView({ onContinue }: { onContinue: () => void }) {
   const [result, setResult] = useState<SetupDetectResult>();
   const [waiting, setWaiting] = useState<Set<ToolId>>(new Set());
   const [failed, setFailed] = useState<Set<ToolId>>(new Set());
+  const [error, setError] = useState<string>();
   const tabTool = useRef(new Map<string, ToolId>());
 
   const check = useCallback(async () => {
     try {
       const r = await engine.call('setup.detect');
       setResult(r);
+      setError(undefined);
       setWaiting((w) => new Set([...w].filter((t) => r[t].state !== 'ready')));
-    } catch {}
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
   }, []);
 
   useEffect(() => void check(), [check]);
+  // A restarted engine: detect again.
+  useEffect(
+    () =>
+      engine.on((e) => {
+        if (e.method === 'engine.restarted') void check();
+      }),
+    [check],
+  );
   useEffect(() => {
     term.setInline(true);
     return () => term.setInline(false);
@@ -97,6 +110,16 @@ export function SetupView({ onContinue }: { onContinue: () => void }) {
     <div className="flex h-full min-h-0">
       <div className="flex w-[28rem] shrink-0 flex-col gap-4 overflow-auto p-6">
         <h1 className="text-xl font-semibold">Setup</h1>
+        {error && !result && (
+          <Card role="alert" className="flex flex-col gap-2">
+            <p className="text-sm text-danger">
+              Couldn't check your tools: {error}
+            </p>
+            <Button className="self-start" onClick={() => void check()}>
+              Retry
+            </Button>
+          </Card>
+        )}
         <h2 className="hud">Required</h2>
         {REQUIRED.map(card)}
         <details>

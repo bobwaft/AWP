@@ -86,3 +86,10 @@ test('creating a project joins parent and name and calls project.create', async 
     }),
   );
 });
+
+test('a failed project list shows an inline error', async () => {
+  call.mockRejectedValue(new Error('engine not running'));
+  mount();
+  expect(await screen.findByText(/engine not running/)).toBeTruthy();
+  expect(screen.queryByText('No projects yet.')).toBeNull();
+});

@@ -18,7 +18,11 @@ export function SettingsScreen({ settings, onChange }: Props) {
     engine
       .call('version')
       .then((r) => setEngineVersion(r.version))
-      .catch(() => setEngineVersion('unavailable'));
+      .catch((e) =>
+        setEngineVersion(
+          `unavailable: ${e instanceof Error ? e.message : String(e)}`,
+        ),
+      );
   }, []);
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-8">

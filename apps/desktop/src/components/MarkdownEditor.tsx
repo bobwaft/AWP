@@ -5,6 +5,38 @@ import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { useEffect, useRef } from 'react';
 
+// Colours come from tokens.css variables, so one theme serves dark and light.
+const theme = EditorView.theme({
+  '&': { backgroundColor: 'var(--bg-1)', color: 'var(--text-1)' },
+  '.cm-content': { caretColor: 'var(--accent-bright)' },
+  '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--accent-bright)' },
+  '&.cm-focused': { outline: 'none' },
+  '.cm-gutters': {
+    backgroundColor: 'var(--bg-1)',
+    color: 'var(--text-3)',
+    border: 'none',
+  },
+  '.cm-activeLine': { backgroundColor: 'var(--bg-2)' },
+  '.cm-activeLineGutter': {
+    backgroundColor: 'var(--bg-2)',
+    color: 'var(--text-2)',
+  },
+  '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection':
+    { backgroundColor: 'var(--accent-dim)' },
+  '.cm-changedLine': {
+    backgroundColor: 'color-mix(in srgb, var(--success) 14%, transparent)',
+  },
+  '.cm-deletedChunk': {
+    backgroundColor: 'color-mix(in srgb, var(--danger) 14%, transparent)',
+  },
+  '.cm-changedText': {
+    backgroundColor: 'color-mix(in srgb, var(--success) 30%, transparent)',
+  },
+  '.cm-deletedChunk .cm-deletedText': {
+    backgroundColor: 'color-mix(in srgb, var(--danger) 30%, transparent)',
+  },
+});
+
 type Props = {
   value: string;
   readOnly?: boolean;
@@ -30,6 +62,7 @@ export function MarkdownEditor({ value, readOnly, original, onChange }: Props) {
         extensions: [
           basicSetup,
           markdown(),
+          theme,
           EditorView.lineWrapping,
           EditorState.readOnly.of(!!readOnly),
           EditorView.editable.of(!readOnly),

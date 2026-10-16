@@ -11,6 +11,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { engine } from './engine';
@@ -19,6 +20,8 @@ import type { StageState } from './stages';
 type Ctx = {
   project: ProjectState | null;
   recents: ProjectSummary[];
+  /** Message of the last failed `project.list`, or null. */
+  listError: string | null;
   setupDone: boolean;
   setSetupDone: (v: boolean) => void;
   /** Rail/diagram state for stage number 1..10. */
@@ -55,7 +58,10 @@ const MAP: Record<ProjectState['stages'][StageId]['status'], StageState> = {
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [project, setProject] = useState<ProjectState | null>(null);
   const [recents, setRecents] = useState<ProjectSummary[]>([]);
+  const [listError, setListError] = useState<string | null>(null);
   const [setupDone, setDone] = useState(readDone);
+  const openPath = useRef<string | undefined>(undefined);
+  openPath.current = project?.project?.path;
 
   const setSetupDone = useCallback((v: boolean) => {
     setDone(v);
@@ -67,7 +73,10 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       setRecents(await engine.call('project.list'));
-    } catch {}
+      setListError(null);
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : String(e));
+    }
   }, []);
 
   // On launch, reopen the most recent project so the user lands on the same stage.
@@ -76,10 +85,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       try {
         const list = await engine.call('project.list');
         setRecents(list);
+        setListError(null);
         const last = list.find((p) => !p.missing);
         if (last)
           setProject(await engine.call('project.open', { path: last.path }));
-      } catch {}
+      } catch (e) {
+        setListError(e instanceof Error ? e.message : String(e));
+      }
     })();
   }, []);
 
@@ -87,8 +99,18 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     () =>
       engine.on((e) => {
         if (e.method === 'state.changed') setProject(e.params as ProjectState);
+        // A restarted engine has no open project: reload the list and reopen.
+        else if (e.method === 'engine.restarted')
+          void (async () => {
+            await refresh();
+            const path = openPath.current;
+            if (!path) return;
+            try {
+              setProject(await engine.call('project.open', { path }));
+            } catch {}
+          })();
       }),
-    [],
+    [refresh],
   );
 
   const open = useCallback(
@@ -127,6 +149,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     () => ({
       project,
       recents,
+      listError,
       setupDone,
       setSetupDone,
       stateOf,
@@ -138,6 +161,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     [
       project,
       recents,
+      listError,
       setupDone,
       setSetupDone,
       stateOf,

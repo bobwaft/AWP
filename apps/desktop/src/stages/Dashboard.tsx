@@ -12,8 +12,10 @@ import { STAGES } from '../lib/stages';
 const stageLabel = (id?: string) =>
   STAGES.find((s) => s.label.toLowerCase() === id)?.label ?? id ?? '';
 
+const looksAbsolute = (p: string) => /^(?:[\\/]|[A-Za-z]:[\\/])/.test(p.trim());
+
 export function Dashboard({ onRerunSetup }: { onRerunSetup: () => void }) {
-  const { recents, open, create } = useProject();
+  const { recents, listError, open, create, refresh } = useProject();
   const toast = useToast();
   const [name, setName] = useState('');
   const [parent, setParent] = useState('');
@@ -54,7 +56,7 @@ export function Dashboard({ onRerunSetup }: { onRerunSetup: () => void }) {
         </div>
         <Button
           variant="primary"
-          disabled={!name.trim() || !parent.trim()}
+          disabled={!name.trim() || !looksAbsolute(parent)}
           onClick={() =>
             run(() =>
               create(
@@ -81,7 +83,18 @@ export function Dashboard({ onRerunSetup }: { onRerunSetup: () => void }) {
             Open folder…
           </Button>
         </div>
-        {recents.length === 0 && (
+        {listError && (
+          <p
+            role="alert"
+            className="flex items-center gap-2 text-sm text-danger"
+          >
+            Couldn't load projects: {listError}
+            <Button variant="ghost" onClick={() => void refresh()}>
+              Retry
+            </Button>
+          </p>
+        )}
+        {recents.length === 0 && !listError && (
           <p className="text-text-2">No projects yet.</p>
         )}
         {recents.map((p) => (

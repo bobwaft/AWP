@@ -73,3 +73,25 @@ test('agent.run on fake adapter returns a runId and applies defaults', async () 
   await new Promise((r) => setTimeout(r, 100));
   expect(seen).toContain('run.event');
 });
+
+test('params: null (Rust bridge) is treated as no params', async () => {
+  expect((await call(req('ping', null))).result).toBe('pong');
+  expect((await call(req('version', null))).result).toEqual({ version: '9' });
+});
+
+test('INVALID_PARAMS names the method and the first issue', async () => {
+  const e = (await call(req('version', 5))).error;
+  expect(e.data.code).toBe('INVALID_PARAMS');
+  expect(e.message).toMatch(/^version: /);
+});
+
+test('failed requests are logged without params', async () => {
+  const lines: string[] = [];
+  const hl = createHandler({ ping: () => 'pong' }, (m) => lines.push(m));
+  await hl(JSON.stringify(req('ping', { token: 'hunter2' })));
+  await hl(JSON.stringify(req('nope')));
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain('nope');
+  expect(lines[0]).toContain('METHOD_NOT_FOUND');
+  expect(lines.join()).not.toContain('hunter2');
+});

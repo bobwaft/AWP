@@ -11,7 +11,14 @@
   },
   "app": {
     "windows": [
-      { "label": "main", "title": "AWP", "width": 1280, "height": 800 }
+      {
+        "label": "main",
+        "title": "AWP",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1100,
+        "minHeight": 700
+      }
     ],
     "security": { "csp": null }
   },

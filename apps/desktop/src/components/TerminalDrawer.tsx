@@ -205,7 +205,7 @@ export function TerminalDrawer() {
         type="button"
         onClick={() => term.setExpanded(!term.expanded)}
         aria-expanded={term.expanded}
-        className="hud flex h-7 w-full items-center px-3"
+        className={`hud flex w-full items-center px-3 ${term.expanded ? 'h-7' : 'h-full'}`}
       >
         TERMINAL · {term.tabs.length} {term.tabs.length === 1 ? 'tab' : 'tabs'}
       </button>

@@ -10,6 +10,11 @@ html,
 body,
 #root {
   height: 100%;
+  overflow: hidden; /* the app manages its own scroll areas */
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
 body {
   margin: 0;

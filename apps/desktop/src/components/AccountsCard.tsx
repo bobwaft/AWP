@@ -64,19 +64,25 @@ export function AccountsCard({ githubAccount }: { githubAccount?: string }) {
           </li>
         ))}
       </ul>
-      <div className="flex items-end gap-2">
-        <Input
-          label="Service (e.g. figma)"
-          value={service}
-          onChange={(e) => setService(e.target.value)}
-        />
-        <Input
-          label="Token"
-          type="password"
-          autoComplete="off"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-        />
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-32 flex-1">
+          <Input
+            label="Service (e.g. figma)"
+            className="w-full min-w-0"
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+          />
+        </div>
+        <div className="min-w-32 flex-1">
+          <Input
+            label="Token"
+            type="password"
+            autoComplete="off"
+            className="w-full min-w-0"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+          />
+        </div>
         <Button
           variant="primary"
           disabled={!service.trim() || !token}

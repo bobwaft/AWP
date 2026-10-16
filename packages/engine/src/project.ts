@@ -1,6 +1,6 @@
 import { type FSWatcher, watch } from 'node:fs';
 import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { basename, isAbsolute, join, resolve } from 'node:path';
 import {
   type ProjectState,
   ProjectState as ProjectStateSchema,
@@ -143,6 +143,17 @@ export async function countOpenBugs(root: string) {
 
 type Recent = { path: string; name: string };
 
+/** Resolves a user path; relative ones would land in the engine cwd, so refuse them. */
+function absolute(path: string): string {
+  if (!isAbsolute(path))
+    throw new EngineError(
+      'PATH_NOT_ABSOLUTE',
+      'Project path must be absolute',
+      'Choose a full folder path.',
+    );
+  return resolve(path);
+}
+
 export class ProjectService {
   private root_?: string;
   private state_?: ProjectState;
@@ -160,7 +171,12 @@ export class ProjectService {
 
   private async recents(): Promise<Recent[]> {
     try {
-      return JSON.parse(await readFile(this.recentsFile, 'utf8'));
+      // Tolerate an older `{ projects: [...] }` shape or a corrupt file.
+      const raw = JSON.parse(await readFile(this.recentsFile, 'utf8'));
+      const list = Array.isArray(raw) ? raw : raw?.projects;
+      return Array.isArray(list)
+        ? list.filter((r) => typeof r?.path === 'string')
+        : [];
     } catch {
       return [];
     }
@@ -176,13 +192,13 @@ export class ProjectService {
   }
 
   async create(path: string, name: string) {
-    const root = resolve(path);
+    const root = absolute(path);
     const state = await scaffoldProject(root, name);
     return this.activate(root, state);
   }
 
   async open(path: string) {
-    const root = resolve(path);
+    const root = absolute(path);
     return this.activate(root, await readState(root));
   }
 

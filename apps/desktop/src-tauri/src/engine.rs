@@ -150,6 +150,15 @@ fn answer_engine_request(state: &Engine, msg: &Value) {
     }
 }
 
+/// One NDJSON request line. A missing `params` is omitted, not sent as null.
+fn request_line(id: u64, method: &str, params: Option<Value>) -> String {
+    let mut req = json!({ "jsonrpc": "2.0", "id": id, "method": method });
+    if let Some(p) = params {
+        req["params"] = p;
+    }
+    req.to_string()
+}
+
 /// Sends one JSON-RPC request, returns the full response object (UI interprets result/error).
 #[tauri::command]
 pub async fn engine_request(
@@ -164,7 +173,7 @@ pub async fn engine_request(
         *n
     };
     engine.pending.lock().unwrap().insert(id, tx);
-    let line = json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
+    let line = request_line(id, &method, params);
     let sent = match engine.stdin.lock().unwrap().as_mut() {
         Some(w) => writeln!(w, "{line}").and_then(|_| w.flush()).is_ok(),
         None => false,
@@ -194,6 +203,17 @@ mod tests {
         assert!(allow_restart(&mut h, t));
         assert!(allow_restart(&mut h, t));
         assert!(!allow_restart(&mut h, t));
+    }
+
+    #[test]
+    fn request_line_omits_missing_params() {
+        let v: Value = serde_json::from_str(&request_line(7, "ping", None)).unwrap();
+        assert_eq!(v["method"], "ping");
+        assert_eq!(v["id"], 7);
+        assert!(v.get("params").is_none());
+        let v: Value =
+            serde_json::from_str(&request_line(8, "x", Some(json!({ "a": 1 })))).unwrap();
+        assert_eq!(v["params"]["a"], 1);
     }
 
     #[test]

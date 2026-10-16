@@ -12,6 +12,7 @@ export type RunState = {
 export function useRun() {
   const [state, setState] = useState<RunState>({ events: [], running: false });
   const runId = useRef<string | null>(null);
+  const stopWanted = useRef(false);
   const pending = useRef<{ runId: string; event: AgentEvent }[]>([]);
 
   const apply = useCallback((event: AgentEvent) => {
@@ -40,9 +41,11 @@ export function useRun() {
       cwd: string;
       adapter: 'claude' | 'fake';
       fixture?: string;
+      model?: string;
     }) => {
       runId.current = null;
       pending.current = [];
+      stopWanted.current = false;
       setState({ events: [], running: true });
       try {
         const r = await engine.call('agent.run', input);
@@ -50,6 +53,9 @@ export function useRun() {
         for (const p of pending.current)
           if (p.runId === r.runId) apply(p.event);
         pending.current = [];
+        // Stop was pressed before the id arrived: honour it now.
+        if (stopWanted.current)
+          await engine.call('agent.stop', { runId: r.runId }).catch(() => {});
       } catch (e) {
         apply({
           type: 'error',
@@ -64,6 +70,7 @@ export function useRun() {
   const stop = useCallback(async () => {
     if (runId.current)
       await engine.call('agent.stop', { runId: runId.current }).catch(() => {});
+    else stopWanted.current = true;
   }, []);
 
   return { ...state, start, stop };

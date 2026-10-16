@@ -1,17 +1,17 @@
-# Graph Report - AWP  (2026-10-15)
+# Graph Report - AWP  (2026-10-16)
 
 ## Corpus Check
-- 274 files · ~346,363 words
+- 277 files · ~358,660 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: (none) 8, .css 3, .jsonl 3)
 
 ## Summary
-- 3327 nodes · 6295 edges · 180 communities (166 shown, 14 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 227 edges (avg confidence: 0.9)
+- 3307 nodes · 6216 edges · 180 communities (168 shown, 12 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 231 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c257a04c`
+- Built from commit: `35d6b614`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,7 +24,7 @@
 - Hardening Controls
 - actOnAgentTarget
 - setLiveState
-- onAnnotDown
+- renderDesignVisual
 - SpecSession
 - new-work.md
 - package.json
@@ -65,7 +65,7 @@
 - Regulatory Landscape
 - App.tsx
 - Organize
-- captureElementToBlob
+- handleGo
 - Content Strategy
 - Service Design
 - Interview Me
@@ -74,11 +74,11 @@
 - ReOrder: Keep Your Regulars Ordering Direct
 - Idea Refine
 - protocol/src/index.ts
-- mountSvelteComponentVariant
+- scheduleAcceptCleanup
 - createLiveBrowserSessionState
-- Button
+- Dashboard.tsx
 - biome.json
-- App
+- engine.ts
 - intent/SKILL.md
 - viewer.js
 - AWP — Architecture
@@ -103,7 +103,7 @@
 - critique.md
 - Simplify the Design
 - Hardening Dimensions
-- vitest
+- tokens.test.ts
 - 5. User flow
 - compilerOptions
 - clarify.md
@@ -131,7 +131,7 @@
 - Android platform
 - colorize.md
 - Persona-Based Design Testing
-- Extract Flow
+- react
 - engine/package.json
 - prompts/package.json
 - protocol/package.json
@@ -144,13 +144,13 @@
 - Impeccable Finish Reviewer
 - Impeccable Manual Edit Applier
 - live-browser-ignores.js
-- Navigation Patterns
+- onAnnotDown
 - Diagnostic Scan
 - SetupView.tsx
 - design.test.ts
 - Visualize: Direction Comps & Asset Production
 - pty.rs
-- handlers.ts
+- SpecService
 - default.json
 - Impeccable Documenter
 - Impeccable Documenter
@@ -158,9 +158,9 @@
 - setup-view.test.tsx
 - 3d/package.json
 - Heuristics Scoring Guide
-- Read
+- app.test.tsx
 - engine/src/setup.ts
-- MEMORY
+- resolveLiveInjectionAnchor
 - engine/tsconfig.json
 - prompts/tsconfig.json
 - protocol/tsconfig.json
@@ -176,26 +176,26 @@
 - build-engine.ts
 - ChatPanel.tsx
 - secrets.rs
-- applyEditing
-- resolveLiveInjectionAnchor
+- enableInlineEdit
+- Extract Flow
 - dependencies
 - orchestrator.ts
-- serve.ts
+- Regulatory Landscape
 - devDependencies
 - spec/planning.test.ts
 - git.ts
-- The UX Anti-Pattern Catalog
-- design-ui.test.tsx
+- Region map
+- Search Behavior Models
 - MarkdownEditor.tsx
-- Core UX Principles
+- Inclusive Design Beyond Disability
 - scripts
-- Command guidance
-- Form Design Principles
-- Tabs.tsx
+- WCAG 2.2 for Designers
+- Voice Framework Methodology
+- A/B Test Design
 
 ## God Nodes (most connected - your core abstractions)
 1. `SpecSession` - 60 edges
-2. `EngineError` - 41 edges
+2. `EngineError` - 42 edges
 3. `Button()` - 36 edges
 4. `connectSSE()` - 34 edges
 5. `setLiveState()` - 33 edges
@@ -210,8 +210,8 @@
   ARCHITECTURE.md → apps/desktop/src/components/RifleDiagram2D.tsx
 - `Phase 7 — Design stage` --references--> `ThemeCard()`  [INFERRED]
   IMPLEMENTATION.md → apps/desktop/src/components/ThemeCard.tsx
-- `5.1 Setup` --references--> `git()`  [INFERRED]
-  PRD.md → packages/engine/src/git.ts
+- `BUG-003` --references--> `freshEnv()`  [INFERRED]
+  BUGS.md → packages/engine/src/setup.ts
 - `Conventions` --references--> `check()`  [INFERRED]
   IMPLEMENTATION.md → .claude/skills/impeccable/scripts/live-browser.js
 - `Phase 0 — Monorepo scaffold` --references--> `check()`  [INFERRED]
@@ -220,51 +220,51 @@
 ## Import Cycles
 - None detected.
 
-## Communities (180 total, 14 thin omitted)
+## Communities (180 total, 12 thin omitted)
 
 ### Community 0 - "live-browser.js"
 Cohesion: 0.03
-Nodes (134): addManualContextText(), agentHasWorkInFlight(), applyGlobalBarLabelState(), applyLiveBarPreference(), applyParamValue(), applyPlaceholderSizingStyles(), bindEditBadgeProxy(), bufferToBase64() (+126 more)
+Nodes (136): addManualContextText(), applyGlobalBarLabelState(), applyLiveBarPreference(), applyParamDefaults(), applyParamValue(), applyPlaceholderSizingStyles(), averageRgb01(), bindEditBadgeProxy() (+128 more)
 
 ### Community 1 - "initGlobalBar"
 Cohesion: 0.09
-Nodes (47): armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer(), collapsePageChat(), configureVoiceContext(), expandPageChat() (+39 more)
+Nodes (51): armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), buildSteerQueueHint(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer(), collapsePageChat() (+43 more)
 
 ### Community 2 - "modern-screenshot.umd.js"
 Cohesion: 0.09
 Nodes (55): ae(), be(), bt(), Ce(), s(), Ct(), de(), dt() (+47 more)
 
 ### Community 3 - "connectSSE"
-Cohesion: 0.07
-Nodes (83): applyConfigureBarChrome(), applyParamDefaults(), applySavedSessionMeta(), buildCyclingRow(), clearHandled(), clearSession(), closedClipPath(), completeParameterGenerationIfReady() (+75 more)
+Cohesion: 0.09
+Nodes (68): applyPlaceholderDimensions(), applySavedSessionMeta(), closedClipPath(), completeParameterGenerationIfReady(), completeParameterPublication(), completeSourceInjection(), connectSSE(), disableInlineEdit() (+60 more)
 
 ### Community 4 - "el"
-Cohesion: 0.09
-Nodes (43): actionLabel(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow(), buildConfigureSubmitButton() (+35 more)
+Cohesion: 0.07
+Nodes (56): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+48 more)
 
 ### Community 5 - "Hardening Controls"
 Cohesion: 0.05
 Nodes (42): Broken Access Control, Broken Authentication, Cross-Site Scripting (XSS), Data Classification, Dependency Audit Triage, Destructive Operations on Derived Paths, File Upload Safety, Hardening Patterns (+34 more)
 
 ### Community 6 - "actOnAgentTarget"
-Cohesion: 0.11
-Nodes (41): actOnAgentTarget(), agentTargetBusyReason(), agentTargetOverlayGone(), agentTargetTaken(), claimAgentTarget(), claimAndActOnAgentTarget(), clearStoredManualApplyState(), declineAgentTargetBusy() (+33 more)
+Cohesion: 0.12
+Nodes (39): actOnAgentTarget(), agentTargetBusyReason(), agentTargetOverlayGone(), agentTargetTaken(), claimAgentTarget(), claimAndActOnAgentTarget(), clearStoredManualApplyState(), declineAgentTargetBusy() (+31 more)
 
 ### Community 7 - "setLiveState"
-Cohesion: 0.09
-Nodes (64): abortSvelteComponentInjection(), beginNewLiveConfiguration(), buildInsertPlaceholderSnapshotFromDom(), buildPickedAnchorSnapshot(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), captureAndEmit() (+56 more)
+Cohesion: 0.12
+Nodes (50): abortSvelteComponentInjection(), beginNewLiveConfiguration(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), cleanup(), cleanupAcceptedSession(), clearAnnotations() (+42 more)
 
-### Community 8 - "onAnnotDown"
-Cohesion: 0.14
-Nodes (22): applyPlaceholderDimensions(), beginEditPin(), buildAnnotationsForCapture(), buildPinElement(), cancelEditingPin(), clampPlaceholderSize(), finalizeEditingPin(), initAnnotOverlay() (+14 more)
+### Community 8 - "renderDesignVisual"
+Cohesion: 0.08
+Nodes (39): buildCollapsible(), buildColorModels(), buildDesignHeader(), buildListHtml(), buildRadiiModels(), buildTypographyModels(), cssSafe(), designEmptyMessage() (+31 more)
 
 ### Community 9 - "SpecSession"
-Cohesion: 0.12
-Nodes (11): Phase 7, EngineError, tokensFromFormValues(), resolveFields(), msg(), slot(), SpecSession, FormResult (+3 more)
+Cohesion: 0.11
+Nodes (15): Phase 7, Review of phases 3-8 (fixed), EngineError, tokensFromFormValues(), resolveFields(), msg(), slot(), SpecSession (+7 more)
 
 ### Community 10 - "new-work.md"
 Cohesion: 0.07
-Nodes (24): Recommended Actions, Craft (deprecated alias), Apply, Live-mode signature params, Set the spatial thesis, Two isolated assessments, Verify, Visitor mode (+16 more)
+Nodes (23): Recommended Actions, Craft (deprecated alias), Apply, Live-mode signature params, Set the spatial thesis, Two isolated assessments, Verify, Visitor mode (+15 more)
 
 ### Community 11 - "package.json"
 Cohesion: 0.12
@@ -275,8 +275,8 @@ Cohesion: 0.07
 Nodes (29): 1. Correctness, 2. Readability & Simplicity, 3. Architecture, 4. Security, 5. Performance, Change Descriptions, Change Sizing, Code Review and Quality (+21 more)
 
 ### Community 13 - "Accessibility Foundations"
-Cohesion: 0.07
-Nodes (29): Accessibility Foundations, Aging, Assistive Technology Landscape, Cognitive Accessibility, Consistent Patterns, Error Prevention, Focus Management, Inclusive Design Beyond Disability (+21 more)
+Cohesion: 0.10
+Nodes (19): Accessibility Foundations, Assistive Technology Landscape, Cognitive Accessibility, Consistent Patterns, Error Prevention, Focus Management, Keyboard Navigation Design, Keyboard Patterns for Custom Components (+11 more)
 
 ### Community 14 - "Test-Driven Development"
 Cohesion: 0.07
@@ -299,8 +299,8 @@ Cohesion: 0.07
 Nodes (26): 1. Commit Early, Commit Often, 2. Atomic Commits, 3. Descriptive Messages, 4. Keep Concerns Separate, 5. Size Your Changes, Branch Naming, Branching Strategy, Change Summaries (+18 more)
 
 ### Community 19 - "Interaction Patterns"
-Cohesion: 0.09
-Nodes (21): Anti-Patterns in Progressive Disclosure, Button States, Design Principles for Undo, Destructive Action Safeguards, Error Message Design, Feedback Loops, Form Field States, Friction Hierarchy (+13 more)
+Cohesion: 0.07
+Nodes (26): Anti-Patterns in Progressive Disclosure, Button States, Design Principles for Undo, Destructive Action Safeguards, Error Message Design, Feedback Loops, Field Grouping, Form Design Principles (+18 more)
 
 ### Community 20 - "Optimization Patterns"
 Cohesion: 0.06
@@ -311,16 +311,16 @@ Cohesion: 0.07
 Nodes (26): 10. Open questions, 1. Design principles, 2.1 Model requirements, 2.2 Stage → part map ("load → aim → fire"), 2.3 Camera, 2.4 Lighting and rendering, 2.5 Performance fallback (2D mode), 2. The 3D rifle (+18 more)
 
 ### Community 22 - "showToast"
-Cohesion: 0.17
-Nodes (15): abandonForeignSession(), abandonSupersededGo(), discardOrphanedSession(), dismissToast(), markSessionHandled(), maybeCompleteSteer(), maybePrefetchPage(), maybeShowFirstSaveToast() (+7 more)
+Cohesion: 0.09
+Nodes (32): abandonForeignSession(), abandonSupersededGo(), applyOriginalAttrsToSvelteAnchor(), clearMountErrorCard(), commitAcceptedSvelteComponentToDom(), componentModuleCandidates(), copyToClipboard(), describeMountFailure() (+24 more)
 
 ### Community 23 - "Shipping and Launch"
 Cohesion: 0.08
 Nodes (25): Accessibility, Code Quality, Common Rationalizations, Documentation, Error Budget Release Gate, Error Reporting, Feature Flag Strategy, Infrastructure (+17 more)
 
 ### Community 24 - "desktop/package.json"
-Cohesion: 0.10
-Nodes (20): @awp/prompts, @awp/protocol, @types/node, name, private, type, version, @fontsource/geist-mono (+12 more)
+Cohesion: 0.09
+Nodes (21): @awp/prompts, @awp/protocol, @types/node, name, private, type, version, @fontsource/geist-mono (+13 more)
 
 ### Community 25 - "API and Interface Design"
 Cohesion: 0.08
@@ -335,8 +335,8 @@ Cohesion: 0.08
 Nodes (24): Accessibility (WCAG 2.1 AA), ARIA Labels, Avoid the AI Aesthetic, Color, Common Rationalizations, Component Architecture, Component Patterns, Design System Adherence (+16 more)
 
 ### Community 28 - "Information Architecture"
-Cohesion: 0.11
-Nodes (18): Applied Mental Model Theory, Card Sort and Tree Test Methodology, Core Wayfinding Principles, Don't-Know-What-I-Don't-Know, Exploratory Search, Information Architecture, Known-Item Search, Lynch's Spatial Elements (+10 more)
+Cohesion: 0.10
+Nodes (19): Applied Mental Model Theory, Card Sort and Tree Test Methodology, Core Wayfinding Principles, Dashboard, Faceted, Flat, Hierarchical (Tree), Hub-and-Spoke (+11 more)
 
 ### Community 29 - "Core capabilities"
 Cohesion: 0.08
@@ -355,8 +355,8 @@ Cohesion: 0.08
 Nodes (23): Adapter Pattern, Code Is a Liability, Common Rationalizations, Compulsory vs Advisory Deprecation, Core Principles, Database Schema Migrations (Expand/Contract), Deprecation and Migration, Deprecation Planning Starts at Design Time (+15 more)
 
 ### Community 33 - "Measurement Frameworks"
-Cohesion: 0.08
-Nodes (23): A/B Test Design, Applying HEART by Feature Type, Common GSM Mistakes, Confidence Intervals, Effect Size, Engagement vs. Wellbeing, Ethical Measurement, Ethical Measurement Principles (+15 more)
+Cohesion: 0.11
+Nodes (18): Applying HEART by Feature Type, Common GSM Mistakes, Confidence Intervals, Effect Size, Engagement vs. Wellbeing, Ethical Measurement, Ethical Measurement Principles, Goal-Signal-Metric (GSM) Mapping (+10 more)
 
 ### Community 34 - "Documentation and ADRs"
 Cohesion: 0.09
@@ -383,8 +383,8 @@ Cohesion: 0.09
 Nodes (21): Build Failure Triage, Common Rationalizations, Debugging and Error Recovery, Error-Specific Patterns, Instrumentation Guidelines, Overview, Red Flags, Runtime Error Triage (+13 more)
 
 ### Community 40 - "impeccable/SKILL.md"
-Cohesion: 0.13
-Nodes (12): Before you finish, Scope is sovereign, The amplification, The skeleton test, Why it reads flat, Craft floor, Refuse, Verify (+4 more)
+Cohesion: 0.11
+Nodes (14): Before you finish, Scope is sovereign, The amplification, The skeleton test, Why it reads flat, Craft floor, Refuse, Verify (+6 more)
 
 ### Community 41 - "AWP — Implementation Plan"
 Cohesion: 0.12
@@ -392,7 +392,7 @@ Nodes (17): check(), AWP — Implementation Plan, Conventions, Decisions needed 
 
 ### Community 42 - "claude.ts"
 Cohesion: 0.09
-Nodes (21): Phase 3 — Claude adapter + run stream, Phase 3, parseFixture(), buildArgs(), ClaudeCodeAdapter, exec, Block, createClaudeParser() (+13 more)
+Nodes (20): Phase 3 — Claude adapter + run stream, parseFixture(), buildArgs(), ClaudeCodeAdapter, exec, Block, createClaudeParser(), FILE_TOOLS (+12 more)
 
 ### Community 43 - "Impeccable Asset Producer"
 Cohesion: 0.10
@@ -404,27 +404,27 @@ Nodes (20): Animate complex properties, Assess What "Extraordinary" Means Here, 
 
 ### Community 45 - "engine.rs"
 Cohesion: 0.10
-Nodes (11): allow_restart(), answer_engine_request(), emit(), Engine, engine_request(), MAX_RESTARTS, old_crashes_expire(), REQUEST_TIMEOUT (+3 more)
+Nodes (13): allow_restart(), answer_engine_request(), emit(), Engine, engine_request(), MAX_RESTARTS, old_crashes_expire(), request_line() (+5 more)
 
 ### Community 46 - "Regulatory Landscape"
-Cohesion: 0.10
-Nodes (20): Addictive Design → Respectful Engagement, Anti-Pattern Remediation Guide, California CPRA (2023) and Automated Decision-Making, Common consent failures, Consent Design Patterns, Consent interface patterns, Consequence Scanning, COPPA (United States, 1998 / Updated 2013) (+12 more)
+Cohesion: 0.12
+Nodes (14): Addictive Design → Respectful Engagement, Anti-Pattern Remediation Guide, Common consent failures, Consent Design Patterns, Consent interface patterns, Consequence Scanning, Deceptive Patterns → Honest Alternatives, Default Manipulation → Respectful Defaults (+6 more)
 
 ### Community 47 - "App.tsx"
-Cohesion: 0.09
-Nodes (39): App(), EngineToasts(), Shell(), View, PlanPanel(), Props, RifleDiagram2D(), RING (+31 more)
+Cohesion: 0.08
+Nodes (47): App(), EngineToasts(), Shell(), View, CommandPalette(), Props, RifleDiagram2D(), RING (+39 more)
 
 ### Community 48 - "Organize"
 Cohesion: 0.10
 Nodes (19): 1. Navigation pattern design, 2. Taxonomy design, 3. Labeling systems, 4. Search and browse design, 5. Wayfinding design, 6. IA research methods, Ask first, Core capabilities (+11 more)
 
-### Community 49 - "captureElementToBlob"
-Cohesion: 0.12
-Nodes (20): averageRgb01(), captureChromeNodes(), captureElementFromRenderedAncestor(), captureElementToBlob(), compileShader(), cssColorToRgb01(), dominantRgb01(), findBackdropAncestor() (+12 more)
+### Community 49 - "handleGo"
+Cohesion: 0.16
+Nodes (19): applyEditing(), buildInsertPlaceholderSnapshotFromDom(), buildLocatorForLeaf(), buildPickedAnchorSnapshot(), captureAndEmit(), copyEditContainerContext(), copyEditLeafContext(), documentRefForElement() (+11 more)
 
 ### Community 50 - "Content Strategy"
-Cohesion: 0.08
-Nodes (23): Building a Terminology Glossary, Confirmation Messages, Content Modeling, Content Reuse, Content Strategy, Empty States, Jargon Management, Localization-Ready Content (+15 more)
+Cohesion: 0.11
+Nodes (18): Building a Terminology Glossary, Confirmation Messages, Content Modeling, Content Reuse, Content Strategy, Empty States, Jargon Management, Localization-Ready Content (+10 more)
 
 ### Community 51 - "Service Design"
 Cohesion: 0.10
@@ -451,31 +451,31 @@ Cohesion: 0.11
 Nodes (17): Anti-patterns to Avoid, Common Rationalizations, Detailed Instructions, How It Works, Idea Refine, Output, Overview, Phase 1: Understand & Expand (Divergent) (+9 more)
 
 ### Community 57 - "protocol/src/index.ts"
-Cohesion: 0.08
-Nodes (30): Mode, call(), engine, EngineError, EngineEvent, RunState, Ctx, OpenOpts (+22 more)
+Cohesion: 0.07
+Nodes (31): name, call(), h, createOutbound(), call(), getSecret(), Outbound, handle (+23 more)
 
-### Community 58 - "mountSvelteComponentVariant"
-Cohesion: 0.13
-Nodes (24): acceptedDomAlreadyClean(), applyOriginalAttrsToSvelteAnchor(), clearHandledWrapperReloadStamp(), commitAcceptedSvelteComponentToDom(), componentModuleCandidates(), deferredRecoverySuperseded(), describeMountFailure(), detectDevServerBase() (+16 more)
+### Community 58 - "scheduleAcceptCleanup"
+Cohesion: 0.31
+Nodes (11): acceptedDomAlreadyClean(), clearHandledWrapperReloadStamp(), deferredRecoverySuperseded(), ensureAcceptedDomClean(), findAcceptedRuntimeWrappers(), handledWrapperReloadKey(), reloadAfterMissingAcceptedDom(), restoreAcceptedDomFromSnapshot() (+3 more)
 
 ### Community 59 - "createLiveBrowserSessionState"
 Cohesion: 0.22
 Nodes (15): createLiveBrowserSessionState(), clearHandled(), clearScrollY(), clearSession(), isHandled(), loadSession(), markHandled(), nextCheckpointRevision() (+7 more)
 
-### Community 60 - "Button"
-Cohesion: 0.17
-Nodes (21): AccountsCard(), AgentRunStream(), Props, Row(), Button(), Props, VARIANTS, Card() (+13 more)
+### Community 60 - "Dashboard.tsx"
+Cohesion: 0.18
+Nodes (10): AgentRunStream(), Props, Row(), Chip(), TONES, call, tokens, ThemeCard() (+2 more)
 
 ### Community 61 - "biome.json"
 Cohesion: 0.12
 Nodes (16): css, parser, files, includes, formatter, indentStyle, indentWidth, quoteStyle (+8 more)
 
-### Community 62 - "App"
-Cohesion: 0.18
-Nodes (14): MODES, Props, SettingsScreen(), OPTIONS, ThemeSwitch(), DEFAULT_SETTINGS, DisplayMode, loadSettings() (+6 more)
+### Community 62 - "engine.ts"
+Cohesion: 0.10
+Nodes (21): ANSI, TerminalDrawer(), TerminalPanel(), TerminalView(), call(), engine, EngineError, EngineEvent (+13 more)
 
 ### Community 63 - "intent/SKILL.md"
-Cohesion: 0.10
+Cohesion: 0.11
 Nodes (17): Affinity Mapping, Bias Avoidance in Research, Common Communication Failures, Communicating Findings, Evaluative Methods (Is this working?), Evidence Strength Indicators, Findings Format, Generative Methods (What should we build?) (+9 more)
 
 ### Community 64 - "viewer.js"
@@ -515,8 +515,8 @@ Cohesion: 0.13
 Nodes (14): 1. Accessibility (A11y), 2. Performance, 3. Theming, 4. Responsive Design, 5. Implementation Integrity (CRITICAL), Audit Health Score, Detailed Findings by Severity, Diagnostic Scan (+6 more)
 
 ### Community 73 - "Intent"
-Cohesion: 0.10
-Nodes (20): Assessment-to-action pipeline, By what the user needs done, Context-Gathering Protocol, `context` — Set project context, `extract` — Extract UX patterns from an existing product, Intent, Invocation banner, Loop-backs and exit conditions (+12 more)
+Cohesion: 0.05
+Nodes (39): 1. Respect user autonomy, 2. Design for real conditions, 3. Make intent visible, 4. Evidence over intuition, 5. Systems over screens, 6. Ethical defaults, Assessment-to-action pipeline, By what the user needs done (+31 more)
 
 ### Community 74 - "Using Agent Skills"
 Cohesion: 0.13
@@ -535,12 +535,12 @@ Cohesion: 0.14
 Nodes (13): Common Rationalizations, Keeping the Spec Alive, Overview, Phase 0: Scope Check, Phase 1: Specify, Phase 2: Plan, Phase 3: Tasks, Phase 4: Implement (+5 more)
 
 ### Community 78 - "session.ts"
-Cohesion: 0.07
-Nodes (25): ACTIVE_TOOLS, runMcpServer(), toolList(), ToolName, TOOLS, Deferred, now(), Persisted (+17 more)
+Cohesion: 0.08
+Nodes (33): ACTIVE_TOOLS, runMcpServer(), toolList(), isToolName(), ToolName, TOOLS, SPEC_STAGES, SpecStageConfig (+25 more)
 
 ### Community 79 - "engine/src/project.ts"
 Cohesion: 0.09
-Nodes (20): 4. Engine protocol (JSON-RPC 2.0), Phase 5, createHandlers(), claudeMd(), countOpenBugs(), ensureIgnored(), exists(), ProjectService (+12 more)
+Nodes (23): 4. Engine protocol (JSON-RPC 2.0), BUG-007, No-argument routing: the context-aware menu, Phase 5, createHandlers(), absolute(), claudeMd(), countOpenBugs() (+15 more)
 
 ### Community 80 - "Scan mode (approach C: auto-extract, then confirm descriptive language)"
 Cohesion: 0.15
@@ -570,13 +570,13 @@ Nodes (11): Assess Current State, Code Simplification, Content Simplification, D
 Cohesion: 0.17
 Nodes (11): Accessibility Resilience, Assess Hardening Needs, Edge Cases & Boundary Conditions, Error Handling, Hardening Dimensions, Input Validation & Sanitization, Internationalization (i18n), Performance Resilience (+3 more)
 
-### Community 87 - "vitest"
-Cohesion: 0.14
-Nodes (9): current(), loaded(), state, status, invoke, listen, call(), h (+1 more)
+### Community 87 - "tokens.test.ts"
+Cohesion: 0.50
+Nodes (3): css, lum(), ratio()
 
 ### Community 88 - "5. User flow"
-Cohesion: 0.17
-Nodes (12): 5.10 Shipping, 5.1 Setup, 5.2.1 Spec gate rule (Ideation, Design, Planning), 5.2 Ideation, 5.3 Design, 5.4 Planning, 5.5 Connectors / Tools / MCPs, 5.6 Implementation (+4 more)
+Cohesion: 0.18
+Nodes (11): 5.10 Shipping, 5.2.1 Spec gate rule (Ideation, Design, Planning), 5.2 Ideation, 5.3 Design, 5.4 Planning, 5.5 Connectors / Tools / MCPs, 5.6 Implementation, 5.7 Testing (runs alongside Implementation) (+3 more)
 
 ### Community 89 - "compilerOptions"
 Cohesion: 0.17
@@ -603,8 +603,8 @@ Cohesion: 0.18
 Nodes (10): Assess Current State, Color Refinement, Composition Refinement, Motion Reduction, Plan Refinement, Refine the Design, Simplification, Verify Quality (+2 more)
 
 ### Community 95 - "spec.test.ts"
-Cohesion: 0.11
-Nodes (17): css, lum(), ratio(), Bridge, engineCommand(), mcpLauncher(), startBridge(), ToolCall (+9 more)
+Cohesion: 0.15
+Nodes (14): Bridge, engineCommand(), mcpLauncher(), startBridge(), ToolCall, call(), idle(), phaseOf() (+6 more)
 
 ### Community 96 - "AWP — Product Requirements Document"
 Cohesion: 0.18
@@ -631,8 +631,8 @@ Cohesion: 0.20
 Nodes (9): 0. Identify the phase, 1. Plan (once per phase), 2. Explore (only when needed), 3. Implement each TODO (main session, test-first), 4. Review (once per phase), 5. Close out, Cost rules, Parallel TODOs (optional) (+1 more)
 
 ### Community 102 - "PhaseBarrel.tsx"
-Cohesion: 0.11
-Nodes (24): MarkdownEditor(), PhaseBarrel(), Plan, call, verify, Phase 8 — Planning stage, Phase 8, Cmd (+16 more)
+Cohesion: 0.16
+Nodes (20): PhaseBarrel(), Plan, call, verify, Phase 8 — Planning stage, Phase 8, Cmd, mergePhases() (+12 more)
 
 ### Community 103 - "Ideation Frameworks Reference"
 Cohesion: 0.22
@@ -655,8 +655,8 @@ Cohesion: 0.22
 Nodes (8): Cadence, Confirm and stop, Phase 1: Discovery interview, Phase 2: Resolve the design direction, Phase 3: Write the brief, Round 1: purpose, people, and outcome, Round 2: material, behavior, and boundaries, Shape
 
 ### Community 108 - "initGlobalBar"
-Cohesion: 0.09
-Nodes (39): agentStatusText(), barPaletteForTheme(), brandMarkSvg(), buildParamsPanel(), cursorForInsertAxis(), detectPageTheme(), own(), pickable() (+31 more)
+Cohesion: 0.11
+Nodes (30): agentHasWorkInFlight(), agentStatusText(), barPaletteForTheme(), brandMarkSvg(), designPanelCss(), detectPageTheme(), ensureAgentPollTooltip(), fetchPendingCount() (+22 more)
 
 ### Community 109 - "AWP — Registry seed list"
 Cohesion: 0.22
@@ -682,9 +682,9 @@ Nodes (7): Apply at system scale, Audit before choosing, Choose a strategy, Cont
 Cohesion: 0.25
 Nodes (8): 1. Impatient Power User: "Alex", 2. Confused First-Timer: "Jordan", 3. Accessibility-Dependent User: "Sam", 4. Deliberate Stress Tester: "Riley", 5. Distracted Mobile User: "Casey", Persona-Based Design Testing, Project-Specific Personas, Selecting Personas
 
-### Community 115 - "Extract Flow"
-Cohesion: 0.25
-Nodes (7): Extract Flow, Step 1: Discover the Design System, Step 2: Identify Patterns, Step 3: Plan Extraction, Step 4: Extract & Enrich, Step 5: Migrate, Step 6: Document
+### Community 115 - "react"
+Cohesion: 0.14
+Nodes (10): Command, Props, Dialog(), Props, Tab, RunState, useRun(), root (+2 more)
 
 ### Community 116 - "engine/package.json"
 Cohesion: 0.11
@@ -699,8 +699,8 @@ Cohesion: 0.18
 Nodes (10): dependencies, zod, zod, main, name, private, scripts, typecheck (+2 more)
 
 ### Community 119 - "prompts/src/index.ts"
-Cohesion: 0.08
-Nodes (11): FORM_TEMPLATES, FormTemplate, LIBRARY, loadPrompt(), name, promptIds(), SECTION_SCHEMAS, SectionSchema (+3 more)
+Cohesion: 0.09
+Nodes (10): FormTemplate, LIBRARY, loadPrompt(), name, promptIds(), SECTION_SCHEMAS, SectionSchema, parsePrompt() (+2 more)
 
 ### Community 120 - "desktop/tsconfig.json"
 Cohesion: 0.29
@@ -734,21 +734,21 @@ Nodes (6): Checks, Entry Atomicity, Impeccable Manual Edit Applier, Input Contra
 Cohesion: 0.52
 Nodes (6): globToRegex(), matchesScope(), normalizeIgnoreRule(), normalizeIgnoreValue(), pageCandidates(), resolveDetectIgnores()
 
-### Community 128 - "Navigation Patterns"
-Cohesion: 0.33
-Nodes (6): Dashboard, Faceted, Flat, Hierarchical (Tree), Hub-and-Spoke, Navigation Patterns
+### Community 128 - "onAnnotDown"
+Cohesion: 0.24
+Nodes (15): beginEditPin(), buildAnnotationsForCapture(), buildPinElement(), cancelEditingPin(), finalizeEditingPin(), initAnnotOverlay(), localCoords(), onAnnotDown() (+7 more)
 
 ### Community 129 - "Diagnostic Scan"
 Cohesion: 0.33
 Nodes (6): 1. Accessibility (VoiceOver / TalkBack), 2. Performance, 3. Appearance & Theming, 4. Platform Conformance (CRITICAL), 5. Adaptivity, Diagnostic Scan
 
 ### Community 130 - "SetupView.tsx"
-Cohesion: 0.10
-Nodes (24): CardState, Icon(), LABEL, Props, SetupCard(), ANSI, TerminalDrawer(), TerminalPanel() (+16 more)
+Cohesion: 0.12
+Nodes (30): AccountsCard(), Button(), Props, VARIANTS, Card(), Input(), Props, CardState (+22 more)
 
 ### Community 131 - "design.test.ts"
-Cohesion: 0.11
-Nodes (21): addRef(), formValuesFromTokens(), ratio(), readRefs(), REF_EXT, refsFile(), renderDesignMd(), renderTokensJson() (+13 more)
+Cohesion: 0.15
+Nodes (20): addRef(), formValuesFromTokens(), ratio(), readRefs(), REF_EXT, refsFile(), renderDesignMd(), renderTokensJson() (+12 more)
 
 ### Community 132 - "Visualize: Direction Comps & Asset Production"
 Cohesion: 0.33
@@ -758,9 +758,9 @@ Nodes (5): After approval: the comp becomes a spec, Generate three compositional
 Cohesion: 0.13
 Nodes (9): default_shell(), Pty, pty_kill(), pty_resize(), pty_spawn(), pty_write(), Ptys, SpawnOpts (+1 more)
 
-### Community 135 - "handlers.ts"
-Cohesion: 0.12
-Nodes (10): HandlerOpts, isToolName(), AdapterFactory, SPEC_STAGES, SpecStageConfig, SpecService, SpecServiceOpts, McpLauncher (+2 more)
+### Community 135 - "SpecService"
+Cohesion: 0.15
+Nodes (8): Full debug 2026-10-16 (BUG-003 to BUG-013), MEMORY, Phase 0, Phase 1, Phase 2, Phase 3, Phase 6, SpecService
 
 ### Community 136 - "default.json"
 Cohesion: 0.40
@@ -775,12 +775,12 @@ Cohesion: 0.40
 Nodes (4): Impeccable Documenter, Input Contract, Output Contract, Workflow
 
 ### Community 139 - "IdeationView.tsx"
-Cohesion: 0.17
-Nodes (17): ChatPanel(), Command, CommandPalette(), Props, Dialog(), Props, FormSummaryCard(), show() (+9 more)
+Cohesion: 0.15
+Nodes (20): ChatPanel(), FormSummaryCard(), show(), MarkdownEditor(), PlanPanel(), QuestionList(), ReadinessReticle(), Mode (+12 more)
 
 ### Community 140 - "setup-view.test.tsx"
-Cohesion: 0.11
-Nodes (11): call, s, call, base(), call, mount(), call, invoke (+3 more)
+Cohesion: 0.07
+Nodes (16): call, s, call, Handler, handlers, state, summary, call (+8 more)
 
 ### Community 141 - "3d/package.json"
 Cohesion: 0.50
@@ -790,17 +790,17 @@ Nodes (3): name, private, version
 Cohesion: 0.50
 Nodes (4): Heuristics Scoring Guide, Issue Severity (P0–P3), Reference Material, Score Summary
 
-### Community 143 - "Read"
-Cohesion: 0.50
-Nodes (3): Comps, Directions, Read
+### Community 143 - "app.test.tsx"
+Cohesion: 0.33
+Nodes (4): current(), loaded(), state, status
 
 ### Community 144 - "engine/src/setup.ts"
-Cohesion: 0.17
-Nodes (11): Phase 4, isSupportedVersion(), defaultRunner(), detectTools(), execFileP, expandWinVars(), freshEnv(), parseRegPath() (+3 more)
+Cohesion: 0.21
+Nodes (13): Phase 4, isSupportedVersion(), HandlerOpts, AdapterFactory, defaultRunner(), detectTools(), execFileP, expandWinVars() (+5 more)
 
-### Community 145 - "MEMORY"
+### Community 145 - "resolveLiveInjectionAnchor"
 Cohesion: 0.22
-Nodes (8): MEMORY, Phase 0, Phase 1, Phase 2, Phase 6, Review of phases 3-8 (fixed), empty(), validateValues()
+Nodes (15): buildSvelteExpressionTextMap(), buildSveltePropValuesFromLiveElement(), buildSveltePropValuesV2(), cloneWithoutElements(), collectTextNodes(), collectVisibleTexts(), cssEscapeIdent(), elementMatchesOriginalMarkup() (+7 more)
 
 ### Community 146 - "engine/tsconfig.json"
 Cohesion: 0.29
@@ -818,33 +818,37 @@ Nodes (3): extends, include, ../../tsconfig.base.json
 Cohesion: 0.50
 Nodes (3): name, private, version
 
+### Community 151 - "BUGS"
+Cohesion: 0.14
+Nodes (13): BUG-001, BUG-002, BUG-003, BUG-004, BUG-005, BUG-006, BUG-008, BUG-009 (+5 more)
+
 ### Community 162 - "ChatPanel.tsx"
-Cohesion: 0.16
-Nodes (13): PHASE, Props, Spec, fields, form, AGAINST, Control(), FONTS (+5 more)
+Cohesion: 0.19
+Nodes (12): PHASE, Props, Spec, fields, form, AGAINST, Control(), FONTS (+4 more)
 
 ### Community 163 - "secrets.rs"
 Cohesion: 0.22
 Nodes (12): accounts_list(), entry(), get(), index_path(), key(), keychain_round_trip(), read_index(), secret_delete() (+4 more)
 
-### Community 164 - "applyEditing"
-Cohesion: 0.14
-Nodes (19): applyEditing(), buildLocatorForLeaf(), collectEditableTextRows(), visit(), copyEditContainerContext(), copyEditLeafContext(), documentRefForElement(), enableInlineEdit() (+11 more)
+### Community 164 - "enableInlineEdit"
+Cohesion: 0.22
+Nodes (9): collectEditableTextRows(), visit(), own(), pickable(), stopFocusOutIntoChrome(), enableInlineEdit(), layoutFlowChildren(), onInlineInput() (+1 more)
 
-### Community 165 - "resolveLiveInjectionAnchor"
-Cohesion: 0.16
-Nodes (19): buildSvelteExpressionTextMap(), buildSveltePropValuesFromLiveElement(), buildSveltePropValuesV2(), cloneWithoutElements(), collectTextNodes(), collectVisibleTexts(), cssEscapeIdent(), elementMatchesOriginalMarkup() (+11 more)
+### Community 165 - "Extract Flow"
+Cohesion: 0.25
+Nodes (7): Extract Flow, Step 1: Discover the Design System, Step 2: Identify Patterns, Step 3: Plan Extraction, Step 4: Extract & Enrich, Step 5: Migrate, Step 6: Document
 
 ### Community 166 - "dependencies"
 Cohesion: 0.11
 Nodes (18): dependencies, @awp/prompts, @awp/protocol, codemirror, @codemirror/lang-markdown, @codemirror/merge, @codemirror/state, @codemirror/view (+10 more)
 
 ### Community 167 - "orchestrator.ts"
-Cohesion: 0.28
+Cohesion: 0.31
 Nodes (13): clone(), completeStage(), enterStage(), idx(), initialState(), later(), markLaterStale(), rec() (+5 more)
 
-### Community 168 - "serve.ts"
-Cohesion: 0.19
-Nodes (8): createOutbound(), call(), getSecret(), Outbound, handle, logFile, outbound, rl
+### Community 168 - "Regulatory Landscape"
+Cohesion: 0.33
+Nodes (6): California CPRA (2023) and Automated Decision-Making, COPPA (United States, 1998 / Updated 2013), EU Digital Services Act (2024), FTC (United States), GDPR (EU, 2018), Regulatory Landscape
 
 ### Community 169 - "devDependencies"
 Cohesion: 0.15
@@ -855,56 +859,60 @@ Cohesion: 0.22
 Nodes (11): call(), idle(), option(), Ph, phase(), phOf(), planAttempts, seen (+3 more)
 
 ### Community 171 - "git.ts"
-Cohesion: 0.23
-Nodes (6): 2. Key decisions, BUILD_BRANCH, exec, git(), gitService, identityArgs()
+Cohesion: 0.19
+Nodes (7): 2. Key decisions, BUILD_BRANCH, exec, git(), gitService, identityArgs(), 5.1 Setup
 
-### Community 172 - "The UX Anti-Pattern Catalog"
-Cohesion: 0.17
-Nodes (12): Category 10: Narrative Pathologies in Design Process, Category 1: Deceptive Patterns, Category 2: Prechecked & Default Manipulation, Category 3: Urgency & Scarcity Fabrication, Category 4: Addictive Design, Category 5: Attention Exploitation, Category 6: Accessibility Weaponized, Category 7: Vulnerable User Exploitation (+4 more)
+### Community 172 - "Region map"
+Cohesion: 0.40
+Nodes (4): Containment, Painted material, Region map, What varies independently
 
-### Community 173 - "design-ui.test.tsx"
-Cohesion: 0.28
-Nodes (4): call, tokens, safeFont(), themePreviewHtml()
+### Community 173 - "Search Behavior Models"
+Cohesion: 0.40
+Nodes (5): Don't-Know-What-I-Don't-Know, Exploratory Search, Known-Item Search, Re-finding, Search Behavior Models
 
 ### Community 174 - "MarkdownEditor.tsx"
-Cohesion: 0.29
-Nodes (6): Props, codemirror, @codemirror/lang-markdown, @codemirror/merge, @codemirror/state, @codemirror/view
+Cohesion: 0.25
+Nodes (7): Props, theme, codemirror, @codemirror/lang-markdown, @codemirror/merge, @codemirror/state, @codemirror/view
 
-### Community 175 - "Core UX Principles"
-Cohesion: 0.29
-Nodes (7): 1. Respect user autonomy, 2. Design for real conditions, 3. Make intent visible, 4. Evidence over intuition, 5. Systems over screens, 6. Ethical defaults, Core UX Principles
+### Community 175 - "Inclusive Design Beyond Disability"
+Cohesion: 0.40
+Nodes (5): Aging, Inclusive Design Beyond Disability, Low Literacy, Older Devices and Low Bandwidth, Situational Impairment
 
 ### Community 176 - "scripts"
 Cohesion: 0.40
 Nodes (5): scripts, build, dev, tauri, typecheck
 
-### Community 177 - "Command guidance"
+### Community 177 - "WCAG 2.2 for Designers"
 Cohesion: 0.40
-Nodes (3): Command guidance, No-argument routing: the context-aware menu, Workflow questions
+Nodes (5): Operable, Perceivable, Robust, Understandable, WCAG 2.2 for Designers
 
-### Community 178 - "Form Design Principles"
+### Community 178 - "Voice Framework Methodology"
 Cohesion: 0.40
-Nodes (5): Field Grouping, Form Design Principles, Inline Validation Timing, One Thing Per Page, Smart Defaults
+Nodes (5): Step 1: Brand Attribute Identification, Step 2: Voice Principles, Step 3: Tone Spectrum, Step 4: Writing Guidelines, Voice Framework Methodology
+
+### Community 179 - "A/B Test Design"
+Cohesion: 0.40
+Nodes (5): A/B Test Design, Hypothesis Structure, Minimum Detectable Effect (MDE), Test Duration, What A/B Tests Cannot Tell You
 
 ## Knowledge Gaps
 - **24 isolated node(s):** `@awp/prompts`, `@awp/protocol`, `@fontsource/geist-mono`, `@fontsource/geist-sans`, `@tauri-apps/cli` (+19 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1696 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1699 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ProjectState` connect `engine/src/project.ts` to `actOnAgentTarget`, `orchestrator.ts`, `session.ts`, `App.tsx`, `protocol/src/index.ts`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+- **Why does `init()` connect `initGlobalBar` to `live-browser.js`, `initGlobalBar`, `doctor.md`, `connectSSE`, `Init flow`, `enableInlineEdit`, `onAnnotDown`, `setLiveState`, `impeccable/SKILL.md`, `live.md`?**
+  _High betweenness centrality (0.066) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `SpecSession` (e.g. with `Phase 6` and `Phase 7`) actually correct?**
   _`SpecSession` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `@awp/prompts`, `@awp/protocol`, `@fontsource/geist-mono` to the rest of the system?**
   _24 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `live-browser.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.02835992075904494 - nodes in this community are weakly interconnected._
-- **Why does `init()` connect `initGlobalBar` to `live-browser.js`, `initGlobalBar`, `doctor.md`, `connectSSE`, `Init flow`, `setLiveState`, `onAnnotDown`, `impeccable/SKILL.md`, `live.md`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+  _Cohesion score 0.026171211667166117 - nodes in this community are weakly interconnected._
+- **Why does `ProjectState` connect `engine/src/project.ts` to `actOnAgentTarget`, `orchestrator.ts`, `session.ts`, `App.tsx`, `protocol/src/index.ts`?**
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Should `initGlobalBar` be split into smaller, more focused modules?**
-  _Cohesion score 0.08880666049953746 - nodes in this community are weakly interconnected._
-- **Why does `EngineError` connect `SpecSession` to `design.test.ts`, `actOnAgentTarget`, `orchestrator.ts`, `handlers.ts`, `git.ts`, `session.ts`, `engine/src/project.ts`, `Command guidance`, `protocol/src/index.ts`, `spec.test.ts`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+  _Cohesion score 0.08549019607843138 - nodes in this community are weakly interconnected._
+- **Why does `EngineError` connect `SpecSession` to `design.test.ts`, `actOnAgentTarget`, `orchestrator.ts`, `SpecService`, `git.ts`, `session.ts`, `engine/src/project.ts`, `protocol/src/index.ts`, `spec.test.ts`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._

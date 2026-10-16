@@ -18,5 +18,11 @@ test('About shows the engine version from the engine', async () => {
 test('About degrades when the engine is unreachable', async () => {
   call.mockRejectedValue(new Error('x'));
   render(<SettingsScreen settings={s} onChange={() => {}} />);
-  expect(await screen.findByText('unavailable')).toBeTruthy();
+  expect(await screen.findByText(/^unavailable/)).toBeTruthy();
+});
+
+test('About shows the error message, not just "unavailable"', async () => {
+  call.mockRejectedValue(new Error('INVALID_PARAMS: version'));
+  render(<SettingsScreen settings={s} onChange={() => {}} />);
+  expect(await screen.findByText(/unavailable: INVALID_PARAMS/)).toBeTruthy();
 });

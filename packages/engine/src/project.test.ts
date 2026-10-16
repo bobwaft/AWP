@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, test } from 'vitest';
@@ -152,4 +152,44 @@ test('scaffolding into an existing folder never commits unrelated files or secre
   expect(ignore).toContain('dist/');
   expect(ignore).toContain('.env');
   expect(ignore).toContain('.awp/runs/');
+});
+
+const seed = async (content: string) => {
+  await mkdir(join(dir, 'data'), { recursive: true });
+  await writeFile(join(dir, 'data', 'projects.json'), content);
+};
+
+test('recents tolerate the { projects: [...] } shape', async () => {
+  const root = join(dir, 'old');
+  await svc.create(root, 'old');
+  const rows = JSON.parse(
+    readFileSync(join(dir, 'data', 'projects.json'), 'utf8'),
+  );
+  await seed(JSON.stringify({ projects: rows }));
+  expect((await svc.list()).map((p) => p.path)).toEqual([root]);
+  const other = join(dir, 'new');
+  await svc.create(other, 'new');
+  expect((await svc.open(root)).current).toBe('ideation');
+  expect((await svc.list()).length).toBe(2);
+});
+
+test('recents survive a corrupt file and junk rows', async () => {
+  await seed('{not json');
+  expect(await svc.list()).toEqual([]);
+  await svc.create(join(dir, 'a'), 'a');
+  await seed(JSON.stringify([null, 5, { name: 'x' }, { path: 7 }]));
+  expect(await svc.list()).toEqual([]);
+  await expect(svc.create(join(dir, 'b'), 'b')).resolves.toBeTruthy();
+});
+
+test('create and open refuse non-absolute paths (BUG-013)', async () => {
+  const bad = process.platform === 'win32' ? 'C:Users\\x\\Demo' : 'rel/Demo';
+  for (const p of [bad, 'Demo', '.'] as const) {
+    await expect(svc.create(p, 'Demo')).rejects.toMatchObject({
+      code: 'PATH_NOT_ABSOLUTE',
+    });
+    await expect(svc.open(p)).rejects.toMatchObject({
+      code: 'PATH_NOT_ABSOLUTE',
+    });
+  }
 });

@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { AdapterId, AgentEvent } from './agent';
 
+import { SetupDetectResult } from './setup';
+
 export * from './agent';
+export * from './setup';
 
 export const name = '@awp/protocol';
 
@@ -48,6 +51,15 @@ export const methods = {
   version: {
     params: z.undefined().or(z.object({})),
     result: z.object({ version: z.string() }),
+  },
+  'setup.detect': {
+    params: z.undefined().or(z.object({})),
+    result: SetupDetectResult,
+  },
+  // PATH re-read from the registry on Windows; UI passes it to new terminal tabs.
+  'setup.freshEnv': {
+    params: z.undefined().or(z.object({})),
+    result: z.record(z.string(), z.string()),
   },
   'agent.run': {
     params: z.object({

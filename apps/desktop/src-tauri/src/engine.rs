@@ -95,7 +95,9 @@ pub fn start(app: AppHandle) {
                 let Ok(msg) = serde_json::from_str::<Value>(&line) else {
                     continue;
                 };
-                if msg.get("method").is_none() {
+                if msg.get("method").is_some() && msg.get("id").is_some() {
+                    answer_engine_request(&state, &msg);
+                } else if msg.get("method").is_none() {
                     // A response; id:null (unparseable request) matches no caller.
                     if let Some(tx) = msg["id"]
                         .as_u64()
@@ -124,6 +126,27 @@ pub fn start(app: AppHandle) {
             }
         }
     });
+}
+
+/// The engine may call back for secrets only (`secret.get`); anything else is refused.
+fn answer_engine_request(state: &Engine, msg: &Value) {
+    let reply = match msg["method"].as_str() {
+        Some("secret.get") => match msg["params"]["key"].as_str().map(crate::secrets::get) {
+            Some(Ok(v)) => json!({ "jsonrpc": "2.0", "id": msg["id"], "result": { "value": v } }),
+            Some(Err(e)) => {
+                json!({ "jsonrpc": "2.0", "id": msg["id"], "error": { "code": -32000, "message": e } })
+            }
+            None => {
+                json!({ "jsonrpc": "2.0", "id": msg["id"], "error": { "code": -32602, "message": "key required" } })
+            }
+        },
+        _ => {
+            json!({ "jsonrpc": "2.0", "id": msg["id"], "error": { "code": -32601, "message": "method not found" } })
+        }
+    };
+    if let Some(w) = state.stdin.lock().unwrap().as_mut() {
+        let _ = writeln!(w, "{reply}").and_then(|_| w.flush());
+    }
 }
 
 /// Sends one JSON-RPC request, returns the full response object (UI interprets result/error).

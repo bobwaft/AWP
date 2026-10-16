@@ -114,15 +114,15 @@
 ## Phase 4 — Setup stage
 **Goal:** the user connects Claude Code and accounts, using AWP's built-in terminal.
 
-- [ ] `setup.detect`: claude, git, gh, semgrep (installed, version, logged in where checkable).
-- [ ] Rust PTY (`portable-pty`, ConPTY on Windows; confirm crate) with `pty_spawn/write/resize/kill` and `pty://data|exit` events (ARCHITECTURE.md §3.1).
-- [ ] `TerminalDrawer` (xterm.js, tabs, resize, `` Ctrl+` ``, "Open Claude Code here") available on every screen.
-- [ ] Setup view per DESIGN.md §3.5: Required/Optional groups, `SetupCard` states, "Fix in terminal" in a new named tab from the built-in fix list (never presses Enter), "Do it manually", 3 s polling while waiting + re-check on exit, account/plan on ready.
-- [ ] Windows PATH refresh from the registry in detection; fresh env for new tabs.
-- [ ] Test: no engine/MCP code path can call `pty_write`.
-- [ ] Keychain commands in Rust; engine secret access via RPC.
-- [ ] Account connections: GitHub (via `gh auth status`, or token stored in keychain), Figma (token for its MCP), generic "add token" for registry items.
-- [ ] Block continuing until Claude Code (logged in) and git are available.
+- [x] `setup.detect`: claude, git, gh, semgrep (installed, version, logged in where checkable).
+- [x] Rust PTY (`portable-pty`, ConPTY on Windows; confirm crate) with `pty_spawn/write/resize/kill` and `pty://data|exit` events (ARCHITECTURE.md §3.1).
+- [x] `TerminalDrawer` (xterm.js, tabs, resize, `` Ctrl+` ``, "Open Claude Code here") available on every screen.
+- [x] Setup view per DESIGN.md §3.5: Required/Optional groups, `SetupCard` states, "Fix in terminal" in a new named tab from the built-in fix list (never presses Enter), "Do it manually", 3 s polling while waiting + re-check on exit, account/plan on ready.
+- [x] Windows PATH refresh from the registry in detection; fresh env for new tabs.
+- [x] Test: no engine/MCP code path can call `pty_write`.
+- [x] Keychain commands in Rust; engine secret access via RPC.
+- [x] Account connections: GitHub (via `gh auth status`, or token stored in keychain), Figma (token for its MCP), generic "add token" for registry items.
+- [x] Block continuing until Claude Code (logged in) and git are available.
 
 **Done when:** detection is correct on Windows and macOS; tokens survive restart and never appear in any file.
 

@@ -3,13 +3,16 @@ import { CommandPalette } from './components/CommandPalette';
 import { RifleDiagram2D } from './components/RifleDiagram2D';
 import { SettingsScreen } from './components/SettingsScreen';
 import { StageRail } from './components/StageRail';
+import { TerminalDrawer } from './components/TerminalDrawer';
 import { ToastProvider, useToast } from './components/Toast';
 import { TopBar } from './components/TopBar';
 import { engine } from './lib/engine';
 import { loadSettings, saveSettings } from './lib/settings';
 import { MOCK_PROJECT, STAGES, stageForKey } from './lib/stages';
+import { TerminalProvider } from './lib/terminal';
 import { applyTheme } from './lib/theme';
 import { DevRun } from './stages/DevRun';
+import { SetupView } from './stages/SetupView';
 
 type View = 'home' | 'settings' | 'dev';
 
@@ -95,39 +98,44 @@ export function App() {
   const current = STAGES[stage - 1];
   return (
     <ToastProvider>
-      <EngineToasts />
-      <div className="flex h-full flex-col">
-        <TopBar
-          onOpenPalette={() => setPalette(true)}
-          onOpenSettings={() => setView('settings')}
-        />
-        <div className="flex min-h-0 flex-1">
-          <StageRail selected={stage} onSelect={goStage} />
-          <main className="flex-1 overflow-auto">
-            {view === 'dev' ? (
-              <DevRun />
-            ) : view === 'settings' ? (
-              <SettingsScreen settings={settings} onChange={setSettings} />
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
-                <p className="hud">
-                  Stage {String(stage).padStart(2, '0')} · {current.label}
-                </p>
-                <RifleDiagram2D selected={stage} onSelect={goStage} />
-              </div>
-            )}
-          </main>
-          <aside
-            aria-label="Details"
-            className="hidden w-0 shrink-0 border-l border-line bg-bg-1"
+      <TerminalProvider>
+        <EngineToasts />
+        <div className="flex h-full flex-col">
+          <TopBar
+            onOpenPalette={() => setPalette(true)}
+            onOpenSettings={() => setView('settings')}
           />
+          <div className="flex min-h-0 flex-1">
+            <StageRail selected={stage} onSelect={goStage} />
+            <main className="flex-1 overflow-auto">
+              {view === 'dev' ? (
+                <DevRun />
+              ) : view === 'settings' ? (
+                <SettingsScreen settings={settings} onChange={setSettings} />
+              ) : stage === 1 ? (
+                <SetupView onContinue={() => goStage(2)} />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
+                  <p className="hud">
+                    Stage {String(stage).padStart(2, '0')} · {current.label}
+                  </p>
+                  <RifleDiagram2D selected={stage} onSelect={goStage} />
+                </div>
+              )}
+            </main>
+            <aside
+              aria-label="Details"
+              className="hidden w-0 shrink-0 border-l border-line bg-bg-1"
+            />
+          </div>
+          <TerminalDrawer />
         </div>
-      </div>
-      <CommandPalette
-        open={palette}
-        onClose={() => setPalette(false)}
-        commands={commands}
-      />
+        <CommandPalette
+          open={palette}
+          onClose={() => setPalette(false)}
+          commands={commands}
+        />
+      </TerminalProvider>
     </ToastProvider>
   );
 }

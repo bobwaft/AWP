@@ -1,6 +1,7 @@
 import pkg from '../package.json';
 import { type AdapterFactory, type Notify, RunManager } from './runs';
 import type { Handlers } from './server';
+import { detectTools, freshEnv } from './setup';
 
 export function createHandlers(
   notify: Notify,
@@ -10,6 +11,8 @@ export function createHandlers(
   return {
     ping: () => 'pong',
     version: () => ({ version: pkg.version }),
+    'setup.detect': () => detectTools(),
+    'setup.freshEnv': () => freshEnv(),
     'agent.run': (p) => ({
       runId: runs.start(p as Parameters<RunManager['start']>[0]),
     }),

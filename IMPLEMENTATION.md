@@ -63,13 +63,13 @@
 ## Phase 1 — App shell + design system
 **Goal:** the 2D frame of the app, matching DESIGN.md.
 
-- [ ] `src/styles/tokens.css` + `tokens.json` from DESIGN.md §4; Geist Sans/Mono bundled locally.
-- [ ] Light theme token values designed with Impeccable per DESIGN.md §4.0 (AA-checked), recorded in DESIGN.md §4.1; `ThemeSwitch` (System / Dark / Light) with `data-theme`.
-- [ ] Layout: top bar, collapsible `StageRail` (10 stages, states locked/current/done/stale, keys 1–0), main area, right panel slot.
-- [ ] Base components: Button, Input, Chip, Card, Tabs, Toast, Dialog, `CommandPalette` (Cmd/Ctrl+K).
-- [ ] `RifleDiagram2D` (SVG, original drawing) with 10 clickable hotspots and state styles.
-- [ ] Settings screen skeleton with Display options (3D / 2D / Reduced motion) stored in `settings.json`.
-- [ ] Mock data store to drive stage states until the engine exists.
+- [x] `src/styles/tokens.css` + `tokens.json` from DESIGN.md §4; Geist Sans/Mono bundled locally.
+- [x] Light theme token values designed with Impeccable per DESIGN.md §4.0 (AA-checked), recorded in DESIGN.md §4.1; `ThemeSwitch` (System / Dark / Light) with `data-theme`.
+- [x] Layout: top bar, collapsible `StageRail` (10 stages, states locked/current/done/stale, keys 1–0), main area, right panel slot.
+- [x] Base components: Button, Input, Chip, Card, Tabs, Toast, Dialog, `CommandPalette` (Cmd/Ctrl+K).
+- [x] `RifleDiagram2D` (SVG, original drawing) with 10 clickable hotspots and state styles.
+- [x] Settings screen skeleton with Display options (3D / 2D / Reduced motion) stored in `settings.json`.
+- [x] Mock data store to drive stage states until the engine exists.
 
 **Done when:** all views render with mock data; keyboard navigation works; focus rings visible; contrast meets AA.
 

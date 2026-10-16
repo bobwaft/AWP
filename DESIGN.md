@@ -161,26 +161,28 @@ Assumption to validate in dogfooding (about 5 users): the primary user is only m
 
 ### 4.1 Color
 
-Dark values below; light values TBD in Phase 1 (§4.0).
+Dark and light values below (light defined in Phase 1, AA-checked by `tokens.test.ts`). `--accent` is the text/fill accent; `--accent-bright` is the tracer orange for large fills, the bullet and glows (same as `--accent` in dark). `--on-accent` is text on accent fills.
 
-| Token | Hex (dark) | Use |
-|---|---|---|
-| `--bg-0` | `#0B0D0F` | App background, scene clear color |
-| `--bg-1` | `#121519` | Panels |
-| `--bg-2` | `#1A1E23` | Raised surfaces, inputs, cards |
-| `--bg-3` | `#232830` | Hover, selected rows |
-| `--line` | `#2A3038` | Borders, dividers |
-| `--line-strong` | `#3A424C` | Focused borders |
-| `--text-1` | `#E8EAED` | Primary text |
-| `--text-2` | `#A3ABB5` | Secondary text |
-| `--text-3` | `#6B7480` | Hints, disabled |
-| `--steel` | `#8A949E` | Done states, inactive hotspots |
-| `--accent` | `#FF6B1A` | Tracer orange: primary actions, current stage, bullet |
-| `--accent-dim` | `#FF6B1A26` | Accent fills at 15% |
-| `--scope` | `#4FD1C5` | Scope glass cyan: links, focus rings, info |
-| `--success` | `#3DD68C` | Pass, clean scan |
-| `--warning` | `#F5B83D` | Stale specs, non-blocking questions, medium findings |
-| `--danger` | `#F2555A` | Fail, blocking questions, high findings |
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--bg-0` | `#0B0D0F` | `#EFECE5` | App background, scene clear color |
+| `--bg-1` | `#121519` | `#F7F5F0` | Panels |
+| `--bg-2` | `#1A1E23` | `#FFFFFF` | Raised surfaces, inputs, cards |
+| `--bg-3` | `#232830` | `#E4E0D6` | Hover, selected rows |
+| `--line` | `#2A3038` | `#D3CEC1` | Borders, dividers |
+| `--line-strong` | `#3A424C` | `#8F8A7D` | Focused borders |
+| `--text-1` | `#E8EAED` | `#17191C` | Primary text |
+| `--text-2` | `#A3ABB5` | `#454C55` | Secondary text |
+| `--text-3` | `#6B7480` | `#5B626B` | Hints, disabled |
+| `--steel` | `#8A949E` | `#56616C` | Done states, inactive hotspots |
+| `--accent` | `#FF6B1A` | `#B03A06` | Tracer orange: primary actions, current stage, bullet |
+| `--accent-bright` | `#FF6B1A` | `#FF6B1A` | Large fills, bullet, glows (never text) |
+| `--accent-dim` | `#FF6B1A26` | `#B03A061F` | Accent fills at 15% |
+| `--on-accent` | `#0B0D0F` | `#FFFFFF` | Text on accent-filled buttons |
+| `--scope` | `#4FD1C5` | `#0A6F68` | Scope glass cyan: links, focus rings, info |
+| `--success` | `#3DD68C` | `#13703F` | Pass, clean scan |
+| `--warning` | `#F5B83D` | `#7D5200` | Stale specs, non-blocking questions, medium findings |
+| `--danger` | `#F2555A` | `#B3262B` | Fail, blocking questions, high findings |
 
 Rules: one accent-filled button per view. Orange is never used for errors. Status always pairs color with an icon or label.
 

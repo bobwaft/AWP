@@ -1,0 +1,70 @@
+/* Mirrored in tokens.json; tokens.test.ts keeps them in sync. data-theme is always resolved to dark|light by lib/theme.ts. */
+:root,
+:root[data-theme="dark"] {
+  --bg-0: #0b0d0f;
+  --bg-1: #121519;
+  --bg-2: #1a1e23;
+  --bg-3: #232830;
+  --line: #2a3038;
+  --line-strong: #3a424c;
+  --text-1: #e8eaed;
+  --text-2: #a3abb5;
+  --text-3: #6b7480;
+  --steel: #8a949e;
+  --accent: #ff6b1a;
+  --accent-bright: #ff6b1a;
+  --accent-dim: #ff6b1a26;
+  --on-accent: #0b0d0f;
+  --scope: #4fd1c5;
+  --success: #3dd68c;
+  --warning: #f5b83d;
+  --danger: #f2555a;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg-0: #efece5;
+  --bg-1: #f7f5f0;
+  --bg-2: #ffffff;
+  --bg-3: #e4e0d6;
+  --line: #d3cec1;
+  --line-strong: #8f8a7d;
+  --text-1: #17191c;
+  --text-2: #454c55;
+  --text-3: #5b626b;
+  --steel: #56616c;
+  --accent: #b03a06;
+  --accent-bright: #ff6b1a;
+  --accent-dim: #b03a061f;
+  --on-accent: #ffffff;
+  --scope: #0a6f68;
+  --success: #13703f;
+  --warning: #7d5200;
+  --danger: #b3262b;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-steel: var(--steel);
+  --color-accent: var(--accent);
+  --color-accent-bright: var(--accent-bright);
+  --color-accent-dim: var(--accent-dim);
+  --color-on-accent: var(--on-accent);
+  --color-scope: var(--scope);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: "Geist Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}

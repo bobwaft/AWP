@@ -3,13 +3,34 @@ import { CommandPalette } from './components/CommandPalette';
 import { RifleDiagram2D } from './components/RifleDiagram2D';
 import { SettingsScreen } from './components/SettingsScreen';
 import { StageRail } from './components/StageRail';
-import { ToastProvider } from './components/Toast';
+import { ToastProvider, useToast } from './components/Toast';
 import { TopBar } from './components/TopBar';
+import { engine } from './lib/engine';
 import { loadSettings, saveSettings } from './lib/settings';
 import { MOCK_PROJECT, STAGES, stageForKey } from './lib/stages';
 import { applyTheme } from './lib/theme';
 
 type View = 'home' | 'settings';
+
+// Surfaces engine supervisor/toast notifications as UI toasts.
+function EngineToasts() {
+  const toast = useToast();
+  useEffect(
+    () =>
+      engine.on((e) => {
+        if (e.method === 'engine.restarted')
+          toast('Engine crashed and was restarted.');
+        else if (e.method === 'engine.failed')
+          toast(
+            `Engine stopped: ${(e.params as { reason: string }).reason}. Restart AWP.`,
+          );
+        else if (e.method === 'toast')
+          toast((e.params as { text: string }).text);
+      }),
+    [toast],
+  );
+  return null;
+}
 
 export function App() {
   const [settings, setSettings] = useState(loadSettings);
@@ -68,6 +89,7 @@ export function App() {
   const current = STAGES[stage - 1];
   return (
     <ToastProvider>
+      <EngineToasts />
       <div className="flex h-full flex-col">
         <TopBar
           onOpenPalette={() => setPalette(true)}

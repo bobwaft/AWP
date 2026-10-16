@@ -9,3 +9,4 @@ target
 scratchpad
 graphify-out/cache
 graphify-out/*.html
+apps/desktop/src-tauri/binaries

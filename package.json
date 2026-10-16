@@ -8,11 +8,11 @@
     "assets/3d"
   ],
   "scripts": {
-    "dev": "bun run --cwd apps/desktop tauri dev",
+    "dev": "bun run engine:build && bun run --cwd apps/desktop tauri dev",
     "typecheck": "bun run --workspaces --if-present typecheck",
     "check": "bun run typecheck && biome check . && vitest run",
     "build": "bun run engine:build && bun run --cwd apps/desktop tauri build",
-    "engine:build": "echo 'engine not implemented until Phase 2'"
+    "engine:build": "bun scripts/build-engine.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",

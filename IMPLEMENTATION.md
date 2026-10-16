@@ -83,11 +83,11 @@
 ## Phase 2 — Engine sidecar + protocol
 **Goal:** UI talks to a bundled TypeScript engine through Rust.
 
-- [ ] `packages/protocol`: zod schemas for JSON-RPC envelope, methods and notifications from ARCHITECTURE.md §4 (stubs allowed for later phases).
-- [ ] `packages/engine`: NDJSON JSON-RPC server on stdio; `ping`, `version` methods; structured logging to app-data `logs/`.
-- [ ] `bun build --compile` per target triple → `apps/desktop/src-tauri/binaries/`; `bundle.externalBin` configured.
-- [ ] Rust engine supervisor: spawn on launch, restart policy (3 in 60 s), `invoke("engine_request")`, `engine://event` emits.
-- [ ] `src/lib/engine.ts` typed client; dev mode can run the engine with `bun run` instead of the binary.
+- [x] `packages/protocol`: zod schemas for JSON-RPC envelope, methods and notifications from ARCHITECTURE.md §4 (stubs allowed for later phases).
+- [x] `packages/engine`: NDJSON JSON-RPC server on stdio; `ping`, `version` methods; structured logging to app-data `logs/`.
+- [x] `bun build --compile` per target triple → `apps/desktop/src-tauri/binaries/`; `bundle.externalBin` configured.
+- [x] Rust engine supervisor: spawn on launch, restart policy (3 in 60 s), `invoke("engine_request")`, `engine://event` emits.
+- [x] `src/lib/engine.ts` typed client; dev mode can run the engine with `bun run` instead of the binary.
 
 **Done when:** UI shows engine version from a real round-trip; killing the engine process triggers restart and a toast.
 

@@ -20,6 +20,7 @@ jobs:
           workspaces: apps/desktop/src-tauri
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - run: bun run engine:build
       - run: cargo fmt --check
         working-directory: apps/desktop/src-tauri
       - run: cargo clippy -- -D warnings

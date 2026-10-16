@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { engine } from '../lib/engine';
 import type { DisplayMode, Settings } from '../lib/settings';
 import { Card } from './Card';
 import { ThemeSwitch } from './ThemeSwitch';
@@ -11,6 +13,13 @@ const MODES: { value: DisplayMode; label: string }[] = [
 type Props = { settings: Settings; onChange: (s: Settings) => void };
 
 export function SettingsScreen({ settings, onChange }: Props) {
+  const [engineVersion, setEngineVersion] = useState('checking…');
+  useEffect(() => {
+    engine
+      .call('version')
+      .then((r) => setEngineVersion(r.version))
+      .catch(() => setEngineVersion('unavailable'));
+  }, []);
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-xl font-semibold">Settings</h1>
@@ -44,6 +53,15 @@ export function SettingsScreen({ settings, onChange }: Props) {
             ))}
           </div>
         </fieldset>
+      </Card>
+      <Card className="flex flex-col gap-4">
+        <h2 className="hud">About</h2>
+        <div className="flex items-center justify-between gap-4">
+          <span>Engine version</span>
+          <span data-testid="engine-version" className="font-mono">
+            {engineVersion}
+          </span>
+        </div>
       </Card>
     </div>
   );

@@ -9,7 +9,7 @@ export type SpecStageConfig = {
   tools: { interviewer: string[]; synthesizer: string[]; critic: string[] };
   maxRounds: number;
   /** 'design': the synthesizer slot is the themer and the critic waits for a picked theme. */
-  mode?: 'prose' | 'design';
+  mode?: 'prose' | 'design' | 'planning';
 };
 
 export const SPEC_STAGES: Partial<Record<StageId, SpecStageConfig>> = {
@@ -52,6 +52,29 @@ export const SPEC_STAGES: Partial<Record<StageId, SpecStageConfig>> = {
         'mcp__awp__remember',
       ],
       synthesizer: ['Read', 'mcp__awp__submit_themes'],
+      critic: ['Read', 'mcp__awp__submit_critique'],
+    },
+    maxRounds: 3,
+  },
+  planning: {
+    stage: 'planning',
+    specFile: 'docs/ARCHITECTURE.md',
+    schemaId: 'planning',
+    mode: 'planning',
+    prompts: {
+      interviewer: 'planning.architect',
+      synthesizer: 'planning.phaser',
+      critic: 'planning.critic',
+    },
+    tools: {
+      interviewer: [
+        'Read',
+        'mcp__awp__ask_user',
+        'mcp__awp__request_form',
+        'mcp__awp__remember',
+        'mcp__awp__submit_stack_options',
+      ],
+      synthesizer: ['Read', 'mcp__awp__submit_phase_plan'],
       critic: ['Read', 'mcp__awp__submit_critique'],
     },
     maxRounds: 3,

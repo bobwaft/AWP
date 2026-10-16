@@ -19,12 +19,20 @@ import {
   type FormResult,
   type FormValues,
   type PermissionRequest,
+  PhasePlanInput,
   type ProjectState,
+  parsePhasesMd,
   type Question,
+  renderArchitectureMd,
+  renderPhasesMd,
   type SpecPhase,
   type SpecSnapshot,
+  type StackOption,
+  StackOptionsInput,
   type Theme,
   ThemesInput,
+  VerifyCommands,
+  validatePhases,
   validateValues,
 } from '@awp/protocol';
 import { EngineError } from '../errors';
@@ -67,11 +75,16 @@ type Persisted = {
   declined: string[];
   themes?: Theme[] | null;
   picked?: SpecSnapshot['picked'];
+  stackOptions?: StackOption[] | null;
+  stackPicked?: SpecSnapshot['stackPicked'];
 };
 
 type Deferred<T> = { resolve: (v: T) => void };
 
 const now = () => new Date().toISOString();
+// Phases that share the config's "synthesizer" slot (design themer, planning phaser).
+const slot = (p: SpecPhase) =>
+  p === 'themer' || p === 'phaser' ? 'synthesizer' : p;
 const msg = (
   role: ChatMessage['role'],
   text: string,
@@ -90,6 +103,9 @@ export class SpecSession {
   unsure: SpecSnapshot['unsure'] = [];
   declined = new Set<string>();
   themes: Theme[] | null = null;
+  stackOptions: StackOption[] | null = null;
+  stackPicked: SpecSnapshot['stackPicked'] = null;
+  private phasePlanSubmitted = false;
   picked: SpecSnapshot['picked'] = null;
   /** Theme chosen but not yet confirmed through the design form. */
   private pendingTheme: Theme | null = null;
@@ -118,6 +134,8 @@ export class SpecSession {
       this.unsure = p.unsure ?? [];
       this.declined = new Set(p.declined ?? []);
       this.themes = p.themes ?? null;
+      this.stackOptions = p.stackOptions ?? null;
+      this.stackPicked = p.stackPicked ?? null;
       this.picked = p.picked ?? null;
     } catch {}
     // A form left open by an interrupted run is offered again as "Continue this form".
@@ -145,6 +163,8 @@ export class SpecSession {
       declined: [...this.declined],
       themes: this.themes,
       picked: this.picked,
+      stackOptions: this.stackOptions,
+      stackPicked: this.stackPicked,
     };
     await writeFile(this.file, JSON.stringify(p, null, 2));
   }
@@ -179,6 +199,8 @@ export class SpecSession {
       declined: [...this.declined],
       themes: this.themes,
       picked: this.picked,
+      stackOptions: this.stackOptions,
+      stackPicked: this.stackPicked,
     };
   }
 
@@ -404,6 +426,166 @@ export class SpecSession {
     wait?.resolve({ allow, message });
   }
 
+  // ---- planning stage: stack options, phase plan ----
+
+  async submitStackOptions(raw: unknown) {
+    const parsed = StackOptionsInput.safeParse(raw);
+    if (!parsed.success)
+      throw new EngineError(
+        'STACK_OPTIONS_INVALID',
+        parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; '),
+      );
+    if (
+      new Set(parsed.data.options.map((o) => o.id)).size !==
+      parsed.data.options.length
+    )
+      throw new EngineError(
+        'STACK_OPTIONS_INVALID',
+        'Option ids must be unique',
+      );
+    this.stackOptions = parsed.data.options;
+    await this.persist();
+    this.emit();
+    return { ok: true, count: parsed.data.options.length };
+  }
+
+  async submitPhasePlan(raw: unknown) {
+    const parsed = PhasePlanInput.safeParse(raw);
+    if (!parsed.success)
+      throw new EngineError(
+        'PLAN_INVALID',
+        parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; '),
+      );
+    const errors = validatePhases(parsed.data.phases);
+    if (errors.length)
+      throw new EngineError(
+        'PLAN_INVALID',
+        errors.join('; '),
+        'Fix these and resubmit.',
+      );
+    await this.savePhases(parsed.data.phases);
+    this.phasePlanSubmitted = true;
+    return { ok: true, phases: parsed.data.phases.length };
+  }
+
+  /** Writes PHASES.md from structured phases (agent submit, or the phase barrel's edits). */
+  async savePhases(phases: Parameters<typeof renderPhasesMd>[0]) {
+    await mkdir(join(this.d.root, 'docs'), { recursive: true });
+    await writeFile(
+      join(this.d.root, 'docs', 'PHASES.md'),
+      renderPhasesMd(phases),
+    );
+    this.emit();
+  }
+
+  /** Picks a stack: writes ARCHITECTURE.md (with the verify commands), then plans phases and critiques. */
+  async pickStack(
+    optionId: string,
+    edits?: { verify?: Partial<VerifyCommands>; notes?: string },
+  ) {
+    if (this.busy)
+      throw new EngineError(
+        'SPEC_BUSY',
+        'AWP is still working on the last message',
+      );
+    const option = this.stackOptions?.find((o) => o.id === optionId);
+    if (!option)
+      throw new EngineError(
+        'STACK_NOT_FOUND',
+        'That option is not in the current proposals',
+      );
+    const verify = VerifyCommands.safeParse({
+      ...option.verify,
+      ...(edits?.verify ?? {}),
+    });
+    if (!verify.success)
+      throw new EngineError(
+        'VERIFY_INVALID',
+        'Every verify command is required (install, typecheck, lint, test, build)',
+        verify.error.issues.map((i) => i.path.join('.')).join(', '),
+      );
+    await this.writeBase();
+    await mkdir(join(this.d.root, 'docs'), { recursive: true });
+    await writeFile(
+      join(this.d.root, this.d.cfg.specFile),
+      renderArchitectureMd({
+        projectName: this.d.getState().project.name,
+        option,
+        verify: verify.data,
+        notes: edits?.notes,
+      }),
+    );
+    this.stackPicked = {
+      optionId: option.id,
+      name: option.name,
+      verify: verify.data,
+    };
+    await this.persist();
+    this.emit();
+    this.busy = 'phaser';
+    this.emit();
+    void this.phaserAndCritic('', randomUUID()).catch(() => {});
+  }
+
+  /** Phase planner, then the critic once a valid PHASES.md exists. Leaves `busy` cleared. */
+  private async phaserAndCritic(text: string, runId?: string) {
+    try {
+      this.busy = 'phaser';
+      this.emit();
+      this.phasePlanSubmitted = false;
+      await this.runPhase('phaser', text, runId);
+      if (!this.phasePlanSubmitted) {
+        await this.addMessage(
+          msg(
+            'assistant',
+            'No phase plan came back. Send a message to try again.',
+          ),
+        );
+        return;
+      }
+      if (this.rounds < this.d.cfg.maxRounds) {
+        this.busy = 'critic';
+        this.emit();
+        await this.d.recordRound();
+        this.critiqueThisRun = false;
+        await this.runPhase('critic', text);
+        if (!this.critiqueThisRun)
+          await this.addMessage(
+            msg(
+              'assistant',
+              'The review step did not report. Send another message to retry.',
+            ),
+          );
+      }
+    } catch (e) {
+      await this.addMessage(
+        msg(
+          'assistant',
+          `Something went wrong: ${e instanceof Error ? e.message : String(e)}`,
+        ),
+      );
+    } finally {
+      this.busy = null;
+      this.emit();
+    }
+  }
+
+  /** Extra gate conditions for Planning; returns a reason or null. */
+  async planGateProblem(): Promise<string | null> {
+    if (this.d.cfg.mode !== 'planning') return null;
+    if (!this.stackPicked) return 'Pick a stack first';
+    const text = await readFile(
+      join(this.d.root, 'docs', 'PHASES.md'),
+      'utf8',
+    ).catch(() => '');
+    const { errors } = parsePhasesMd(text);
+    return errors.length ? `PHASES.md has problems: ${errors[0]}` : null;
+  }
+
   // ---- design stage: themes, picking, documents ----
 
   async submitThemes(raw: unknown) {
@@ -596,6 +778,11 @@ export class SpecSession {
   private async cycle(firstRunId: string, text: string) {
     try {
       this.formsThisTurn = 0;
+      if (this.d.cfg.mode === 'planning' && this.stackPicked) {
+        // Stack already chosen: further messages are feedback on the phase plan.
+        await this.phaserAndCritic(text, firstRunId);
+        return;
+      }
       const interview = await this.runPhase('interviewer', text, firstRunId);
       if (interview.status === 'error') {
         await this.addMessage(
@@ -618,6 +805,9 @@ export class SpecSession {
           await this.runPhase('themer', text);
         }
         if (!this.picked) return;
+      } else if (this.d.cfg.mode === 'planning') {
+        // The architect (interviewer slot) proposes options; the critic waits for a pick + a plan.
+        return;
       } else {
         this.busy = 'synthesizer';
         this.emit();
@@ -678,7 +868,7 @@ export class SpecSession {
   }
 
   private async promptFor(phase: SpecPhase) {
-    const id = this.d.cfg.prompts[phase === 'themer' ? 'synthesizer' : phase];
+    const id = this.d.cfg.prompts[slot(phase)];
     const override = await readFile(
       join(this.d.root, '.awp', 'prompts', `${id}.md`),
       'utf8',
@@ -711,6 +901,25 @@ export class SpecSession {
     ).catch(() => '');
     return {
       prd: prd.trim() || '(no PRD yet)',
+      design:
+        (
+          await readFile(join(this.d.root, 'docs', 'DESIGN.md'), 'utf8').catch(
+            () => '',
+          )
+        ).trim() || '(none)',
+      architecture:
+        (
+          await readFile(
+            join(this.d.root, 'docs', 'ARCHITECTURE.md'),
+            'utf8',
+          ).catch(() => '')
+        ).trim() || '(none)',
+      phases:
+        (
+          await readFile(join(this.d.root, 'docs', 'PHASES.md'), 'utf8').catch(
+            () => '',
+          )
+        ).trim() || '(none)',
       refs: refLines.join('\n') || '(none)',
       figma: (await this.useFigma())
         ? '\nFigma is connected: you may read the linked Figma files through the figma MCP tools.\n'
@@ -756,7 +965,7 @@ export class SpecSession {
     const figma = phase === 'themer' && (await this.useFigma());
     const mcp = await this.d.mcp?.(runId, { figma });
     const mcpConfigPath = mcp?.path;
-    const toolsKey = phase === 'themer' ? 'synthesizer' : phase;
+    const toolsKey = slot(phase);
     const { done } = this.d.runs.exec({
       runId,
       adapter: this.d.adapter,

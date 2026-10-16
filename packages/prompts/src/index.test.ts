@@ -59,6 +59,7 @@ test('form templates and PRD schema are consistent', () => {
   const sections = new Set([
     ...SECTION_SCHEMAS.prd.sections.map((s) => `prd.${s.id}`),
     ...SECTION_SCHEMAS.design.sections.map((s) => `design.${s.id}`),
+    ...SECTION_SCHEMAS.planning.sections.map((s) => `planning.${s.id}`),
   ]);
   for (const t of Object.values(FORM_TEMPLATES))
     for (const f of t.fields as { fills?: string }[])

@@ -1,0 +1,11 @@
+{
+  "id": "planning",
+  "file": "docs/ARCHITECTURE.md",
+  "sections": [
+    { "id": "overview", "title": "Overview", "required": true },
+    { "id": "stack", "title": "Stack", "required": true },
+    { "id": "verify", "title": "Verify commands", "required": true },
+    { "id": "phases", "title": "Phase plan (PHASES.md)", "required": true },
+    { "id": "risks", "title": "Risks", "required": false }
+  ]
+}

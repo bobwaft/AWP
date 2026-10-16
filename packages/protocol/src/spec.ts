@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DesignTokens, Theme } from './design';
+import { StackOption, VerifyCommands } from './planning';
 
 export const FIELD_TYPES = [
   'text',
@@ -162,6 +163,7 @@ export const SpecPhase = z.enum([
   'interviewer',
   'synthesizer',
   'themer',
+  'phaser',
   'critic',
 ]);
 export type SpecPhase = z.infer<typeof SpecPhase>;
@@ -196,6 +198,11 @@ export const SpecSnapshot = z.object({
   themes: z.array(Theme).nullable(),
   picked: z
     .object({ themeId: z.string(), name: z.string(), tokens: DesignTokens })
+    .nullable(),
+  /** Planning stage: stack proposals and the chosen one (with its final verify commands). */
+  stackOptions: z.array(StackOption).nullable(),
+  stackPicked: z
+    .object({ optionId: z.string(), name: z.string(), verify: VerifyCommands })
     .nullable(),
 });
 export type SpecSnapshot = z.infer<typeof SpecSnapshot>;

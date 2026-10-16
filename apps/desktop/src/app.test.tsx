@@ -90,6 +90,7 @@ test('stage rail switches by click and by keys 1-0', async () => {
 test('rifle hotspots: 10 labelled, clickable and keyboard-operable', async () => {
   render(<App />);
   await loaded();
+  fireEvent.keyDown(window, { key: '5' }); // Connectors is still a placeholder screen
   const diagram = screen.getByRole('group', { name: 'Rifle diagram' });
   const spots = diagram.querySelectorAll('[role=button]');
   expect(spots).toHaveLength(10);

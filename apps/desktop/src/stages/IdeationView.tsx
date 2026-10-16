@@ -15,7 +15,7 @@ export function SpecStageView({
   stage,
   extra,
 }: {
-  stage: 'ideation' | 'design';
+  stage: 'ideation' | 'design' | 'planning';
   extra?: { label: string; node: (snap: SpecSnapshot) => ReactNode };
 }) {
   const spec = useSpec(stage);

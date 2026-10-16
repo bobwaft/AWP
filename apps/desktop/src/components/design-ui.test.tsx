@@ -64,6 +64,8 @@ const snap = (o: object): SpecSnapshot =>
     declined: [],
     themes: null,
     picked: null,
+    stackOptions: null,
+    stackPicked: null,
     ...o,
   }) as SpecSnapshot;
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AdapterId, AgentEvent } from './agent';
 import { DesignRefs } from './design';
+import { Phase, VerifyCommands } from './planning';
 import { ProjectState, ProjectSummary, StageId } from './project';
 import { SetupDetectResult } from './setup';
 import { FormValues, SpecSnapshot } from './spec';
@@ -8,6 +9,7 @@ import { FormValues, SpecSnapshot } from './spec';
 export * from './agent';
 export * from './design';
 export * from './form-validate';
+export * from './planning';
 export * from './project';
 export * from './setup';
 export * from './spec';
@@ -158,6 +160,35 @@ export const methods = {
       tweaks: z.record(z.string(), z.unknown()).optional(),
     }),
     result: z.literal('ok'),
+  },
+  'plan.propose': {
+    params: z.object({ feedback: z.string().optional() }),
+    result: z.literal('ok'),
+  },
+  'plan.pickStack': {
+    params: z.object({
+      optionId: z.string(),
+      /** Owner edits: replace verify commands, add notes. */
+      edits: z
+        .object({
+          verify: VerifyCommands.partial().optional(),
+          notes: z.string().optional(),
+        })
+        .optional(),
+    }),
+    result: z.literal('ok'),
+  },
+  'plan.phases': {
+    params: z.undefined().or(z.object({})),
+    result: z.object({
+      phases: z.array(Phase),
+      errors: z.array(z.string()),
+      text: z.string(),
+    }),
+  },
+  'plan.savePhases': {
+    params: z.object({ phases: z.array(Phase) }),
+    result: z.object({ errors: z.array(z.string()) }),
   },
   'agent.run': {
     params: z.object({

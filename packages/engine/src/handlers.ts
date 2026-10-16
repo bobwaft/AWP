@@ -1,5 +1,14 @@
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { AdapterId, FormValues, StageId } from '@awp/protocol';
+import {
+  type AdapterId,
+  type FormValues,
+  type Phase,
+  parsePhasesMd,
+  type StageId,
+  type VerifyCommands,
+  validatePhases,
+} from '@awp/protocol';
 import pkg from '../package.json';
 import { ProjectService } from './project';
 import { type AdapterFactory, type Notify, RunManager } from './runs';
@@ -76,7 +85,7 @@ export function createHandlers(
         stage: StageId;
         overrideReason?: string;
       };
-      (await getSpec()).checkGate(stage, overrideReason);
+      await (await getSpec()).checkGate(stage, overrideReason);
       return projects.complete(stage, overrideReason);
     },
     'stage.reopen': (p) => projects.reopen((p as { stage: StageId }).stage),
@@ -158,6 +167,39 @@ export function createHandlers(
         tweaks,
       );
       return 'ok';
+    },
+    'plan.propose': async (p) => {
+      const session = await (await getSpec()).session('planning');
+      await session.send(
+        (p as { feedback?: string }).feedback?.trim() ||
+          'Please propose stack options.',
+      );
+      return 'ok';
+    },
+    'plan.pickStack': async (p) => {
+      const { optionId, edits } = p as {
+        optionId: string;
+        edits?: { verify?: Partial<VerifyCommands>; notes?: string };
+      };
+      await (await (await getSpec()).session('planning')).pickStack(
+        optionId,
+        edits,
+      );
+      return 'ok';
+    },
+    'plan.phases': async () => {
+      const text = await readFile(
+        join(projects.root, 'docs', 'PHASES.md'),
+        'utf8',
+      ).catch(() => '');
+      return { ...parsePhasesMd(text), text };
+    },
+    'plan.savePhases': async (p) => {
+      const { phases } = p as { phases: Phase[] };
+      const errors = validatePhases(phases);
+      // Structural problems are reported, but the owner's edit is still saved (hand edits are never lost).
+      await (await (await getSpec()).session('planning')).savePhases(phases);
+      return { errors };
     },
     'permission.decide': async (p) => {
       const { requestId, allow, message } = p as {

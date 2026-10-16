@@ -88,14 +88,17 @@ export class SpecService {
   }
 
   /** Gate (PRD 5.2.1): zero blocking after at least one critic round, or override after the cap. */
-  checkGate(stage: StageId, overrideReason?: string) {
+  async checkGate(stage: StageId, overrideReason?: string) {
     const cfg = SPEC_STAGES[stage];
     if (!cfg) return;
     const state = this.projects.state;
     const rounds = state.stages[stage].criticRounds;
-    const cached = this.sessions.get(`${this.projects.root}::${stage}`);
+    // Loads the persisted session so a restart cannot skip a recorded critique.
+    const cached = await this.session(stage);
     const blocking = cached?.blocking ?? 0;
     if (state.stages[stage].status === 'stale') return; // re-confirming after an upstream change
+    const problem = await cached.planGateProblem();
+    if (problem) throw new EngineError('GATE_BLOCKED', problem);
     if (rounds === 0 && !cached?.critique)
       throw new EngineError(
         'GATE_BLOCKED',
@@ -150,6 +153,10 @@ export class SpecService {
       }
       case 'submit_themes':
         return session.submitThemes(args);
+      case 'submit_stack_options':
+        return session.submitStackOptions(args);
+      case 'submit_phase_plan':
+        return session.submitPhasePlan(args);
       case 'approve_permission': {
         const { tool_name, input } = a as { tool_name: string; input: unknown };
         const d = await session.requestPermission(tool_name, input);

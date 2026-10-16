@@ -394,7 +394,7 @@ test('agent tool args are validated and unknown tools refused', async () => {
         code: 'TOOL_UNKNOWN',
       });
       await expect(
-        s.callTool(req.runId, 'submit_stack_options', {}),
+        s.callTool(req.runId, 'submit_suggestions', {}),
       ).rejects.toMatchObject({ code: 'NOT_AVAILABLE' });
       await expect(
         s.callTool('missing', 'remember', { fact: 'x' }),
@@ -451,6 +451,8 @@ test('mcp tool list exposes the active tools with object schemas; permission fla
     'remember',
     'approve_permission',
     'submit_themes',
+    'submit_stack_options',
+    'submit_phase_plan',
   ]);
   for (const t of tools) expect(t.inputSchema.type).toBe('object');
   expect(

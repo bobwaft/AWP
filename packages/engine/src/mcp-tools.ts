@@ -1,4 +1,10 @@
-import { CritiqueInput, FormRequest, ThemesInput } from '@awp/protocol';
+import {
+  CritiqueInput,
+  FormRequest,
+  PhasePlanInput,
+  StackOptionsInput,
+  ThemesInput,
+} from '@awp/protocol';
 import { z } from 'zod';
 
 // Tool definitions shared by the MCP stdio proxy (what the agent sees) and the in-process ToolHost.
@@ -41,12 +47,14 @@ export const TOOLS = {
     input: ThemesInput,
   },
   submit_stack_options: {
-    description: 'Planning stage: stack options.',
-    input: z.unknown(),
+    description:
+      'Planning stage: submit 2-3 stack options with pros, cons, fit and the five verify commands.',
+    input: StackOptionsInput,
   },
   submit_phase_plan: {
-    description: 'Planning stage: the phase plan.',
-    input: z.unknown(),
+    description:
+      'Planning stage: submit the numbered phase plan. Every phase needs goal, tasks, acceptance criteria and a test checklist.',
+    input: PhasePlanInput,
   },
   submit_suggestions: {
     description: 'Connectors: registry suggestions.',

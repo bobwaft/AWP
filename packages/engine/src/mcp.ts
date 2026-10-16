@@ -15,6 +15,8 @@ export const ACTIVE_TOOLS: ToolName[] = [
   'remember',
   'approve_permission',
   'submit_themes',
+  'submit_stack_options',
+  'submit_phase_plan',
 ];
 
 export function toolList() {

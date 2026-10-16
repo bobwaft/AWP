@@ -3,6 +3,7 @@ import designSchema from '../forms/design_schema.json';
 import featureSpec from '../forms/feature_spec.json';
 import stackConstraints from '../forms/stack_constraints.json';
 import designSections from '../schemas/design.sections.json';
+import planningSections from '../schemas/planning.sections.json';
 import prdSections from '../schemas/prd.sections.json';
 import designCritic from './library/design.critic';
 import designInterviewer from './library/design.interviewer';
@@ -10,6 +11,9 @@ import designThemer from './library/design.themer';
 import ideationCritic from './library/ideation.critic';
 import ideationInterviewer from './library/ideation.interviewer';
 import ideationSynthesizer from './library/ideation.synthesizer';
+import planningArchitect from './library/planning.architect';
+import planningCritic from './library/planning.critic';
+import planningPhaser from './library/planning.phaser';
 import { type Prompt, parsePrompt, render } from './prompt';
 
 export const name = '@awp/prompts';
@@ -22,6 +26,9 @@ const LIBRARY: Record<string, string> = {
   'design.interviewer': designInterviewer,
   'design.themer': designThemer,
   'design.critic': designCritic,
+  'planning.architect': planningArchitect,
+  'planning.phaser': planningPhaser,
+  'planning.critic': planningCritic,
 };
 
 export type FormTemplate = { id: string; title: string; fields: unknown[] };
@@ -40,6 +47,7 @@ export type SectionSchema = {
 export const SECTION_SCHEMAS: Record<string, SectionSchema> = {
   prd: prdSections,
   design: designSections,
+  planning: planningSections,
 };
 
 export function registerPrompt(id: string, src: string) {

@@ -192,10 +192,10 @@
 ## Phase 8 — Planning stage
 **Goal:** ARCHITECTURE.md and PHASES.md the phase runner can execute.
 
-- [ ] `submit_stack_options`, `submit_phase_plan` tools; prompts `planning.architect`, `planning.phaser`, `planning.critic`.
-- [ ] `StackOption` comparison view; pick/edit → ARCHITECTURE.md (must include verify commands: install, typecheck, lint, test, build).
-- [ ] PHASES.md format: per phase id, title, goal, tasks, files, acceptance criteria, test checklist, UI tag; parser + validator.
-- [ ] `PhaseBarrel` preview of the plan; reorder/split/merge phases.
+- [x] `submit_stack_options`, `submit_phase_plan` tools; prompts `planning.architect`, `planning.phaser`, `planning.critic`.
+- [x] `StackOption` comparison view; pick/edit → ARCHITECTURE.md (must include verify commands: install, typecheck, lint, test, build).
+- [x] PHASES.md format: per phase id, title, goal, tasks, files, acceptance criteria, test checklist, UI tag; parser + validator.
+- [x] `PhaseBarrel` preview of the plan; reorder/split/merge phases.
 
 **Done when:** PHASES.md round-trips through the parser; validator rejects phases without acceptance criteria.
 

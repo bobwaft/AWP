@@ -17,6 +17,7 @@ import { Dashboard } from './stages/Dashboard';
 import { DesignView } from './stages/DesignView';
 import { DevRun } from './stages/DevRun';
 import { IdeationView } from './stages/IdeationView';
+import { PlanningView } from './stages/PlanningView';
 import { SetupView } from './stages/SetupView';
 
 type View = 'home' | 'settings' | 'dev';
@@ -146,6 +147,8 @@ function Shell() {
                 <IdeationView />
               ) : stage === 3 ? (
                 <DesignView />
+              ) : stage === 4 ? (
+                <PlanningView />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
                   <p className="hud">

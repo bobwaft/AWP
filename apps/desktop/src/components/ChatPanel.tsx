@@ -10,6 +10,7 @@ import { FormSummaryCard } from './FormSummaryCard';
 
 type Spec = ReturnType<typeof useSpec>;
 const PHASE = {
+  themer: 'Designing themes…',
   interviewer: 'AWP is thinking…',
   synthesizer: 'Updating the document…',
   critic: 'Reviewing…',

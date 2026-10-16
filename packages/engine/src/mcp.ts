@@ -14,6 +14,7 @@ export const ACTIVE_TOOLS: ToolName[] = [
   'submit_critique',
   'remember',
   'approve_permission',
+  'submit_themes',
 ];
 
 export function toolList() {

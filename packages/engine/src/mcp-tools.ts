@@ -1,4 +1,4 @@
-import { CritiqueInput, FormRequest } from '@awp/protocol';
+import { CritiqueInput, FormRequest, ThemesInput } from '@awp/protocol';
 import { z } from 'zod';
 
 // Tool definitions shared by the MCP stdio proxy (what the agent sees) and the in-process ToolHost.
@@ -36,8 +36,9 @@ export const TOOLS = {
   },
   // Later phases implement these; calling them now returns NOT_AVAILABLE.
   submit_themes: {
-    description: 'Design stage: 2-3 theme proposals.',
-    input: z.unknown(),
+    description:
+      'Design stage: submit 2-3 named themes with full tokens. Rejected if text contrast is below 4.5:1.',
+    input: ThemesInput,
   },
   submit_stack_options: {
     description: 'Planning stage: stack options.',

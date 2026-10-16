@@ -71,33 +71,39 @@ export function engineCommand(
     : { command: execPath, args: ['run', main, 'mcp'] };
 }
 
-/** Writes a per-run MCP config (no secrets beyond the per-process bridge token) and returns its path. */
-export function mcpLauncher(root: string, bridge: Bridge) {
-  return async (runId: string) => {
+/** Writes a per-run MCP config and returns its path plus env to inject. The Figma token is never written: the config references ${FIGMA_TOKEN} and the token travels in the run env only. */
+export function mcpLauncher(
+  root: string,
+  bridge: Bridge,
+  getFigmaToken?: () => Promise<string | null>,
+) {
+  return async (runId: string, opts: { figma: boolean } = { figma: false }) => {
     const dir = join(root, '.awp', 'runs', runId);
     await mkdir(dir, { recursive: true });
     const file = join(dir, 'mcp.json');
     const { command, args } = engineCommand();
-    await writeFile(
-      file,
-      JSON.stringify(
-        {
-          mcpServers: {
-            awp: {
-              command,
-              args,
-              env: {
-                AWP_BRIDGE_URL: bridge.url,
-                AWP_BRIDGE_TOKEN: bridge.token,
-                AWP_RUN_ID: runId,
-              },
-            },
-          },
+    const servers: Record<string, unknown> = {
+      awp: {
+        command,
+        args,
+        env: {
+          AWP_BRIDGE_URL: bridge.url,
+          AWP_BRIDGE_TOKEN: bridge.token,
+          AWP_RUN_ID: runId,
         },
-        null,
-        2,
-      ),
-    );
-    return file;
+      },
+    };
+    const env: Record<string, string> = {};
+    const token = opts.figma ? await getFigmaToken?.() : null;
+    if (token) {
+      servers.figma = {
+        type: 'http',
+        url: 'https://mcp.figma.com/mcp',
+        headers: { Authorization: 'Bearer ${FIGMA_TOKEN}' },
+      };
+      env.FIGMA_TOKEN = token;
+    }
+    await writeFile(file, JSON.stringify({ mcpServers: servers }, null, 2));
+    return { path: file, env: token ? env : undefined };
   };
 }

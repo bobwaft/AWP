@@ -1,7 +1,12 @@
 import bugReport from '../forms/bug_report.json';
+import designSchema from '../forms/design_schema.json';
 import featureSpec from '../forms/feature_spec.json';
 import stackConstraints from '../forms/stack_constraints.json';
+import designSections from '../schemas/design.sections.json';
 import prdSections from '../schemas/prd.sections.json';
+import designCritic from './library/design.critic';
+import designInterviewer from './library/design.interviewer';
+import designThemer from './library/design.themer';
 import ideationCritic from './library/ideation.critic';
 import ideationInterviewer from './library/ideation.interviewer';
 import ideationSynthesizer from './library/ideation.synthesizer';
@@ -14,6 +19,9 @@ const LIBRARY: Record<string, string> = {
   'ideation.interviewer': ideationInterviewer,
   'ideation.synthesizer': ideationSynthesizer,
   'ideation.critic': ideationCritic,
+  'design.interviewer': designInterviewer,
+  'design.themer': designThemer,
+  'design.critic': designCritic,
 };
 
 export type FormTemplate = { id: string; title: string; fields: unknown[] };
@@ -21,6 +29,7 @@ export const FORM_TEMPLATES: Record<string, FormTemplate> = {
   feature_spec: featureSpec,
   stack_constraints: stackConstraints,
   bug_report: bugReport,
+  design_schema: designSchema,
 };
 
 export type SectionSchema = {
@@ -30,6 +39,7 @@ export type SectionSchema = {
 };
 export const SECTION_SCHEMAS: Record<string, SectionSchema> = {
   prd: prdSections,
+  design: designSections,
 };
 
 export function registerPrompt(id: string, src: string) {

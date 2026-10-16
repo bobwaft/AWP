@@ -1,4 +1,5 @@
 import {
+  contrastRatio,
   type FormField,
   type FormRequested,
   type FormValues,
@@ -6,6 +7,50 @@ import {
 } from '@awp/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
+
+const FONTS = [
+  'Geist, system-ui, sans-serif',
+  'Inter, system-ui, sans-serif',
+  'system-ui, sans-serif',
+  'Georgia, serif',
+  "'IBM Plex Sans', system-ui, sans-serif",
+  "'Geist Mono', ui-monospace, monospace",
+  'ui-monospace, monospace',
+  "'JetBrains Mono', ui-monospace, monospace",
+  "'Fira Code', ui-monospace, monospace",
+];
+
+// Which color each color field is read against (text vs bg, text-on-accent vs accent, ...).
+const AGAINST: Record<string, [string, number]> = {
+  color_text: ['color_bg', 4.5],
+  color_text_muted: ['color_bg', 4.5],
+  color_on_accent: ['color_accent', 4.5],
+  color_accent: ['color_bg', 3],
+};
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+function Readout({ id, values }: { id: string; values: FormValues }) {
+  const rule = AGAINST[id];
+  const a = values[id];
+  const b = rule && values[rule[0]];
+  if (
+    !rule ||
+    typeof a !== 'string' ||
+    typeof b !== 'string' ||
+    !HEX.test(a) ||
+    !HEX.test(b)
+  )
+    return null;
+  const r = contrastRatio(a, b);
+  const ok = r >= rule[1];
+  return (
+    <p className={`text-xs ${ok ? 'text-success' : 'text-danger'}`}>
+      Contrast {r.toFixed(1)}:1{' '}
+      {ok ? `(meets ${rule[1]}:1)` : `(needs ${rule[1]}:1)`}
+    </p>
+  );
+}
 
 type Props = {
   form: Pick<
@@ -45,6 +90,23 @@ function Control({
         />
       );
     case 'number':
+      if (f.min !== undefined && f.max !== undefined)
+        return (
+          <div className="flex items-center gap-2">
+            <input
+              id={id}
+              type="range"
+              min={f.min}
+              max={f.max}
+              value={Number(value ?? f.min)}
+              onChange={(e) => onChange(Number(e.target.value))}
+              className="flex-1"
+            />
+            <output className="w-8 font-mono text-sm">
+              {String(value ?? f.min)}
+            </output>
+          </div>
+        );
       return (
         <input
           id={id}
@@ -103,6 +165,29 @@ function Control({
               {o.label}
             </label>
           ))}
+        </div>
+      );
+    }
+    case 'font': {
+      const cur = String(value ?? '');
+      const opts = !cur || FONTS.includes(cur) ? FONTS : [cur, ...FONTS];
+      return (
+        <div className="flex flex-col gap-1">
+          <select
+            id={id}
+            className={inputCls}
+            value={cur}
+            onChange={(e) => onChange(e.target.value)}
+          >
+            {opts.map((o) => (
+              <option key={o} value={o}>
+                {o.split(',')[0].replace(/'/g, '')}
+              </option>
+            ))}
+          </select>
+          <span className="text-sm" style={{ fontFamily: cur }}>
+            Aa The quick brown fox 0123
+          </span>
         </div>
       );
     }
@@ -261,6 +346,7 @@ export function FormCard({
               value={values[f.id]}
               onChange={(v) => set(f.id, v)}
             />
+            {f.type === 'color' && <Readout id={f.id} values={values} />}
             {f.help && <p className="text-xs text-text-3">{f.help}</p>}
             {f.required && (
               <label className="flex items-center gap-1 text-xs text-text-2">

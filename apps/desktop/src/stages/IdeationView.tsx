@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import type { SpecSnapshot } from '@awp/protocol';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../components/Button';
 import { ChatPanel } from '../components/ChatPanel';
 import { Dialog } from '../components/Dialog';
@@ -10,8 +11,14 @@ import { useSpec } from '../lib/spec';
 
 const MAX_ROUNDS = 3;
 
-export function IdeationView() {
-  const spec = useSpec('ideation');
+export function SpecStageView({
+  stage,
+  extra,
+}: {
+  stage: 'ideation' | 'design';
+  extra?: { label: string; node: (snap: SpecSnapshot) => ReactNode };
+}) {
+  const spec = useSpec(stage);
   const toast = useToast();
   const [draft, setDraft] = useState('');
   const [split, setSplit] = useState(40); // chat column width, percent
@@ -19,7 +26,9 @@ export function IdeationView() {
   const [reason, setReason] = useState('');
   const { snap } = spec;
   if (!snap)
-    return <p className="p-8 text-text-2">Open a project to start Ideation.</p>;
+    return (
+      <p className="p-8 text-text-2">Open a project to start this stage.</p>
+    );
 
   const capped = snap.rounds >= MAX_ROUNDS;
   const gateOpen = snap.rounds > 0 && snap.blocking === 0;
@@ -69,7 +78,10 @@ export function IdeationView() {
       />
       <div className="flex min-h-0 min-w-[360px] flex-1 flex-col">
         <div className="min-h-0 flex-1">
-          <SpecPanel snap={snap} />
+          <SpecPanel
+            snap={snap}
+            extra={extra && { label: extra.label, node: extra.node(snap) }}
+          />
         </div>
         <div className="flex items-center gap-4 border-t border-line p-3">
           <ReadinessReticle value={snap.readiness} />
@@ -135,3 +147,5 @@ export function IdeationView() {
     </div>
   );
 }
+
+export const IdeationView = () => <SpecStageView stage="ideation" />;

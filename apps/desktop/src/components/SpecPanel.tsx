@@ -1,14 +1,27 @@
 import type { SpecSnapshot } from '@awp/protocol';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import Markdown from 'react-markdown';
 import { engine } from '../lib/engine';
 import { Button } from './Button';
 import { MarkdownEditor } from './MarkdownEditor';
 
-type Mode = 'edit' | 'preview' | 'diff';
+type Mode = 'edit' | 'preview' | 'diff' | 'extra';
 
-export function SpecPanel({ snap }: { snap: SpecSnapshot }) {
-  const [mode, setMode] = useState<Mode>('edit');
+export function SpecPanel({
+  snap,
+  extra,
+}: {
+  snap: SpecSnapshot;
+  /** An additional first tab (the Design stage's themes). */
+  extra?: { label: string; node: ReactNode };
+}) {
+  const [mode, setMode] = useState<Mode>(extra ? 'extra' : 'edit');
   const [content, setContent] = useState('');
   const [base, setBase] = useState<string | null>(null);
   const dirty = useRef(false);
@@ -55,6 +68,15 @@ export function SpecPanel({ snap }: { snap: SpecSnapshot }) {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-1 border-b border-line px-3 py-1">
         <span className="hud mr-2">{snap.specFile.replace('docs/', '')}</span>
+        {extra && (
+          <Button
+            variant={mode === 'extra' ? 'secondary' : 'ghost'}
+            aria-pressed={mode === 'extra'}
+            onClick={() => setMode('extra')}
+          >
+            {extra.label}
+          </Button>
+        )}
         {(['edit', 'preview', 'diff'] as const).map((m) => (
           <Button
             key={m}
@@ -70,6 +92,7 @@ export function SpecPanel({ snap }: { snap: SpecSnapshot }) {
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
+        {mode === 'extra' && extra?.node}
         {mode === 'edit' && (
           <MarkdownEditor
             value={content}

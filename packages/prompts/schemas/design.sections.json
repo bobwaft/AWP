@@ -1,0 +1,13 @@
+{
+  "id": "design",
+  "file": "docs/DESIGN.md",
+  "sections": [
+    { "id": "overview", "title": "Overview", "required": true },
+    { "id": "color", "title": "Color", "required": true },
+    { "id": "typography", "title": "Typography", "required": true },
+    { "id": "spacing_radius", "title": "Spacing and radius", "required": true },
+    { "id": "motion", "title": "Motion", "required": true },
+    { "id": "components", "title": "Components", "required": true },
+    { "id": "references", "title": "References", "required": false }
+  ]
+}

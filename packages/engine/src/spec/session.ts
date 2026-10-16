@@ -1,12 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { loadPrompt, render, SECTION_SCHEMAS } from '@awp/prompts';
+import {
+  FORM_TEMPLATES,
+  loadPrompt,
+  render,
+  SECTION_SCHEMAS,
+} from '@awp/prompts';
 import {
   type AdapterId,
   type ChatMessage,
   type Critique,
   CritiqueInput,
+  contrastFailures,
+  type DesignTokens,
   FormRequest,
   type FormRequested,
   type FormResult,
@@ -16,14 +23,27 @@ import {
   type Question,
   type SpecPhase,
   type SpecSnapshot,
+  type Theme,
+  ThemesInput,
   validateValues,
 } from '@awp/protocol';
 import { EngineError } from '../errors';
 import type { Notify, RunManager } from '../runs';
 import type { SpecStageConfig } from './config';
+import {
+  addRef,
+  formValuesFromTokens,
+  readRefs,
+  renderDesignMd,
+  renderTokensJson,
+  tokensFromFormValues,
+} from './design';
 import { resolveFields } from './forms';
 
-export type McpLauncher = (runId: string) => Promise<string>; // returns mcp config path
+export type McpLauncher = (
+  runId: string,
+  opts: { figma: boolean },
+) => Promise<{ path: string; env?: Record<string, string> }>;
 
 export type SessionDeps = {
   root: string;
@@ -34,6 +54,8 @@ export type SessionDeps = {
   model?: string;
   mcp?: McpLauncher;
   register: (runId: string) => void;
+  /** True when a Figma token is stored (Design may then read linked Figma files). */
+  hasFigma?: () => Promise<boolean>;
   getState: () => ProjectState;
   recordRound: () => Promise<unknown>;
 };
@@ -43,6 +65,8 @@ type Persisted = {
   critique: Critique | null;
   unsure: SpecSnapshot['unsure'];
   declined: string[];
+  themes?: Theme[] | null;
+  picked?: SpecSnapshot['picked'];
 };
 
 type Deferred<T> = { resolve: (v: T) => void };
@@ -65,6 +89,10 @@ export class SpecSession {
   critique: Critique | null = null;
   unsure: SpecSnapshot['unsure'] = [];
   declined = new Set<string>();
+  themes: Theme[] | null = null;
+  picked: SpecSnapshot['picked'] = null;
+  /** Theme chosen but not yet confirmed through the design form. */
+  private pendingTheme: Theme | null = null;
   busy: SpecPhase | null = null;
   question: Question | null = null;
   form: FormRequested | null = null;
@@ -89,6 +117,8 @@ export class SpecSession {
       this.critique = p.critique ?? null;
       this.unsure = p.unsure ?? [];
       this.declined = new Set(p.declined ?? []);
+      this.themes = p.themes ?? null;
+      this.picked = p.picked ?? null;
     } catch {}
     // A form left open by an interrupted run is offered again as "Continue this form".
     try {
@@ -113,6 +143,8 @@ export class SpecSession {
       critique: this.critique,
       unsure: this.unsure,
       declined: [...this.declined],
+      themes: this.themes,
+      picked: this.picked,
     };
     await writeFile(this.file, JSON.stringify(p, null, 2));
   }
@@ -145,6 +177,8 @@ export class SpecSession {
       },
       unsure: this.unsure,
       declined: [...this.declined],
+      themes: this.themes,
+      picked: this.picked,
     };
   }
 
@@ -253,6 +287,18 @@ export class SpecSession {
         'Some fields need attention',
         JSON.stringify(errors),
       );
+    // Design forms opened by AWP are checked before anything is consumed, so the user can fix and resubmit.
+    let designTokens: DesignTokens | undefined;
+    if (form.templateId === 'design_schema' && !this.formWait) {
+      designTokens = tokensFromFormValues(values);
+      const fail = contrastFailures(designTokens);
+      if (fail.length)
+        throw new EngineError(
+          'DESIGN_CONTRAST',
+          fail.join('; '),
+          'Adjust the colors.',
+        );
+    }
     // "Not sure" fields feed the critic; fields answered this time are no longer unsure.
     const answered = new Set(form.fields.map((f) => f.id));
     this.unsure = [
@@ -272,7 +318,12 @@ export class SpecSession {
         values,
       }),
     );
-    if (wait) wait.resolve({ status: 'submitted', values, unsure });
+    if (designTokens) {
+      // Opened by AWP after a theme pick (no agent is waiting): write the design docs.
+      await this.addUrlRefs(values.references);
+      await this.applyDesign(designTokens, this.pendingTheme);
+      void this.critiqueOnly();
+    } else if (wait) wait.resolve({ status: 'submitted', values, unsure });
     // Interrupted run: the submission starts a new turn as structured data.
     else
       void this.startCycle(
@@ -353,6 +404,169 @@ export class SpecSession {
     wait?.resolve({ allow, message });
   }
 
+  // ---- design stage: themes, picking, documents ----
+
+  async submitThemes(raw: unknown) {
+    const parsed = ThemesInput.safeParse(raw);
+    if (!parsed.success)
+      throw new EngineError(
+        'THEMES_INVALID',
+        parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; '),
+      );
+    const { themes } = parsed.data;
+    if (new Set(themes.map((t) => t.id)).size !== themes.length)
+      throw new EngineError('THEMES_INVALID', 'Theme ids must be unique');
+    const bad = themes.flatMap((t) =>
+      contrastFailures(t.tokens).map((f) => `${t.name}: ${f}`),
+    );
+    if (bad.length)
+      throw new EngineError(
+        'THEME_CONTRAST',
+        bad.join('; '),
+        'Fix the colors and resubmit.',
+      );
+    this.themes = themes;
+    await this.persist();
+    this.emit();
+    return { ok: true, count: themes.length };
+  }
+
+  /** Asks the themer for fresh proposals (optionally with feedback on the last ones). */
+  async proposeThemes(feedback = ''): Promise<void> {
+    if (this.busy)
+      throw new EngineError(
+        'SPEC_BUSY',
+        'AWP is still working on the last message',
+      );
+    this.busy = 'themer';
+    this.emit();
+    void (async () => {
+      try {
+        this.themes = null;
+        const r = await this.runPhase('themer', feedback);
+        if (r.status === 'error' || !this.themes)
+          await this.addMessage(
+            msg(
+              'assistant',
+              'No themes came back. Try again, or tell me more about the look you want.',
+            ),
+          );
+      } catch (e) {
+        await this.addMessage(
+          msg(
+            'assistant',
+            `Something went wrong: ${e instanceof Error ? e.message : String(e)}`,
+          ),
+        );
+      } finally {
+        this.busy = null;
+        await this.persist();
+        this.emit();
+      }
+    })();
+  }
+
+  /** Picks a theme. With `tweaks` the docs are written now; otherwise AWP opens the design form prefilled with it. */
+  async pickTheme(themeId: string, tweaks?: Record<string, unknown>) {
+    const theme = this.themes?.find((t) => t.id === themeId);
+    if (!theme)
+      throw new EngineError(
+        'THEME_NOT_FOUND',
+        'That theme is not in the current proposals',
+      );
+    this.pendingTheme = theme;
+    const values = { ...formValuesFromTokens(theme.tokens), ...(tweaks ?? {}) };
+    if (tweaks) {
+      await this.applyDesign(tokensFromFormValues(values), theme);
+      void this.critiqueOnly();
+      return;
+    }
+    const template = FORM_TEMPLATES.design_schema;
+    const form: FormRequested = {
+      formId: randomUUID(),
+      title: `Design tokens: ${theme.name}`,
+      templateId: 'design_schema',
+      fields: resolveFields({
+        templateId: 'design_schema',
+        title: template.title,
+      }),
+      prefill: values,
+      aiFilled: Object.keys(values),
+      orphaned: false,
+    };
+    this.form = form;
+    await this.saveFormFile(form, 'open');
+    this.d.notify('form.requested', form);
+    this.emit();
+  }
+
+  private async applyDesign(tokens: DesignTokens, theme: Theme | null) {
+    const fail = contrastFailures(tokens);
+    if (fail.length)
+      throw new EngineError(
+        'DESIGN_CONTRAST',
+        fail.join('; '),
+        'Adjust the colors.',
+      );
+    const name = theme?.name ?? this.picked?.name ?? 'Custom';
+    const refs = await readRefs(this.d.root);
+    const docs = join(this.d.root, 'docs');
+    await mkdir(join(docs, 'design'), { recursive: true });
+    await writeFile(
+      join(docs, 'design', 'tokens.json'),
+      renderTokensJson(name, tokens),
+    );
+    await this.writeBase();
+    await writeFile(
+      join(this.d.root, this.d.cfg.specFile),
+      renderDesignMd({
+        projectName: this.d.getState().project.name,
+        themeName: name,
+        description: theme?.description ?? 'Customised design tokens.',
+        tokens,
+        refs,
+      }),
+    );
+    this.picked = {
+      themeId: theme?.id ?? this.picked?.themeId ?? 'custom',
+      name,
+      tokens,
+    };
+    this.pendingTheme = null;
+    await this.persist();
+    this.emit();
+  }
+
+  private async addUrlRefs(list: unknown) {
+    if (!Array.isArray(list)) return;
+    for (const row of list as { url?: string }[])
+      if (row?.url) await addRef(this.d.root, row.url).catch(() => {});
+  }
+
+  /** Runs just the critic (after the design docs were written). */
+  private async critiqueOnly() {
+    if (this.busy || this.rounds >= this.d.cfg.maxRounds) return;
+    this.busy = 'critic';
+    this.emit();
+    try {
+      await this.d.recordRound();
+      this.critiqueThisRun = false;
+      await this.runPhase('critic', '');
+    } catch (e) {
+      await this.addMessage(
+        msg(
+          'assistant',
+          `Something went wrong: ${e instanceof Error ? e.message : String(e)}`,
+        ),
+      );
+    } finally {
+      this.busy = null;
+      this.emit();
+    }
+  }
+
   // ---- the interview -> synthesize -> critique cycle ----
 
   /** Adds the user's message and runs a full cycle in the background. Returns the first run id. */
@@ -396,10 +610,20 @@ export class SpecSession {
         await this.addMessage(msg('assistant', interview.text));
       if (interview.status === 'stopped') return;
 
-      this.busy = 'synthesizer';
-      this.emit();
-      await this.writeBase();
-      await this.runPhase('synthesizer', text);
+      if (this.d.cfg.mode === 'design') {
+        // Themes are proposed once; the critic waits until a theme is picked and the docs exist.
+        if (!this.themes) {
+          this.busy = 'themer';
+          this.emit();
+          await this.runPhase('themer', text);
+        }
+        if (!this.picked) return;
+      } else {
+        this.busy = 'synthesizer';
+        this.emit();
+        await this.writeBase();
+        await this.runPhase('synthesizer', text);
+      }
 
       if (this.rounds < this.d.cfg.maxRounds) {
         this.busy = 'critic';
@@ -454,7 +678,7 @@ export class SpecSession {
   }
 
   private async promptFor(phase: SpecPhase) {
-    const id = this.d.cfg.prompts[phase];
+    const id = this.d.cfg.prompts[phase === 'themer' ? 'synthesizer' : phase];
     const override = await readFile(
       join(this.d.root, '.awp', 'prompts', `${id}.md`),
       'utf8',
@@ -474,7 +698,23 @@ export class SpecSession {
             : `AWP: ${m.text}`,
       )
       .join('\n');
+    const refs = await readRefs(this.d.root);
+    const refLines = [
+      ...refs.files.map((f) => `- file: ${f.path}`),
+      ...refs.links.map(
+        (l) => `- ${l.kind === 'figma' ? 'Figma file' : 'link'}: ${l.url}`,
+      ),
+    ];
+    const prd = await readFile(
+      join(this.d.root, 'docs', 'PRD.md'),
+      'utf8',
+    ).catch(() => '');
     return {
+      prd: prd.trim() || '(no PRD yet)',
+      refs: refLines.join('\n') || '(none)',
+      figma: (await this.useFigma())
+        ? '\nFigma is connected: you may read the linked Figma files through the figma MCP tools.\n'
+        : '',
       spec: (await this.readSpec()).trim() || '(empty: no document yet)',
       chat: transcript || '(no messages yet)',
       open_questions:
@@ -496,6 +736,13 @@ export class SpecSession {
     };
   }
 
+  /** Figma is used only when a token is stored and the user linked a Figma file. */
+  private async useFigma() {
+    if (this.d.cfg.mode !== 'design' || !(await this.d.hasFigma?.()))
+      return false;
+    return (await readRefs(this.d.root)).links.some((l) => l.kind === 'figma');
+  }
+
   private async runPhase(
     phase: SpecPhase,
     text: string,
@@ -506,14 +753,21 @@ export class SpecSession {
       await this.vars(text),
     );
     this.d.register(runId);
-    const mcpConfigPath = await this.d.mcp?.(runId);
+    const figma = phase === 'themer' && (await this.useFigma());
+    const mcp = await this.d.mcp?.(runId, { figma });
+    const mcpConfigPath = mcp?.path;
+    const toolsKey = phase === 'themer' ? 'synthesizer' : phase;
     const { done } = this.d.runs.exec({
       runId,
       adapter: this.d.adapter,
       cwd: this.d.root,
       prompt,
       model: this.d.model,
-      allowedTools: this.d.cfg.tools[phase],
+      allowedTools: [
+        ...this.d.cfg.tools[toolsKey],
+        ...(figma ? ['mcp__figma'] : []),
+      ],
+      env: mcp?.env,
       mcpConfigPath,
       permissionPromptTool: mcpConfigPath
         ? 'mcp__awp__approve_permission'

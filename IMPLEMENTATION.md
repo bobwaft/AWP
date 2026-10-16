@@ -175,12 +175,12 @@
 ## Phase 7 — Design stage
 **Goal:** DESIGN.md with tokens from the user's taste and references.
 
-- [ ] Uploads (images, PDFs, sketches) copied to `docs/design/refs/`; URLs and Figma links accepted.
-- [ ] `submit_themes` tool; prompts `design.interviewer`, `design.themer`, `design.critic`.
-- [ ] `design_schema` form template: color pickers with contrast readout, font picker with pairing preview, density/radius/motion sliders, references. Opens only after a theme is picked, prefilled with it.
-- [ ] `ThemeCard` grid with live preview (sample components rendered with each theme's tokens in an isolated iframe).
-- [ ] Pick/mix theme → DESIGN.md + `docs/design/tokens.json`.
-- [ ] If Figma is connected, the themer may read the linked file through the Figma MCP.
+- [x] Uploads (images, PDFs, sketches) copied to `docs/design/refs/`; URLs and Figma links accepted.
+- [x] `submit_themes` tool; prompts `design.interviewer`, `design.themer`, `design.critic`.
+- [x] `design_schema` form template: color pickers with contrast readout, font picker with pairing preview, density/radius/motion sliders, references. Opens only after a theme is picked, prefilled with it.
+- [x] `ThemeCard` grid with live preview (sample components rendered with each theme's tokens in an isolated iframe).
+- [x] Pick/mix theme → DESIGN.md + `docs/design/tokens.json`.
+- [x] If Figma is connected, the themer may read the linked file through the Figma MCP.
 
 **Done when:** themes render as real previews; picked theme writes valid tokens; design gate works.
 

@@ -394,7 +394,7 @@ test('agent tool args are validated and unknown tools refused', async () => {
         code: 'TOOL_UNKNOWN',
       });
       await expect(
-        s.callTool(req.runId, 'submit_themes', {}),
+        s.callTool(req.runId, 'submit_stack_options', {}),
       ).rejects.toMatchObject({ code: 'NOT_AVAILABLE' });
       await expect(
         s.callTool('missing', 'remember', { fact: 'x' }),
@@ -442,7 +442,7 @@ test('bridge requires the bearer token and forwards tool results and errors', as
   b.close();
 });
 
-test('mcp tool list exposes the five active tools with object schemas; permission flag reaches the CLI args', () => {
+test('mcp tool list exposes the active tools with object schemas; permission flag reaches the CLI args', () => {
   const tools = toolList();
   expect(tools.map((t) => t.name)).toEqual([
     'ask_user',
@@ -450,6 +450,7 @@ test('mcp tool list exposes the five active tools with object schemas; permissio
     'submit_critique',
     'remember',
     'approve_permission',
+    'submit_themes',
   ]);
   for (const t of tools) expect(t.inputSchema.type).toBe('object');
   expect(

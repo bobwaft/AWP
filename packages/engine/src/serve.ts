@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import pkg from '../package.json';
 import { createHandlers } from './handlers';
-import { createOutbound } from './outbound';
+import { createOutbound, getSecret } from './outbound';
 import { createHandler } from './server';
 
 // Rust passes the app-data logs dir; fall back to cwd/logs when run by hand.
@@ -21,7 +21,12 @@ const notify = (method: string, params: unknown) =>
   process.stdout.write(
     `${JSON.stringify({ jsonrpc: '2.0', method, params })}\n`,
   );
-const handle = createHandler(createHandlers(notify), log);
+const handle = createHandler(
+  createHandlers(notify, undefined, {
+    getSecret: (key) => getSecret(outbound, key),
+  }),
+  log,
+);
 
 log(`engine ${pkg.version} started, pid ${process.pid}`);
 // Requests run concurrently (a slow detect must not block ping/stop); replies are matched by id.

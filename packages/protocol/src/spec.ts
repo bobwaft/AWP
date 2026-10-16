@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DesignTokens, Theme } from './design';
 
 export const FIELD_TYPES = [
   'text',
@@ -157,7 +158,12 @@ export const PermissionRequest = z.object({
 });
 export type PermissionRequest = z.infer<typeof PermissionRequest>;
 
-export const SpecPhase = z.enum(['interviewer', 'synthesizer', 'critic']);
+export const SpecPhase = z.enum([
+  'interviewer',
+  'synthesizer',
+  'themer',
+  'critic',
+]);
 export type SpecPhase = z.infer<typeof SpecPhase>;
 
 export const SpecSnapshot = z.object({
@@ -186,5 +192,10 @@ export const SpecSnapshot = z.object({
     }),
   ),
   declined: z.array(z.string()),
+  /** Design stage: proposed themes and the one picked (tokens as written to docs). */
+  themes: z.array(Theme).nullable(),
+  picked: z
+    .object({ themeId: z.string(), name: z.string(), tokens: DesignTokens })
+    .nullable(),
 });
 export type SpecSnapshot = z.infer<typeof SpecSnapshot>;

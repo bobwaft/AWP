@@ -6,9 +6,15 @@ import { type AdapterFactory, type Notify, RunManager } from './runs';
 import type { Handlers } from './server';
 import { detectTools, freshEnv } from './setup';
 import { mcpLauncher, startBridge } from './spec/bridge';
+import { addRef, readRefs } from './spec/design';
 import { SpecService } from './spec/service';
 
-export type HandlerOpts = { specAdapter?: AdapterId; withMcp?: boolean };
+export type HandlerOpts = {
+  specAdapter?: AdapterId;
+  withMcp?: boolean;
+  /** Reads a keychain secret via the Rust core (see outbound.ts). */
+  getSecret?: (key: string) => Promise<string | null>;
+};
 
 export function createHandlers(
   notify: Notify,
@@ -30,7 +36,17 @@ export function createHandlers(
       const svc: SpecService = new SpecService(projects, notify, runs, {
         adapter: opts.specAdapter ?? 'claude',
         model: process.env.AWP_MODEL, // dev override until routing (Phase 10)
-        mcp: bridge && ((runId) => mcpLauncher(projects.root, bridge)(runId)),
+        mcp:
+          bridge &&
+          ((runId, o) =>
+            mcpLauncher(
+              projects.root,
+              bridge,
+              () =>
+                opts.getSecret?.('awp/figma/default') ?? Promise.resolve(null),
+            )(runId, o)),
+        hasFigma: async () =>
+          !!(await opts.getSecret?.('awp/figma/default').catch(() => null)),
       });
       return svc;
     })();
@@ -121,6 +137,26 @@ export function createHandlers(
         draft: FormValues;
       };
       await (await owner('form', formId)).askAboutForm(formId, text, draft);
+      return 'ok';
+    },
+    'design.refs': async () => readRefs(projects.root),
+    'design.addRef': async (p) =>
+      addRef(projects.root, (p as { source: string }).source),
+    'design.propose': async (p) => {
+      await (await (await getSpec()).session('design')).proposeThemes(
+        (p as { feedback?: string }).feedback,
+      );
+      return 'ok';
+    },
+    'design.pickTheme': async (p) => {
+      const { themeId, tweaks } = p as {
+        themeId: string;
+        tweaks?: Record<string, unknown>;
+      };
+      await (await (await getSpec()).session('design')).pickTheme(
+        themeId,
+        tweaks,
+      );
       return 'ok';
     },
     'permission.decide': async (p) => {

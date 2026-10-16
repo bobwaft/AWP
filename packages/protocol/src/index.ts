@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { AdapterId, AgentEvent } from './agent';
+import { DesignRefs } from './design';
 import { ProjectState, ProjectSummary, StageId } from './project';
 import { SetupDetectResult } from './setup';
 import { FormValues, SpecSnapshot } from './spec';
 
 export * from './agent';
+export * from './design';
 export * from './form-validate';
 export * from './project';
 export * from './setup';
@@ -137,6 +139,23 @@ export const methods = {
       requestId: z.string(),
       allow: z.boolean(),
       message: z.string().optional(),
+    }),
+    result: z.literal('ok'),
+  },
+  'design.refs': { params: z.undefined().or(z.object({})), result: DesignRefs },
+  'design.addRef': {
+    params: z.object({ source: z.string().min(1) }),
+    result: DesignRefs,
+  },
+  'design.propose': {
+    params: z.object({ feedback: z.string().optional() }),
+    result: z.literal('ok'),
+  },
+  'design.pickTheme': {
+    params: z.object({
+      themeId: z.string(),
+      /** Skips the design-schema form and writes the docs immediately. */
+      tweaks: z.record(z.string(), z.unknown()).optional(),
     }),
     result: z.literal('ok'),
   },

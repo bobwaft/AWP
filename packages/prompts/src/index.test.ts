@@ -52,12 +52,14 @@ test('per-project override takes precedence', () => {
 test('form templates and PRD schema are consistent', () => {
   expect(Object.keys(FORM_TEMPLATES).sort()).toEqual([
     'bug_report',
+    'design_schema',
     'feature_spec',
     'stack_constraints',
   ]);
-  const sections = new Set(
-    SECTION_SCHEMAS.prd.sections.map((s) => `prd.${s.id}`),
-  );
+  const sections = new Set([
+    ...SECTION_SCHEMAS.prd.sections.map((s) => `prd.${s.id}`),
+    ...SECTION_SCHEMAS.design.sections.map((s) => `design.${s.id}`),
+  ]);
   for (const t of Object.values(FORM_TEMPLATES))
     for (const f of t.fields as { fills?: string }[])
       if (f.fills) expect(sections.has(f.fills), f.fills).toBe(true);

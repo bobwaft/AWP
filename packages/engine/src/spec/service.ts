@@ -13,6 +13,7 @@ export type SpecServiceOpts = {
   adapter: AdapterId;
   model?: string;
   mcp?: McpLauncher;
+  hasFigma?: () => Promise<boolean>;
 };
 
 /** Owns one SpecSession per spec stage of the open project and routes agent tool calls to them. */
@@ -43,6 +44,7 @@ export class SpecService {
         adapter: this.opts.adapter,
         model: this.opts.model,
         mcp: this.opts.mcp,
+        hasFigma: this.opts.hasFigma,
         register: (runId) => this.byRun.set(runId, session),
         getState: () => this.projects.state,
         recordRound: () => this.projects.recordRound(stage),
@@ -146,6 +148,8 @@ export class SpecService {
         );
         return { ok: true };
       }
+      case 'submit_themes':
+        return session.submitThemes(args);
       case 'approve_permission': {
         const { tool_name, input } = a as { tool_name: string; input: unknown };
         const d = await session.requestPermission(tool_name, input);

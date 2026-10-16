@@ -22,6 +22,8 @@ export function buildArgs(req: RunRequest, resume?: string): string[] {
   if (req.systemAppend) a.push('--append-system-prompt', req.systemAppend);
   if (req.mcpConfigPath) a.push('--mcp-config', req.mcpConfigPath);
   if (req.maxTurns) a.push('--max-turns', String(req.maxTurns));
+  if (req.permissionPromptTool)
+    a.push('--permission-prompt-tool', req.permissionPromptTool);
   // Prompt goes last, after `--`, so tool lists cannot swallow it.
   a.push('--', req.prompt);
   return a;

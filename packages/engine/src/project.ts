@@ -110,8 +110,8 @@ export async function countOpenBugs(root: string) {
 type Recent = { path: string; name: string };
 
 export class ProjectService {
-  private root?: string;
-  private state?: ProjectState;
+  private root_?: string;
+  private state_?: ProjectState;
   private watcher?: FSWatcher;
   private debounce = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -154,8 +154,8 @@ export class ProjectService {
 
   private async activate(root: string, state: ProjectState) {
     this.watcher?.close();
-    this.root = root;
-    this.state = state;
+    this.root_ = root;
+    this.state_ = state;
     await this.remember({ path: root, name: state.project.name });
     this.watchSpecs(root);
     return state;
@@ -201,10 +201,23 @@ export class ProjectService {
     if (next === this.state) return next;
     next.updatedAt = new Date().toISOString();
     await writeState(this.root, next);
-    this.state = next;
+    this.state_ = next;
     this.notify('state.changed', next);
     return next;
   }
+
+  get root(): string {
+    if (!this.root_) throw new EngineError('NO_PROJECT', 'No project is open');
+    return this.root_;
+  }
+
+  get state(): ProjectState {
+    if (!this.state_) throw new EngineError('NO_PROJECT', 'No project is open');
+    return this.state_;
+  }
+
+  recordRound = (stage: StageId) =>
+    this.mutate((s) => orch.recordCriticRound(s, stage));
 
   enter = (stage: StageId) => this.mutate((s) => orch.enterStage(s, stage));
   complete = (stage: StageId, reason?: string) =>

@@ -16,7 +16,13 @@ export class FakeAdapter implements AgentAdapter {
   private stopped = new Set<string>();
 
   constructor(
-    private opts: { fixture?: string; dir?: string; delayMs?: number } = {},
+    private opts: {
+      fixture?: string;
+      dir?: string;
+      delayMs?: number;
+      /** Test hook: produce events programmatically (e.g. call AWP tools in-process). */
+      script?: (req: RunRequest) => AsyncIterable<AgentEvent>;
+    } = {},
   ) {}
 
   async detect() {
@@ -39,6 +45,10 @@ export class FakeAdapter implements AgentAdapter {
   }
 
   private async *replay(req: RunRequest): AsyncGenerator<AgentEvent> {
+    if (this.opts.script) {
+      yield* this.opts.script(req);
+      return;
+    }
     const name = this.opts.fixture ?? 'claude-text-only';
     const file = join(
       this.opts.dir ?? FIXTURE_DIR,

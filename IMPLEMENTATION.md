@@ -151,15 +151,15 @@
 ## Phase 6 — Spec engine + Ideation
 **Goal:** the interview → synthesize → critique loop, producing PRD.md.
 
-- [ ] AWP MCP server inside the engine binary (`awp-engine mcp`): `ask_user`, `request_form`, `submit_critique`, `remember`, `approve_permission` (others stubbed for later phases).
-- [ ] Forms: `FormField` schema subset + zod validation, `packages/prompts/forms/` templates (`feature_spec`, `stack_constraints`, `bug_report`; `design_schema` in Phase 7) with `fills` mapping, `form.*` RPCs, drafts in `.awp/forms/`.
-- [ ] `InputDock`, `FormCard`, `FormSummaryCard` per DESIGN.md §3.2 and §3.5: AI-filled markers, "Not sure, help me" → suggestion or open question, "Ask about this form" round-trip, decline memory (`FORM_DECLINED`), Edit prefills from the current spec, "Continue this form" after an interrupted run.
-- [ ] Interviewer prompt rules: form only for 3+ field shapes, `ask_user` for single questions, max one form per turn, prefill from earlier answers.
-- [ ] Per-run MCP config generation including the AWP server; `--permission-prompt-tool` wiring.
-- [ ] Prompt library format + loader + per-project overrides; prompts: `ideation.interviewer`, `ideation.synthesizer`, `ideation.critic`.
-- [ ] PRD required-section schema; readiness scoring (informational).
-- [ ] Gate per PRD §5.2.1: enabled at zero blocking; user confirms; max 3 critic rounds, then "Complete anyway" with reason.
-- [ ] Ideation view: `ChatPanel` (attachments, quick-reply chips), `SpecPanel` (CodeMirror edit/preview/diff, accept/reject AI hunks, read-only while the agent writes), `QuestionList`, `ReadinessReticle`, Complete stage button.
+- [x] AWP MCP server inside the engine binary (`awp-engine mcp`): `ask_user`, `request_form`, `submit_critique`, `remember`, `approve_permission` (others stubbed for later phases).
+- [x] Forms: `FormField` schema subset + zod validation, `packages/prompts/forms/` templates (`feature_spec`, `stack_constraints`, `bug_report`; `design_schema` in Phase 7) with `fills` mapping, `form.*` RPCs, drafts in `.awp/forms/`.
+- [x] `InputDock`, `FormCard`, `FormSummaryCard` per DESIGN.md §3.2 and §3.5: AI-filled markers, "Not sure, help me" → suggestion or open question, "Ask about this form" round-trip, decline memory (`FORM_DECLINED`), Edit prefills from the current spec, "Continue this form" after an interrupted run.
+- [x] Interviewer prompt rules: form only for 3+ field shapes, `ask_user` for single questions, max one form per turn, prefill from earlier answers.
+- [x] Per-run MCP config generation including the AWP server; `--permission-prompt-tool` wiring.
+- [x] Prompt library format + loader + per-project overrides; prompts: `ideation.interviewer`, `ideation.synthesizer`, `ideation.critic`.
+- [x] PRD required-section schema; readiness scoring (informational).
+- [x] Gate per PRD §5.2.1: enabled at zero blocking; user confirms; max 3 critic rounds, then "Complete anyway" with reason.
+- [x] Ideation view: `ChatPanel` (attachments, quick-reply chips), `SpecPanel` (CodeMirror edit/preview/diff, accept/reject AI hunks, read-only while the agent writes), `QuestionList`, `ReadinessReticle`, Complete stage button.
 
 **Done when:** a full Ideation run on FakeAdapter reaches zero blocking questions and completes in tests; the round cap is tested; a real run produces a usable PRD.md.
 

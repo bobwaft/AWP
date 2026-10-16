@@ -1,0 +1,48 @@
+{
+  "id": "feature_spec",
+  "title": "Feature spec",
+  "fields": [
+    {
+      "id": "name",
+      "label": "Feature name",
+      "type": "text",
+      "required": true,
+      "fills": "prd.features"
+    },
+    {
+      "id": "story",
+      "label": "User story",
+      "help": "As a ..., I want ..., so that ...",
+      "type": "longtext",
+      "required": true,
+      "fills": "prd.stories"
+    },
+    {
+      "id": "priority",
+      "label": "Priority",
+      "type": "select",
+      "required": true,
+      "fills": "prd.features",
+      "options": [
+        { "value": "must", "label": "Must have" },
+        { "value": "should", "label": "Should have" },
+        { "value": "could", "label": "Could have" }
+      ]
+    },
+    {
+      "id": "criteria",
+      "label": "Acceptance criteria",
+      "type": "list",
+      "required": true,
+      "fills": "prd.features",
+      "fields": [
+        {
+          "id": "criterion",
+          "label": "Criterion",
+          "type": "text",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

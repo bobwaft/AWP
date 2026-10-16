@@ -1,0 +1,36 @@
+{
+  "id": "bug_report",
+  "title": "Bug report",
+  "fields": [
+    {
+      "id": "steps",
+      "label": "Steps to reproduce",
+      "type": "longtext",
+      "required": true
+    },
+    {
+      "id": "expected",
+      "label": "What you expected",
+      "type": "longtext",
+      "required": true
+    },
+    {
+      "id": "actual",
+      "label": "What actually happened",
+      "type": "longtext",
+      "required": true
+    },
+    {
+      "id": "severity",
+      "label": "Severity",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "low", "label": "Low" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "high", "label": "High" }
+      ]
+    },
+    { "id": "screenshot", "label": "Screenshot", "type": "file" }
+  ]
+}

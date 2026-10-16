@@ -1,0 +1,16 @@
+{
+  "id": "prd",
+  "file": "docs/PRD.md",
+  "sections": [
+    { "id": "problem", "title": "Problem", "required": true },
+    { "id": "users", "title": "Users", "required": true },
+    { "id": "features", "title": "Features", "required": true },
+    { "id": "stories", "title": "User stories", "required": true },
+    { "id": "data", "title": "Data", "required": false },
+    { "id": "integrations", "title": "Integrations", "required": false },
+    { "id": "platforms", "title": "Platforms", "required": true },
+    { "id": "non_goals", "title": "Non-goals", "required": true },
+    { "id": "success", "title": "Success criteria", "required": true },
+    { "id": "open_questions", "title": "Open questions", "required": false }
+  ]
+}

@@ -26,3 +26,39 @@ test('method and notification schemas', () => {
     false,
   );
 });
+
+import { type FormField, validateValues } from './index';
+
+const fields: FormField[] = [
+  { id: 'name', label: 'Name', type: 'text', required: true, max: 5 },
+  { id: 'n', label: 'N', type: 'number', min: 1, max: 3 },
+  {
+    id: 'pick',
+    label: 'Pick',
+    type: 'select',
+    options: [{ value: 'a', label: 'A' }],
+  },
+  { id: 'url', label: 'URL', type: 'url' },
+  {
+    id: 'rows',
+    label: 'Rows',
+    type: 'list',
+    fields: [{ id: 'c', label: 'C', type: 'text', required: true }],
+  },
+];
+
+test('validateValues: required, ranges, options, urls, nested lists, and "not sure"', () => {
+  expect(validateValues(fields, {})).toEqual({ name: 'Required' });
+  expect(validateValues(fields, {}, ['name'])).toEqual({});
+  expect(
+    validateValues(fields, { name: 'toolong', n: 9, pick: 'z', url: 'nope' }),
+  ).toEqual({
+    name: 'At most 5 characters',
+    n: 'At most 3',
+    pick: 'Pick one of the options',
+    url: 'Enter a full URL',
+  });
+  expect(
+    validateValues(fields, { name: 'ok', rows: [{ c: 'x' }, {}] }),
+  ).toEqual({ 'rows.1.c': 'Required' });
+});

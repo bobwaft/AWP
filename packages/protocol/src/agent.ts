@@ -57,6 +57,8 @@ export const RunRequest = z.object({
   mcpConfigPath: z.string().optional(),
   env: z.record(z.string(), z.string()).optional(),
   maxTurns: z.number().int().positive().optional(),
+  /** e.g. "mcp__awp__approve_permission"; routes out-of-policy tool use to the user. */
+  permissionPromptTool: z.string().optional(),
 });
 export type RunRequest = z.infer<typeof RunRequest>;
 

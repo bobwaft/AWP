@@ -1,0 +1,37 @@
+{
+  "id": "stack_constraints",
+  "title": "Stack constraints",
+  "fields": [
+    {
+      "id": "platforms",
+      "label": "Target platforms",
+      "type": "multiselect",
+      "required": true,
+      "fills": "prd.platforms",
+      "options": [
+        { "value": "web", "label": "Web" },
+        { "value": "desktop", "label": "Desktop" },
+        { "value": "mobile", "label": "Mobile" },
+        { "value": "cli", "label": "CLI" }
+      ]
+    },
+    {
+      "id": "languages",
+      "label": "Languages or frameworks you want",
+      "type": "text",
+      "fills": "prd.platforms"
+    },
+    {
+      "id": "avoid",
+      "label": "Anything to avoid",
+      "type": "longtext",
+      "fills": "prd.non_goals"
+    },
+    {
+      "id": "hosting",
+      "label": "Hosting or deployment limits",
+      "type": "text",
+      "fills": "prd.platforms"
+    }
+  ]
+}

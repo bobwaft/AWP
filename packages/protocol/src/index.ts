@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { AdapterId, AgentEvent } from './agent';
-
 import { ProjectState, ProjectSummary, StageId } from './project';
 import { SetupDetectResult } from './setup';
+import { FormValues, SpecSnapshot } from './spec';
 
 export * from './agent';
+export * from './form-validate';
 export * from './project';
 export * from './setup';
+export * from './spec';
 
 export const name = '@awp/protocol';
 
@@ -84,6 +86,60 @@ export const methods = {
     params: z.object({ stage: StageId }),
     result: ProjectState,
   },
+  'spec.get': { params: z.object({ stage: StageId }), result: SpecSnapshot },
+  'spec.read': {
+    params: z.object({ file: z.string() }),
+    // `base` = the document as it was before the AI's last edit (for the diff view).
+    result: z.object({ content: z.string(), base: z.string().nullable() }),
+  },
+  'spec.save': {
+    params: z.object({ file: z.string(), content: z.string() }),
+    result: z.literal('ok'),
+  },
+  'chat.send': {
+    params: z.object({
+      stage: StageId,
+      text: z.string().min(1),
+      attachments: z.array(z.string()).optional(),
+    }),
+    result: z.object({ runId: z.string() }),
+  },
+  'question.answer': {
+    params: z.object({ questionId: z.string(), answer: z.string() }),
+    result: z.literal('ok'),
+  },
+  'form.submit': {
+    params: z.object({
+      formId: z.string(),
+      values: FormValues,
+      unsure: z.array(z.string()).default([]),
+    }),
+    result: z.literal('ok'),
+  },
+  'form.decline': {
+    params: z.object({ formId: z.string() }),
+    result: z.literal('ok'),
+  },
+  'form.saveDraft': {
+    params: z.object({ formId: z.string(), values: FormValues }),
+    result: z.literal('ok'),
+  },
+  'form.ask': {
+    params: z.object({
+      formId: z.string(),
+      text: z.string().min(1),
+      draft: FormValues,
+    }),
+    result: z.literal('ok'),
+  },
+  'permission.decide': {
+    params: z.object({
+      requestId: z.string(),
+      allow: z.boolean(),
+      message: z.string().optional(),
+    }),
+    result: z.literal('ok'),
+  },
   'agent.run': {
     params: z.object({
       prompt: z.string().min(1),
@@ -110,6 +166,7 @@ export const notifications = {
   'run.event': z.object({ runId: z.string(), event: AgentEvent }),
   'state.changed': ProjectState,
   'spec.changed': z.object({ file: z.string() }),
+  'spec.state': SpecSnapshot,
   'question.asked': z.unknown(),
   'form.requested': z.unknown(),
   'permission.requested': z.unknown(),

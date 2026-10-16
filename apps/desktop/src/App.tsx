@@ -15,6 +15,7 @@ import { TerminalProvider } from './lib/terminal';
 import { applyTheme } from './lib/theme';
 import { Dashboard } from './stages/Dashboard';
 import { DevRun } from './stages/DevRun';
+import { IdeationView } from './stages/IdeationView';
 import { SetupView } from './stages/SetupView';
 
 type View = 'home' | 'settings' | 'dev';
@@ -140,6 +141,8 @@ function Shell() {
                 />
               ) : !project ? (
                 <Dashboard onRerunSetup={() => setSetupDone(false)} />
+              ) : stage === 2 ? (
+                <IdeationView />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
                   <p className="hud">

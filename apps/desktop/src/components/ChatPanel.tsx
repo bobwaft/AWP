@@ -43,7 +43,7 @@ export function ChatPanel({ spec, snap, draft, onDraft }: Props) {
   }, [count]);
 
   const send = async (text: string) => {
-    if (!text.trim() || snap.busy) return;
+    if (!text.trim() || (snap.busy && !question)) return;
     setError('');
     try {
       if (question) await spec.answer(question.questionId, text.trim());

@@ -25,6 +25,7 @@ export function SpecPanel({
   const [content, setContent] = useState('');
   const [base, setBase] = useState<string | null>(null);
   const dirty = useRef(false);
+  const saveVersion = useRef(0);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const readOnly = snap.busy === 'synthesizer'; // the agent is writing
 
@@ -56,11 +57,14 @@ export function SpecPanel({
     setContent(v);
     dirty.current = true;
     clearTimeout(saveTimer.current);
+    const version = ++saveVersion.current;
     saveTimer.current = setTimeout(async () => {
-      await engine
+      const ok = await engine
         .call('spec.save', { file: snap.specFile, content: v })
-        .catch(() => {});
-      dirty.current = false;
+        .then(() => true)
+        .catch(() => false);
+      // Only a save of the newest text clears "dirty"; a failed save keeps it so the edit is not overwritten.
+      if (ok && version === saveVersion.current) dirty.current = false;
     }, 600);
   };
 

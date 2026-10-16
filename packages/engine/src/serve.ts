@@ -30,7 +30,10 @@ const handle = createHandler(
 
 log(`engine ${pkg.version} started, pid ${process.pid}`);
 // Requests run concurrently (a slow detect must not block ping/stop); replies are matched by id.
-createInterface({ input: process.stdin }).on('line', (line) => {
+const rl = createInterface({ input: process.stdin });
+// The app closing our stdin means it is gone: exit so the engine is never orphaned.
+rl.on('close', () => process.exit(0));
+rl.on('line', (line) => {
   if (!line.trim() || outbound.handleLine(line)) return;
   handle(line)
     .then((out) => out && process.stdout.write(`${out}\n`))

@@ -50,6 +50,25 @@ export const gitService = {
     ]);
     return git(cwd, ['rev-parse', '--short', 'HEAD']);
   },
+  /** Commits only the given paths (everything else stays untouched in the working tree). */
+  async commitPaths(
+    cwd: string,
+    paths: string[],
+    message: string,
+  ): Promise<string> {
+    await git(cwd, ['add', '--', ...paths]);
+    await git(cwd, [
+      ...(await identityArgs(cwd)),
+      'commit',
+      '-m',
+      message,
+      '--allow-empty',
+      '--only',
+      '--',
+      ...paths,
+    ]);
+    return git(cwd, ['rev-parse', '--short', 'HEAD']);
+  },
   async tag(cwd: string, name: string) {
     await git(cwd, [...(await identityArgs(cwd)), 'tag', name]);
   },

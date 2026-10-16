@@ -119,3 +119,37 @@ test('git service: tag, diff stats, clean-tree check in a temp repo', async () =
     deletions: 1,
   });
 });
+
+test('concurrent mutations are serialized: no lost updates', async () => {
+  const root = join(dir, 'c');
+  await svc.create(root, 'c');
+  await Promise.all([
+    svc.recordRound('ideation'),
+    svc.recordRound('ideation'),
+    svc.recordRound('ideation'),
+  ]);
+  expect(svc.state.stages.ideation.criticRounds).toBe(3);
+  const onDisk = JSON.parse(
+    readFileSync(join(root, '.awp/state.json'), 'utf8'),
+  );
+  expect(onDisk.stages.ideation.criticRounds).toBe(3);
+});
+
+test('scaffolding into an existing folder never commits unrelated files or secrets', async () => {
+  const root = join(dir, 'existing');
+  const { mkdir } = await import('node:fs/promises');
+  await mkdir(root, { recursive: true });
+  await writeFile(join(root, '.env'), 'SECRET=1');
+  await writeFile(join(root, '.gitignore'), 'dist/');
+  await writeFile(join(root, 'wip.ts'), 'work in progress');
+  await svc.create(root, 'existing');
+  const { execFileSync } = await import('node:child_process');
+  const tracked = execFileSync('git', ['ls-files'], { cwd: root }).toString();
+  expect(tracked).not.toContain('.env\n');
+  expect(tracked).not.toContain('wip.ts');
+  expect(tracked).toContain('CLAUDE.md');
+  const ignore = readFileSync(join(root, '.gitignore'), 'utf8');
+  expect(ignore).toContain('dist/');
+  expect(ignore).toContain('.env');
+  expect(ignore).toContain('.awp/runs/');
+});

@@ -194,3 +194,21 @@ test('a permission request shows Allow/Deny', async () => {
     }),
   );
 });
+
+test('a pending question can be answered while the run is busy (regression)', async () => {
+  mount({
+    busy: 'interviewer',
+    pending: {
+      question: { questionId: 'q9', text: 'Who?', choices: ['devs'] },
+      form: null,
+      permission: null,
+    },
+  });
+  fireEvent.click(await screen.findByText('devs'));
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith('question.answer', {
+      questionId: 'q9',
+      answer: 'devs',
+    }),
+  );
+});

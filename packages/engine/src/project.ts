@@ -45,6 +45,18 @@ const BUGS_MD = `# BUGS
 Each entry: ID (BUG-001...), phase, steps, expected, actual, severity, and a \`- Status: open|fixed\` line.
 `;
 
+async function ensureIgnored(root: string, lines: string[]) {
+  const file = join(root, '.gitignore');
+  const cur = await readFile(file, 'utf8').catch(() => '');
+  const have = new Set(cur.split(/\r?\n/).map((l) => l.trim()));
+  const missing = lines.filter((l) => !have.has(l));
+  if (missing.length)
+    await writeFile(
+      file,
+      `${cur}${cur && !cur.endsWith('\n') ? '\n' : ''}${missing.join('\n')}\n`,
+    );
+}
+
 /** Writes the project layout (ARCHITECTURE.md section 5), inits git, commits, and branches. */
 export async function scaffoldProject(
   root: string,
@@ -62,7 +74,6 @@ export async function scaffoldProject(
     'CLAUDE.md': claudeMd(name),
     'MEMORY.md': '# MEMORY\n',
     'BUGS.md': BUGS_MD,
-    '.gitignore': '.awp/runs/\n.env\n.env.*\nnode_modules/\n',
     'docs/.gitkeep': '',
     'docs/design/.gitkeep': '',
   };
@@ -70,9 +81,22 @@ export async function scaffoldProject(
     await writeFile(join(root, f), body, { flag: 'wx' }).catch((e) => {
       if (e.code !== 'EEXIST') throw e; // keep a pre-existing file
     });
+  await ensureIgnored(root, ['.awp/runs/', '.env', '.env.*', 'node_modules/']);
   await writeState(root, state);
   if (!(await exists(join(root, '.git')))) await gitService.init(root);
-  await gitService.commitAll(root, 'awp: initial project');
+  // Only AWP's own files: an existing folder's work in progress (or a .env) is never swept in.
+  await gitService.commitPaths(
+    root,
+    [
+      'CLAUDE.md',
+      'MEMORY.md',
+      'BUGS.md',
+      '.gitignore',
+      'docs',
+      '.awp/state.json',
+    ],
+    'awp: initial project',
+  );
   await gitService.checkoutNew(root, BUILD_BRANCH).catch(() => {}); // already exists on re-scaffold
   return state;
 }
@@ -80,7 +104,7 @@ export async function scaffoldProject(
 export async function writeState(root: string, state: ProjectState) {
   const file = stateFile(root);
   await mkdir(join(root, '.awp'), { recursive: true });
-  const tmp = `${file}.tmp`;
+  const tmp = `${file}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
   await writeFile(tmp, JSON.stringify(state, null, 2));
   await rename(tmp, file); // atomic: a crash never leaves half a file
 }
@@ -92,7 +116,17 @@ export async function readState(root: string): Promise<ProjectState> {
   } catch {
     throw new EngineError('PROJECT_NOT_FOUND', 'No AWP project in that folder');
   }
-  const parsed = ProjectStateSchema.safeParse(JSON.parse(raw));
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    throw new EngineError(
+      'STATE_INVALID',
+      '.awp/state.json is not valid JSON',
+      'Restore it from git.',
+    );
+  }
+  const parsed = ProjectStateSchema.safeParse(json);
   if (!parsed.success)
     throw new EngineError(
       'STATE_INVALID',
@@ -194,16 +228,22 @@ export class ProjectService {
   }
 
   /** Applies a pure transition, persists, and broadcasts. */
-  async mutate(fn: (s: ProjectState) => ProjectState) {
-    if (!this.root || !this.state)
-      throw new EngineError('NO_PROJECT', 'No project is open');
-    const next = fn(this.state);
-    if (next === this.state) return next;
-    next.updatedAt = new Date().toISOString();
-    await writeState(this.root, next);
-    this.state_ = next;
-    this.notify('state.changed', next);
-    return next;
+  private queue: Promise<unknown> = Promise.resolve();
+
+  /** Applies a pure transition; mutations run one at a time so concurrent writers cannot lose updates. */
+  mutate(fn: (s: ProjectState) => ProjectState): Promise<ProjectState> {
+    const run = async () => {
+      const next = fn(this.state);
+      if (next === this.state) return next;
+      next.updatedAt = new Date().toISOString();
+      await writeState(this.root, next);
+      this.state_ = next;
+      this.notify('state.changed', next);
+      return next;
+    };
+    const p = this.queue.then(run, run);
+    this.queue = p.catch(() => {});
+    return p;
   }
 
   get root(): string {

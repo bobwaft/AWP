@@ -143,7 +143,7 @@ export class SpecSession {
       const dir = join(this.d.root, '.awp', 'forms');
       for (const f of await readdir(dir)) {
         const rec = JSON.parse(await readFile(join(dir, f), 'utf8'));
-        if (rec.status === 'open')
+        if (rec.status === 'open' && rec.stage === this.d.cfg.stage)
           this.form = {
             ...rec.form,
             prefill: rec.values ?? rec.form.prefill,
@@ -286,7 +286,11 @@ export class SpecSession {
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, `${form.formId}.json`),
-      JSON.stringify({ status, form, values }, null, 2),
+      JSON.stringify(
+        { status, stage: this.d.cfg.stage, form, values },
+        null,
+        2,
+      ),
     );
   }
 
@@ -347,7 +351,7 @@ export class SpecSession {
       void this.critiqueOnly();
     } else if (wait) wait.resolve({ status: 'submitted', values, unsure });
     // Interrupted run: the submission starts a new turn as structured data.
-    else
+    else if (!this.busy)
       void this.startCycle(
         `Form submitted (${form.title}): ${JSON.stringify({ values, unsure })}`,
         false,
@@ -375,7 +379,7 @@ export class SpecSession {
     await this.saveFormFile(form, 'done', draft);
     await this.addMessage(msg('user', text));
     if (wait) wait.resolve({ status: 'question', text, draft });
-    else
+    else if (!this.busy)
       void this.startCycle(
         `Question about the "${form.title}" form: ${text}\nDraft: ${JSON.stringify(draft)}`,
         false,
@@ -508,6 +512,7 @@ export class SpecSession {
         'Every verify command is required (install, typecheck, lint, test, build)',
         verify.error.issues.map((i) => i.path.join('.')).join(', '),
       );
+    this.busy = 'phaser'; // claim before any await so a double click cannot start two planners
     await this.writeBase();
     await mkdir(join(this.d.root, 'docs'), { recursive: true });
     await writeFile(
@@ -569,7 +574,7 @@ export class SpecSession {
         ),
       );
     } finally {
-      this.busy = null;
+      this.endBusy();
       this.emit();
     }
   }
@@ -643,7 +648,7 @@ export class SpecSession {
           ),
         );
       } finally {
-        this.busy = null;
+        this.endBusy();
         await this.persist();
         this.emit();
       }
@@ -652,6 +657,11 @@ export class SpecSession {
 
   /** Picks a theme. With `tweaks` the docs are written now; otherwise AWP opens the design form prefilled with it. */
   async pickTheme(themeId: string, tweaks?: Record<string, unknown>) {
+    if (this.busy || this.formWait)
+      throw new EngineError(
+        'SPEC_BUSY',
+        'AWP is still working; finish or answer the open form first',
+      );
     const theme = this.themes?.find((t) => t.id === themeId);
     if (!theme)
       throw new EngineError(
@@ -744,7 +754,7 @@ export class SpecSession {
         ),
       );
     } finally {
-      this.busy = null;
+      this.endBusy();
       this.emit();
     }
   }
@@ -758,11 +768,30 @@ export class SpecSession {
         'SPEC_BUSY',
         'AWP is still working on the last message',
       );
+    this.busy = 'interviewer'; // claim synchronously so a second send cannot slip past the check
     const shown = attachments.length
       ? `${text}\n\nAttached: ${attachments.join(', ')}`
       : text;
-    await this.addMessage(msg('user', shown));
+    try {
+      await this.addMessage(msg('user', shown));
+    } catch (e) {
+      this.endBusy();
+      throw e;
+    }
     return this.startCycle(shown, false);
+  }
+
+  /** Clears busy and every wait that belonged to the finished run; an open agent form becomes an orphan. */
+  private endBusy() {
+    this.busy = null;
+    this.question = null;
+    this.qWait = undefined;
+    this.permission = null;
+    this.permWait = undefined;
+    if (this.form && this.formWait) {
+      this.form = { ...this.form, orphaned: true };
+      this.formWait = undefined;
+    }
   }
 
   private startCycle(text: string, addUser: boolean): string {
@@ -837,7 +866,7 @@ export class SpecSession {
         ),
       );
     } finally {
-      this.busy = null;
+      this.endBusy();
       this.question = null;
       this.qWait = undefined;
       // A form still open when the run ends is kept as an orphan to continue later.

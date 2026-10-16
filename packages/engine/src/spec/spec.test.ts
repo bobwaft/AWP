@@ -485,3 +485,19 @@ test('engineCommand: compiled binary vs dev script', () => {
     args: ['run', '/repo/packages/engine/src/main.ts', 'mcp'],
   });
 });
+
+test('an open form from another stage is not offered here', async () => {
+  await setup(async function* (req, s, phase) {
+    if (phase === 'interviewer')
+      void s
+        .callTool(req.runId, 'request_form', {
+          templateId: 'feature_spec',
+          title: 'F',
+        })
+        .catch(() => {});
+  });
+  await send('x');
+  await waitFor(() => notes.find((n) => n.m === 'form.requested'));
+  const design = await call('spec.get', { stage: 'design' });
+  expect(design.pending.form).toBeNull();
+});

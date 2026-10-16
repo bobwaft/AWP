@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { AdapterId, AgentEvent } from './agent';
 
+import { ProjectState, ProjectSummary, StageId } from './project';
 import { SetupDetectResult } from './setup';
 
 export * from './agent';
+export * from './project';
 export * from './setup';
 
 export const name = '@awp/protocol';
@@ -61,6 +63,27 @@ export const methods = {
     params: z.undefined().or(z.object({})),
     result: z.record(z.string(), z.string()),
   },
+  'project.create': {
+    params: z.object({ path: z.string().min(1), name: z.string().min(1) }),
+    result: ProjectState,
+  },
+  'project.open': {
+    params: z.object({ path: z.string().min(1) }),
+    result: ProjectState,
+  },
+  'project.list': {
+    params: z.undefined().or(z.object({})),
+    result: z.array(ProjectSummary),
+  },
+  'stage.enter': { params: z.object({ stage: StageId }), result: ProjectState },
+  'stage.complete': {
+    params: z.object({ stage: StageId, overrideReason: z.string().optional() }),
+    result: ProjectState,
+  },
+  'stage.reopen': {
+    params: z.object({ stage: StageId }),
+    result: ProjectState,
+  },
   'agent.run': {
     params: z.object({
       prompt: z.string().min(1),
@@ -85,7 +108,7 @@ export type Result<M extends MethodName> = z.infer<Methods[M]['result']>;
 export const notifications = {
   // Stubs: payloads tightened by the phases that emit them.
   'run.event': z.object({ runId: z.string(), event: AgentEvent }),
-  'state.changed': z.unknown(),
+  'state.changed': ProjectState,
   'spec.changed': z.object({ file: z.string() }),
   'question.asked': z.unknown(),
   'form.requested': z.unknown(),

@@ -33,7 +33,7 @@ fn allow_restart(history: &mut VecDeque<Instant>, now: Instant) -> bool {
     history.len() <= MAX_RESTARTS
 }
 
-fn spawn_engine(log_dir: &str) -> std::io::Result<Child> {
+fn spawn_engine(data_dir: &str) -> std::io::Result<Child> {
     // Dev runs the TS source with bun; release runs the bundled binary next to the app exe.
     let mut cmd = if cfg!(debug_assertions) {
         let mut c = Command::new("bun");
@@ -51,7 +51,8 @@ fn spawn_engine(log_dir: &str) -> std::io::Result<Child> {
         };
         Command::new(exe.with_file_name(name))
     };
-    cmd.env("AWP_LOG_DIR", log_dir)
+    cmd.env("AWP_DATA_DIR", data_dir)
+        .env("AWP_LOG_DIR", format!("{data_dir}/logs"))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
@@ -68,17 +69,17 @@ fn emit(app: &AppHandle, method: &str, params: Value) {
 }
 
 pub fn start(app: AppHandle) {
-    let log_dir = app
+    let data_dir = app
         .path()
         .app_data_dir()
-        .map(|p| p.join("logs").to_string_lossy().into_owned())
+        .map(|p| p.to_string_lossy().into_owned())
         .unwrap_or_default();
     std::thread::spawn(move || {
         let state = app.state::<Engine>();
         let mut crashes = VecDeque::new();
         let mut first = true;
         loop {
-            let mut child = match spawn_engine(&log_dir) {
+            let mut child = match spawn_engine(&data_dir) {
                 Ok(c) => c,
                 Err(e) => {
                     emit(&app, "engine.failed", json!({ "reason": e.to_string() }));

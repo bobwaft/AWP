@@ -136,11 +136,11 @@
 ## Phase 5 — Projects, git, state machine
 **Goal:** create and reopen projects with persistent state.
 
-- [ ] `project.create` (folder + `git init` + project layout from ARCHITECTURE.md §5 + generated CLAUDE.md), `project.open`, `project.list`.
-- [ ] Orchestrator: stage statuses, unlock rules, stale propagation, critic-round counter, override-with-reason; persisted to `.awp/state.json` after every change.
-- [ ] Git service: branch `awp/build`, commit, tag, diff stats, clean-tree check.
-- [ ] Dashboard: recent projects with stage, phase progress, last activity, open bugs.
-- [ ] Spec file watcher → `spec.changed` events.
+- [x] `project.create` (folder + `git init` + project layout from ARCHITECTURE.md §5 + generated CLAUDE.md), `project.open`, `project.list`.
+- [x] Orchestrator: stage statuses, unlock rules, stale propagation, critic-round counter, override-with-reason; persisted to `.awp/state.json` after every change.
+- [x] Git service: branch `awp/build`, commit, tag, diff stats, clean-tree check.
+- [x] Dashboard: recent projects with stage, phase progress, last activity, open bugs.
+- [x] Spec file watcher → `spec.changed` events.
 
 **Done when:** state survives restart; stale propagation unit-tested; git ops work in temp repos in tests.
 

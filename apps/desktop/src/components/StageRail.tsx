@@ -7,8 +7,8 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useProject } from '../lib/project';
 import {
-  mockStageState,
   STAGES,
   type StageState,
   stageAriaLabel,
@@ -32,6 +32,7 @@ type Props = { selected: number; onSelect: (n: number) => void };
 
 export function StageRail({ selected, onSelect }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const { stateOf } = useProject();
   return (
     <nav
       aria-label="Stages"
@@ -39,7 +40,7 @@ export function StageRail({ selected, onSelect }: Props) {
     >
       <ol className="flex flex-1 flex-col">
         {STAGES.map((s) => {
-          const state = mockStageState(s.n);
+          const state = stateOf(s.n);
           const Icon = ICON[state];
           return (
             <li key={s.n}>

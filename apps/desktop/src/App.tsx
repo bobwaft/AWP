@@ -1,3 +1,4 @@
+import { STAGE_IDS } from '@awp/protocol';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CommandPalette } from './components/CommandPalette';
 import { RifleDiagram2D } from './components/RifleDiagram2D';
@@ -7,10 +8,12 @@ import { TerminalDrawer } from './components/TerminalDrawer';
 import { ToastProvider, useToast } from './components/Toast';
 import { TopBar } from './components/TopBar';
 import { engine } from './lib/engine';
+import { ProjectProvider, useProject } from './lib/project';
 import { loadSettings, saveSettings } from './lib/settings';
-import { MOCK_PROJECT, STAGES, stageForKey } from './lib/stages';
+import { STAGES, stageForKey } from './lib/stages';
 import { TerminalProvider } from './lib/terminal';
 import { applyTheme } from './lib/theme';
+import { Dashboard } from './stages/Dashboard';
 import { DevRun } from './stages/DevRun';
 import { SetupView } from './stages/SetupView';
 
@@ -36,19 +39,35 @@ function EngineToasts() {
   return null;
 }
 
-export function App() {
+function Shell() {
+  const { project, setupDone, setSetupDone, enter } = useProject();
   const [settings, setSettings] = useState(loadSettings);
-  const [stage, setStage] = useState(MOCK_PROJECT.current);
+  const [stage, setStage] = useState(1);
   const [view, setView] = useState<View>('home');
   const [palette, setPalette] = useState(false);
 
   useEffect(() => applyTheme(settings.theme), [settings.theme]);
   useEffect(() => saveSettings(settings), [settings]);
 
-  const goStage = useCallback((n: number) => {
-    setStage(n);
-    setView('home');
-  }, []);
+  const goStage = useCallback(
+    (n: number) => {
+      setStage(n);
+      setView('home');
+      void enter(STAGE_IDS[n - 1]); // persisted so a restart lands here
+    },
+    [enter],
+  );
+
+  // Land on the project's saved stage when a project is opened.
+  const projectPath = project?.project.path;
+  const savedStage = project ? STAGE_IDS.indexOf(project.current) + 1 : 1;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only on open/close of a project
+  useEffect(() => {
+    if (projectPath) {
+      setStage(savedStage);
+      setView('home');
+    }
+  }, [projectPath]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -112,8 +131,15 @@ export function App() {
                 <DevRun />
               ) : view === 'settings' ? (
                 <SettingsScreen settings={settings} onChange={setSettings} />
-              ) : stage === 1 ? (
-                <SetupView onContinue={() => goStage(2)} />
+              ) : stage === 1 && (project || !setupDone) ? (
+                <SetupView
+                  onContinue={() => {
+                    setSetupDone(true);
+                    if (project) goStage(Math.max(2, savedStage));
+                  }}
+                />
+              ) : !project ? (
+                <Dashboard onRerunSetup={() => setSetupDone(false)} />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
                   <p className="hud">
@@ -137,5 +163,13 @@ export function App() {
         />
       </TerminalProvider>
     </ToastProvider>
+  );
+}
+
+export function App() {
+  return (
+    <ProjectProvider>
+      <Shell />
+    </ProjectProvider>
   );
 }

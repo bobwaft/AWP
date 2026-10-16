@@ -1,9 +1,5 @@
-import {
-  mockStageState,
-  STAGES,
-  type StageState,
-  stageAriaLabel,
-} from '../lib/stages';
+import { useProject } from '../lib/project';
+import { STAGES, type StageState, stageAriaLabel } from '../lib/stages';
 
 // Hotspot centres in the 1000×300 viewBox, one per stage (DESIGN.md §2.2).
 const SPOTS: Record<number, [number, number]> = {
@@ -29,6 +25,7 @@ const RING: Record<StageState, { stroke: string; dash?: string }> = {
 type Props = { onSelect: (n: number) => void; selected?: number };
 
 export function RifleDiagram2D({ onSelect, selected }: Props) {
+  const { stateOf } = useProject();
   return (
     // biome-ignore lint/a11y/useSemanticElements: SVG has no fieldset
     <svg
@@ -50,7 +47,7 @@ export function RifleDiagram2D({ onSelect, selected }: Props) {
         <circle cx="950" cy="150" r="34" strokeDasharray="1 5" />
       </g>
       {STAGES.map((s) => {
-        const state = mockStageState(s.n);
+        const state = stateOf(s.n);
         const [x, y] = SPOTS[s.n];
         const ring = RING[state];
         return (

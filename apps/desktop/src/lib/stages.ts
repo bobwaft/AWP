@@ -22,15 +22,5 @@ export const stageForKey = (key: string): number | undefined =>
 
 export const stageKeyLabel = (n: number) => (n === 10 ? '0' : String(n));
 
-// Mock data until the engine exists (Phase 2/5).
-export const MOCK_PROJECT = { name: 'Demo project', current: 4, stale: [3] };
-
-export function mockStageState(n: number): StageState {
-  const { current, stale } = MOCK_PROJECT;
-  if (stale.includes(n)) return 'stale';
-  if (n === current) return 'current';
-  return n < current ? 'done' : 'locked';
-}
-
 export const stageAriaLabel = (s: Stage, state: StageState) =>
   `Stage ${s.n}, ${s.label}, ${state}`;

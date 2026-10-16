@@ -7,6 +7,8 @@ import {
   type RpcResponse,
 } from '@awp/protocol';
 
+import { EngineError } from './errors';
+
 export type Handlers = { [M in MethodName]?: (params: unknown) => unknown };
 
 const reply = (r: Omit<RpcResponse, 'jsonrpc'>) =>
@@ -52,6 +54,15 @@ export function createHandler(
     try {
       return reply({ id, result: await handler(parsed.data) });
     } catch (e) {
+      if (e instanceof EngineError)
+        return reply({
+          id,
+          error: {
+            code: -32000,
+            message: e.message,
+            data: { code: e.code, hint: e.hint },
+          },
+        });
       log(
         `error in ${method}: ${e instanceof Error ? (e.stack ?? e.message) : String(e)}`,
       );

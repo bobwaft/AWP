@@ -5,6 +5,7 @@ mod secrets;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(engine::Engine::default())
         .manage(pty::Ptys::default())
         .on_window_event(|window, event| {

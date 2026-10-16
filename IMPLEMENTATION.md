@@ -97,13 +97,13 @@
 
 ## Phase 3 — Claude adapter + run stream
 **Goal:** run a prompt through Claude Code and watch it live.
-- [ ] `AgentAdapter` interface and `AgentEvent` union (ARCHITECTURE.md §3.3), kept agent-agnostic for a later Codex adapter.
-- [ ] `ClaudeCodeAdapter` (`claude -p --output-format stream-json --verbose`, resume, stop) with `--help` version probe and tested version range.
-- [ ] `FakeAdapter` replaying fixtures; record 3+ real transcripts into `test/fixtures/` (scrub secrets).
-- [ ] Golden-file parser tests.
-- [ ] Process-tree stop on Windows (job objects / tree-kill) and macOS.
-- [ ] `AgentRunStream` component: messages, tool calls, file changes, commands, usage, Stop button, model badge.
-- [ ] Hidden dev screen: "Run prompt".
+- [x] `AgentAdapter` interface and `AgentEvent` union (ARCHITECTURE.md §3.3), kept agent-agnostic for a later Codex adapter.
+- [x] `ClaudeCodeAdapter` (`claude -p --output-format stream-json --verbose`, resume, stop) with `--help` version probe and tested version range.
+- [x] `FakeAdapter` replaying fixtures; record 3+ real transcripts into `test/fixtures/` (scrub secrets).
+- [x] Golden-file parser tests.
+- [x] Process-tree stop on Windows (job objects / tree-kill) and macOS.
+- [x] `AgentRunStream` component: messages, tool calls, file changes, commands, usage, Stop button, model badge.
+- [x] Hidden dev screen: "Run prompt".
 
 **Done when:** a dev prompt runs end-to-end on Claude Code and on FakeAdapter; Stop ends the run within 5 s.
 

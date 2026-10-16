@@ -2,6 +2,7 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import pkg from '../package.json';
+import { createHandlers } from './handlers';
 import { createHandler } from './server';
 
 // Rust passes the app-data logs dir; fall back to cwd/logs when run by hand.
@@ -14,10 +15,11 @@ const log = (msg: string) =>
     `${JSON.stringify({ t: new Date().toISOString(), msg })}\n`,
   );
 
-const handle = createHandler(
-  { ping: () => 'pong', version: () => ({ version: pkg.version }) },
-  log,
-);
+const notify = (method: string, params: unknown) =>
+  process.stdout.write(
+    `${JSON.stringify({ jsonrpc: '2.0', method, params })}\n`,
+  );
+const handle = createHandler(createHandlers(notify), log);
 
 log(`engine ${pkg.version} started, pid ${process.pid}`);
 // Serialize replies so output order matches input order.

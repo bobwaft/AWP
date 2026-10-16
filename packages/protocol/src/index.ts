@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { AdapterId, AgentEvent } from './agent';
+
+export * from './agent';
 
 export const name = '@awp/protocol';
 
@@ -46,6 +49,20 @@ export const methods = {
     params: z.undefined().or(z.object({})),
     result: z.object({ version: z.string() }),
   },
+  'agent.run': {
+    params: z.object({
+      prompt: z.string().min(1),
+      cwd: z.string(),
+      adapter: AdapterId.default('claude'),
+      model: z.string().optional(),
+      fixture: z.string().optional(), // fake adapter only
+    }),
+    result: z.object({ runId: z.string() }),
+  },
+  'agent.stop': {
+    params: z.object({ runId: z.string() }),
+    result: z.literal('ok'),
+  },
 } as const;
 export type Methods = typeof methods;
 export type MethodName = keyof Methods;
@@ -55,7 +72,7 @@ export type Result<M extends MethodName> = z.infer<Methods[M]['result']>;
 // Notifications: engine -> UI. `engine.*` ones are emitted by the Rust supervisor.
 export const notifications = {
   // Stubs: payloads tightened by the phases that emit them.
-  'run.event': z.object({ runId: z.string(), event: z.unknown() }),
+  'run.event': z.object({ runId: z.string(), event: AgentEvent }),
   'state.changed': z.unknown(),
   'spec.changed': z.object({ file: z.string() }),
   'question.asked': z.unknown(),

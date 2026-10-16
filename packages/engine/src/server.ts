@@ -46,10 +46,11 @@ export function createHandler(
     const handler = handlers[method as MethodName];
     if (!schema || !handler)
       return fail(id, ErrorCode.methodNotFound, 'METHOD_NOT_FOUND', method);
-    if (!schema.params.safeParse(params).success)
+    const parsed = schema.params.safeParse(params);
+    if (!parsed.success)
       return fail(id, ErrorCode.invalidParams, 'INVALID_PARAMS', method);
     try {
-      return reply({ id, result: await handler(params) });
+      return reply({ id, result: await handler(parsed.data) });
     } catch (e) {
       log(
         `error in ${method}: ${e instanceof Error ? (e.stack ?? e.message) : String(e)}`,

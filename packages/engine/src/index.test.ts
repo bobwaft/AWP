@@ -48,3 +48,28 @@ test('notifications (no id) get no reply', async () => {
     await h(JSON.stringify({ jsonrpc: '2.0', method: 'ping' })),
   ).toBeUndefined();
 });
+
+test('agent.run on fake adapter returns a runId and applies defaults', async () => {
+  const { createHandlers } = await import('./handlers');
+  const { FakeAdapter } = await import('./adapters/fake');
+  const seen: string[] = [];
+  const hh = createHandler(
+    createHandlers(
+      (m) => seen.push(m),
+      () => new FakeAdapter(),
+    ),
+  );
+  const r = JSON.parse(
+    (await hh(
+      JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'agent.run',
+        params: { prompt: 'x', cwd: '/', adapter: 'fake' },
+      }),
+    ))!,
+  );
+  expect(typeof r.result.runId).toBe('string');
+  await new Promise((r) => setTimeout(r, 100));
+  expect(seen).toContain('run.event');
+});

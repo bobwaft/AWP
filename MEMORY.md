@@ -21,3 +21,11 @@
 - `bun run engine:build` compiles to `src-tauri/binaries/awp-engine-<triple>` (`--all` for all targets). Tauri's build.rs needs that file to exist even in dev, so root `dev` runs `engine:build` first and CI runs it before cargo. Binaries are gitignored.
 - Rust supervisor (`src-tauri/src/engine.rs`): debug builds run `bun run packages/engine/src/main.ts`; release runs `awp-engine` next to the app exe. `engine_request` returns the full JSON-RPC response; engine notifications are re-emitted on `engine://event` as `{method, params}`; the supervisor itself emits `engine.restarted` / `engine.failed` (3 crashes in 60 s).
 - Not verified: Windows (CREATE_NO_WINDOW path, `awp-engine.exe` kill test) and a release bundle; only Linux dev was exercised. Killing the engine in dev restarts it (checked by hand).
+
+## Phase 3
+- `AgentEvent`/`RunRequest` zod live in `packages/protocol/src/agent.ts`. RPC: `agent.run {prompt,cwd,adapter,model?,fixture?}` → `{runId}`, `agent.stop`; events stream as `run.event`. Server now passes the zod-*parsed* params to handlers (defaults apply).
+- Claude stream-json facts (CLI 2.1.301): `system/init` has session_id+model; tool calls are `assistant` content `tool_use`; results are `user` content `tool_result`; final `result` has `usage` + `total_cost_usd`. Prompt is passed after `--` (tool lists would swallow it). `claude auth status` prints JSON with `loggedIn`. Parser: `adapters/claude-parse.ts` (pure; file_change is derived from successful Write/Edit calls).
+- Fixtures `packages/engine/test/fixtures/claude-*.jsonl` are real transcripts (haiku), slimmed + scrubbed (paths → /work/project, user name, ids). FakeAdapter replays them through the real parser. The write fixture contains a denied Bash call, a realistic case.
+- Stop: POSIX uses a detached process group + SIGTERM then SIGKILL after 2 s; Windows uses `taskkill /T /F`. Windows path is unverified.
+- Dev screen: command palette → "Dev: run prompt". Verified a real Claude run through the engine over stdio (events streamed, done success). Stop was verified only on Fake + a process-tree unit test, not on a live Claude run.
+- Tauri `invoke` of `agent.run` isn't covered by a UI-level test; `useRun` buffers events that arrive before the runId is known.

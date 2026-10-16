@@ -9,8 +9,9 @@ import { engine } from './lib/engine';
 import { loadSettings, saveSettings } from './lib/settings';
 import { MOCK_PROJECT, STAGES, stageForKey } from './lib/stages';
 import { applyTheme } from './lib/theme';
+import { DevRun } from './stages/DevRun';
 
-type View = 'home' | 'settings';
+type View = 'home' | 'settings' | 'dev';
 
 // Surfaces engine supervisor/toast notifications as UI toasts.
 function EngineToasts() {
@@ -82,6 +83,11 @@ export function App() {
         label: 'Open settings',
         run: () => setView('settings'),
       },
+      {
+        id: 'dev-run',
+        label: 'Dev: run prompt',
+        run: () => setView('dev'),
+      },
     ],
     [goStage],
   );
@@ -98,7 +104,9 @@ export function App() {
         <div className="flex min-h-0 flex-1">
           <StageRail selected={stage} onSelect={goStage} />
           <main className="flex-1 overflow-auto">
-            {view === 'settings' ? (
+            {view === 'dev' ? (
+              <DevRun />
+            ) : view === 'settings' ? (
               <SettingsScreen settings={settings} onChange={setSettings} />
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-6 p-8">

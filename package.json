@@ -1,0 +1,22 @@
+{
+  "name": "awp",
+  "private": true,
+  "workspaces": [
+    "apps/desktop",
+    "packages/*",
+    "registry",
+    "assets/3d"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/desktop tauri dev",
+    "typecheck": "bun run --workspaces --if-present typecheck",
+    "check": "bun run typecheck && biome check . && vitest run",
+    "build": "bun run engine:build && bun run --cwd apps/desktop tauri build",
+    "engine:build": "echo 'engine not implemented until Phase 2'"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

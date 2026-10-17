@@ -257,6 +257,29 @@ function Control({
   }
 }
 
+type ChipState = 'empty' | 'filled' | 'unsure' | 'error';
+const CHIP_MARK: Record<ChipState, string> = {
+  empty: '',
+  filled: '✓',
+  unsure: '?',
+  error: '!',
+};
+const CHIP_TEXT: Record<ChipState, string> = {
+  empty: 'empty',
+  filled: 'filled',
+  unsure: 'not sure',
+  error: 'has an error',
+};
+
+const isFilled = (v: unknown) =>
+  Array.isArray(v)
+    ? v.length > 0
+    : typeof v === 'string'
+      ? v.trim() !== ''
+      : v !== undefined && v !== null;
+
+const shortLabel = (l: string) => (l.length > 14 ? `${l.slice(0, 13)}…` : l);
+
 export function FormCard({
   form,
   onSubmit,
@@ -270,8 +293,11 @@ export function FormCard({
   const [unsure, setUnsure] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [ask, setAsk] = useState('');
+  const [step, setStep] = useState(0);
+  const [focusReq, setFocusReq] = useState(0);
   const root = useRef<HTMLFormElement>(null);
   const first = useRef(true);
+  const last = step >= form.fields.length - 1;
 
   // Drafts are saved shortly after the user stops typing.
   useEffect(() => {
@@ -282,6 +308,17 @@ export function FormCard({
     const t = setTimeout(() => onDraft?.(values), 600);
     return () => clearTimeout(t);
   }, [values, onDraft]);
+
+  // After a validation jump, focus the failing step's control once it has rendered.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on focusReq only
+  useEffect(() => {
+    if (focusReq === 0) return;
+    root.current
+      ?.querySelector<HTMLElement>(
+        '[data-field] input, [data-field] select, [data-field] textarea',
+      )
+      ?.focus();
+  }, [focusReq]);
 
   const set = (id: string, v: unknown) => {
     setValues((cur) => ({ ...cur, [id]: v }));
@@ -294,24 +331,35 @@ export function FormCard({
     setErrors(errs);
     const firstErr = Object.keys(errs)[0];
     if (firstErr) {
-      root.current
-        ?.querySelector<HTMLElement>(
-          `[data-field="${firstErr.split('.')[0]}"] input, [data-field="${firstErr.split('.')[0]}"] select, [data-field="${firstErr.split('.')[0]}"] textarea`,
-        )
-        ?.focus();
+      const at = form.fields.findIndex((f) => f.id === firstErr.split('.')[0]);
+      if (at >= 0) setStep(at);
+      setFocusReq((n) => n + 1);
       return;
     }
     await onSubmit(values, [...unsure]);
   };
 
+  const chipState = (f: FormField): ChipState =>
+    Object.keys(errors).some((k) => k === f.id || k.startsWith(`${f.id}.`))
+      ? 'error'
+      : unsure.has(f.id)
+        ? 'unsure'
+        : isFilled(values[f.id])
+          ? 'filled'
+          : 'empty';
+
+  const f = form.fields[step];
+  const id = f ? `ff-${f.id}` : '';
+  const aiMarked = f && form.aiFilled.includes(f.id) && !touched.has(f.id);
   return (
     <form
       ref={root}
       aria-label={form.title}
-      className="flex max-h-[60vh] flex-col gap-3 overflow-auto rounded-md border border-line bg-bg-1 p-4"
+      className="flex max-h-full flex-col gap-3 overflow-auto rounded-md border border-line bg-bg-1 p-4"
       onSubmit={(e) => {
         e.preventDefault();
-        void submit();
+        if (last) void submit();
+        else setStep((n) => n + 1);
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -326,58 +374,83 @@ export function FormCard({
           Continue this form. The last run ended before you submitted.
         </p>
       )}
-      {form.fields.map((f) => {
-        const id = `ff-${f.id}`;
-        const aiMarked = form.aiFilled.includes(f.id) && !touched.has(f.id);
-        return (
-          <div key={f.id} data-field={f.id} className="flex flex-col gap-1">
-            <label htmlFor={id} className="text-sm text-text-2">
-              {f.label}{' '}
-              {f.required ? <span>(required)</span> : <span>(optional)</span>}
-              {aiMarked && (
-                <span className="ml-2 text-xs text-accent">
-                  from your earlier answer
-                </span>
-              )}
-            </label>
-            <Control
-              f={f}
-              id={id}
-              value={values[f.id]}
-              onChange={(v) => set(f.id, v)}
-            />
-            {f.type === 'color' && <Readout id={f.id} values={values} />}
-            {f.help && <p className="text-xs text-text-3">{f.help}</p>}
-            {f.required && (
-              <label className="flex items-center gap-1 text-xs text-text-2">
-                <input
-                  type="checkbox"
-                  checked={unsure.has(f.id)}
-                  onChange={(e) =>
-                    setUnsure((u) =>
-                      e.target.checked
-                        ? new Set(u).add(f.id)
-                        : new Set([...u].filter((x) => x !== f.id)),
-                    )
-                  }
-                />
-                Not sure, help me
-              </label>
+      <ol aria-label="Form steps" className="flex flex-wrap gap-1">
+        {form.fields.map((c, i) => {
+          const st = chipState(c);
+          return (
+            <li key={c.id}>
+              <button
+                type="button"
+                title={c.label}
+                aria-label={`${i + 1}. ${c.label}, ${CHIP_TEXT[st]}`}
+                aria-current={i === step ? 'step' : undefined}
+                onClick={() => setStep(i)}
+                className={`rounded-sm border px-2 py-0.5 text-xs ${i === step ? 'border-line-strong bg-bg-3 text-text-1' : 'border-line text-text-2'} ${st === 'error' ? 'text-danger' : ''}`}
+              >
+                {i + 1} {shortLabel(c.label)}
+                {CHIP_MARK[st] && ` ${CHIP_MARK[st]}`}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      {f && (
+        <div key={f.id} data-field={f.id} className="flex flex-col gap-1">
+          <label htmlFor={id} className="text-sm text-text-2">
+            {f.label}{' '}
+            {f.required ? <span>(required)</span> : <span>(optional)</span>}
+            {aiMarked && (
+              <span className="ml-2 text-xs text-accent">
+                from your earlier answer
+              </span>
             )}
-            {Object.entries(errors)
-              .filter(([k]) => k === f.id || k.startsWith(`${f.id}.`))
-              .map(([k, m]) => (
-                <p key={k} role="alert" className="text-sm text-danger">
-                  {m}
-                </p>
-              ))}
-          </div>
-        );
-      })}
-      <div className="flex items-center gap-2">
-        <Button type="submit" variant="primary">
-          {submitLabel}
+          </label>
+          <Control
+            f={f}
+            id={id}
+            value={values[f.id]}
+            onChange={(v) => set(f.id, v)}
+          />
+          {f.type === 'color' && <Readout id={f.id} values={values} />}
+          {f.help && <p className="text-xs text-text-3">{f.help}</p>}
+          {f.required && (
+            <label className="flex items-center gap-1 text-xs text-text-2">
+              <input
+                type="checkbox"
+                checked={unsure.has(f.id)}
+                onChange={(e) =>
+                  setUnsure((u) =>
+                    e.target.checked
+                      ? new Set(u).add(f.id)
+                      : new Set([...u].filter((x) => x !== f.id)),
+                  )
+                }
+              />
+              Not sure, help me
+            </label>
+          )}
+          {Object.entries(errors)
+            .filter(([k]) => k === f.id || k.startsWith(`${f.id}.`))
+            .map(([k, m]) => (
+              <p key={k} role="alert" className="text-sm text-danger">
+                {m}
+              </p>
+            ))}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button disabled={step === 0} onClick={() => setStep((n) => n - 1)}>
+          Back
         </Button>
+        {last ? (
+          <Button type="submit" variant="primary">
+            {submitLabel}
+          </Button>
+        ) : (
+          <Button variant="primary" onClick={() => setStep((n) => n + 1)}>
+            Next
+          </Button>
+        )}
         {onDecline && (
           <Button variant="ghost" onClick={onDecline}>
             Answer in chat instead

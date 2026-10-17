@@ -62,7 +62,7 @@ export function ChatPanel({ spec, snap, draft, onDraft }: Props) {
         ref={log}
         role="log"
         aria-live="polite"
-        className="flex flex-1 flex-col gap-3 overflow-auto p-4"
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-4"
       >
         {snap.chat.length === 0 && (
           <p className="text-text-2">
@@ -108,7 +108,7 @@ export function ChatPanel({ spec, snap, draft, onDraft }: Props) {
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-line p-3">
+      <div className="flex max-h-[60%] shrink-0 flex-col gap-2 overflow-auto border-t border-line p-3">
         {permission && (
           <div
             role="alert"

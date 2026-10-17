@@ -27,10 +27,12 @@ export function QuestionList({
               onClick={() => onPick(q.text)}
               className="flex w-full items-start gap-2 text-left text-sm hover:bg-bg-3"
             >
-              <span className={q.blocking ? 'text-danger' : 'text-text-2'}>
+              <span
+                className={`shrink-0 whitespace-nowrap ${q.blocking ? 'text-danger' : 'text-text-2'}`}
+              >
                 {q.blocking ? '● blocking' : '○ optional'}
               </span>
-              <span>{q.text}</span>
+              <span className="min-w-0">{q.text}</span>
             </button>
           </li>
         ))}

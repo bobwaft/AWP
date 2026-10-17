@@ -18,3 +18,17 @@ test('many questions sit in a bounded section with a scrolling list (BUG-014)', 
   expect(section.querySelector('ul')?.className).toContain('overflow-auto');
   expect(screen.getByText('Question 29')).toBeTruthy();
 });
+
+test('the blocking/optional label never wraps (BUG-016)', () => {
+  render(
+    <QuestionList
+      critique={
+        { questions: [{ id: 'a', text: 'Why?', blocking: false }] } as never
+      }
+      onPick={() => {}}
+    />,
+  );
+  const label = screen.getByText('○ optional');
+  expect(label.className).toContain('shrink-0');
+  expect(label.className).toContain('whitespace-nowrap');
+});

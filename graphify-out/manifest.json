@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "BUGS.md": {
-    "mtime": 1792213243.6604266,
-    "seen": 1792213261.690534,
-    "ast_hash": "5ef628bd9cbcb0ab19c661e87c540f36",
+    "mtime": 1792214996.8940876,
+    "seen": 1792215004.0804567,
+    "ast_hash": "cfd229b51f1940c73edec0bf777f5935",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1014,9 +1014,9 @@
     "semantic_hash": ""
   },
   "DESIGN.md": {
-    "mtime": 1792174476.0050294,
-    "seen": 1792188873.077779,
-    "ast_hash": "347d3da4bbb49a615a736182fd6ccdf2",
+    "mtime": 1792214790.3184786,
+    "seen": 1792215004.0805254,
+    "ast_hash": "5f1ca215b3557c9b68d5e9974c33327b",
     "semantic_hash": ""
   },
   "IMPLEMENTATION.md": {
@@ -1026,9 +1026,9 @@
     "semantic_hash": ""
   },
   "MEMORY.md": {
-    "mtime": 1792189170.931804,
-    "seen": 1792189197.8484979,
-    "ast_hash": "4266f4144aa5171a6c5cf0a8e80c54cc",
+    "mtime": 1792214792.4578683,
+    "seen": 1792215004.0805988,
+    "ast_hash": "ff5b4aeea7a1f9eb8dff309ff0d1d73d",
     "semantic_hash": ""
   },
   "PRD.md": {
@@ -1404,15 +1404,15 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/ChatPanel.tsx": {
-    "mtime": 1792174476.0475068,
-    "seen": 1792188873.0770245,
-    "ast_hash": "473431dea1cf24af3f954eb79c270d5b",
+    "mtime": 1792214866.9203887,
+    "seen": 1792215004.0638611,
+    "ast_hash": "6c12c6f12610684dbed99d89e36d9560",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/FormCard.tsx": {
-    "mtime": 1792174476.0485067,
-    "seen": 1792188873.0770376,
-    "ast_hash": "96016e55ffce5eea9b0232afb8a691b6",
+    "mtime": 1792214866.9244118,
+    "seen": 1792215004.0640738,
+    "ast_hash": "584dd356720b8f980836ddd50f762545",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/FormSummaryCard.tsx": {
@@ -1440,9 +1440,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/QuestionList.tsx": {
-    "mtime": 1792212679.6257567,
-    "seen": 1792213261.665596,
-    "ast_hash": "3aeedcbdd7b4c5154b05a77c5504cbab",
+    "mtime": 1792214866.9203887,
+    "seen": 1792215004.064439,
+    "ast_hash": "40538f4838056416046cf226ba653d17",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/ReadinessReticle.tsx": {
@@ -1488,15 +1488,15 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/design-ui.test.tsx": {
-    "mtime": 1792174476.0575376,
-    "seen": 1792188873.0771127,
-    "ast_hash": "55f47308a61d2d2c6901cc2a419cbb2d",
+    "mtime": 1792214896.2130497,
+    "seen": 1792215004.0654256,
+    "ast_hash": "32bd7297865fd16f98784ed32bc6ba1e",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/form-card.test.tsx": {
-    "mtime": 1792174476.0575376,
-    "seen": 1792188873.0771155,
-    "ast_hash": "9815fd6aa44658225496ec5e59082b6b",
+    "mtime": 1792214896.2130497,
+    "seen": 1792215004.0654273,
+    "ast_hash": "fd8cec8e70605b1a597675b7ca32f6e7",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/plan-ui.test.tsx": {
@@ -1962,9 +1962,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/question-list.test.tsx": {
-    "mtime": 1792212679.674524,
-    "seen": 1792213261.667743,
-    "ast_hash": "2ae762197a6344dfb380e88e4cf42ede",
+    "mtime": 1792214908.421898,
+    "seen": 1792215004.0654984,
+    "ast_hash": "68afd116d0e931cfe25bebfebf2af16d",
     "semantic_hash": ""
   }
 }

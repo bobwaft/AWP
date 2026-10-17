@@ -85,3 +85,4 @@
 - The app-data dir is shared across builds; never assume its files have the current shape (`projects.json` from an older build crashed project list/create/open, BUG-007).
 - Engine cwd in dev is `apps/desktop/src-tauri` (3.3 GB `target/`): relative paths resolve there. Project paths must be absolute (`PATH_NOT_ABSOLUTE`), and the dev Run screen defaults to the open project and uses haiku.
 - Window minimum 1100 × 700 is enforced in tauri.conf.json; `html/body/#root` are `overflow: hidden` and scrollbars are themed via `scrollbar-color`.
+- 2026-10-17 decision (owner): forms are stepped, one field per step, with a clickable chip strip (empty / ✓ / ? / !) and Back/Next, like AskUserQuestion. Ctrl+Enter submits from any step; errors jump to the first failing step. DESIGN.md §3.5 updated. Reason: multi-field forms overflowed the input dock (BUG-015).

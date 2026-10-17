@@ -138,9 +138,10 @@ Assumption to validate in dogfooding (about 5 users): the primary user is only m
 1. The agent chooses the input mode per question. **Form** only when the answer has a known shape with 3+ fields (templates or ad-hoc). **`ask_user` with choices** for single questions. **Chat** for open-ended talk. At most one form per interview turn.
 2. The agent prefills from earlier answers. AI-filled values carry a small `from your earlier answer` marker until the user touches them.
 3. When a form arrives, it is announced politely ("AWP is asking for: Feature spec"). Focus moves to its first field only if the user isn't typing in the composer.
+   - Forms are stepped: one field per step. A chip strip at the top lists every field with its state (empty, filled ✓, not sure ?, error !); chips are clickable. Back / Next move between steps; on the last step Next becomes Submit. "Answer in chat instead" and "Ask about this form" stay visible on every step. The dock has a max height; a tall field (longtext, list) scrolls inside it.
 4. Every required field has **"Not sure, help me"**. Choosing it either lets the agent propose a value (shown as a marked suggestion) or records an open question for the critic (blocking if the field fills a required section).
 5. **"Ask about this form"** (a single line under the form) sends a chat message without leaving the form. The agent answers in chat and re-sends the form with the draft intact.
-6. Submit: `Ctrl+Enter` or the button. Errors show inline, and focus goes to the first error. `Esc` never discards a form.
+6. Submit: `Ctrl+Enter` or the button, from any step. Errors show inline, and the form jumps to the first step with an error and focuses it. `Esc` never discards a form.
 7. "Answer in chat instead" returns to the composer. That template isn't offered again during this stage visit unless the user asks for it.
 8. Submitted forms collapse into a summary card. **Edit** reopens the form prefilled from the spec section as it is *now* (hand edits win), and resubmitting shows the spec diff.
 9. If the run stops or crashes while a form is open, the draft stays and the dock offers "Continue this form". On submit it is sent to the next run as structured data.
@@ -229,7 +230,7 @@ Reduced motion: all transforms replaced by 150 ms opacity fades; camera jumps cu
 | `PhaseBarrel` | Vertical list of phases styled as barrel segments with progress; shows `built` (One-shot, untested) distinct from `passed` |
 | `InputDock` | Bottom of the chat column; holds the chat composer or the active form plus "Ask about this form"; "Continue this form" after an interrupted run |
 | `SetupCard` | Tool status (checking / missing / needs sign-in / outdated / waiting / ready / error), command preview, Fix in terminal, Do it manually, detected version + account |
-| `FormCard` | Renders a `request_form` schema (text, longtext, number, boolean, select, multiselect, color, font, file, url, list); validation, drafts, Submit / Answer in chat instead |
+| `FormCard` | Renders a `request_form` schema (text, longtext, number, boolean, select, multiselect, color, font, file, url, list) one field per step with a chip strip and Back/Next; validation, drafts, Submit / Answer in chat instead |
 | `FormSummaryCard` | Collapsed submitted form in the chat history; Edit reopens it prefilled |
 | `TerminalDrawer` | xterm.js tabs, resize, `` Ctrl+` ``, "Open Claude Code here"; inline variant in Setup |
 | `ThemeSwitch` | System / Dark / Light in Settings → Display |

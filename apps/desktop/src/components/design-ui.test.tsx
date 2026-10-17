@@ -184,15 +184,22 @@ test('design form: contrast readout, font pairing preview and sliders', () => {
       onSubmit={() => {}}
     />,
   );
+  const step = (n: number) =>
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(`^${n}. `) }),
+    );
+  step(2);
   expect(screen.getByText(/Contrast 4\.5:1|Contrast 4\.4:1/)).toBeTruthy();
   expect(screen.getByText(/needs 4\.5:1/)).toBeTruthy();
   fireEvent.change(screen.getByLabelText(/^Text/), {
     target: { value: '#000000' },
   });
   expect(screen.getByText(/meets 4\.5:1/)).toBeTruthy();
+  step(3);
   expect(
     screen.getByText(/The quick brown fox/).getAttribute('style'),
   ).toContain('Georgia');
+  step(4);
   const slider = screen.getByLabelText(/^Radius/) as HTMLInputElement;
   expect(slider.type).toBe('range');
   fireEvent.change(slider, { target: { value: '12' } });

@@ -60,7 +60,7 @@ export function SpecStageView({
   return (
     <div className="flex h-full min-h-0">
       <div
-        className="flex min-h-0 min-w-[360px] flex-col"
+        className="flex min-h-0 min-w-[360px] flex-col overflow-hidden"
         style={{ width: `${split}%` }}
       >
         <div className="min-h-0 flex-1">

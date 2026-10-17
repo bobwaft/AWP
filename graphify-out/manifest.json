@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "BUGS.md": {
-    "mtime": 1792189179.0681973,
-    "seen": 1792189197.8480947,
-    "ast_hash": "c62807d6bdb302706da93054daf4c6f6",
+    "mtime": 1792213243.6604266,
+    "seen": 1792213261.690534,
+    "ast_hash": "5ef628bd9cbcb0ab19c661e87c540f36",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "IMPLEMENTATION.md": {
-    "mtime": 1792174476.0050294,
-    "seen": 1792188873.0777817,
-    "ast_hash": "6d91736a62e92d3f7462e0eba1e95d25",
+    "mtime": 1792212672.3138013,
+    "seen": 1792213261.6906843,
+    "ast_hash": "c1e1c360876f5f3bf4f5fc9ccd6a9eca",
     "semantic_hash": ""
   },
   "MEMORY.md": {
@@ -1440,9 +1440,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/QuestionList.tsx": {
-    "mtime": 1792174476.05151,
-    "seen": 1792188873.0770614,
-    "ast_hash": "8a75154423bf8b4250afa395557061fd",
+    "mtime": 1792212679.6257567,
+    "seen": 1792213261.665596,
+    "ast_hash": "3aeedcbdd7b4c5154b05a77c5504cbab",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/ReadinessReticle.tsx": {
@@ -1566,9 +1566,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/IdeationView.tsx": {
-    "mtime": 1792174476.0685377,
-    "seen": 1792188873.077187,
-    "ast_hash": "a24b502b055bbdd8be344ba7e21ce18c",
+    "mtime": 1792212679.724802,
+    "seen": 1792213261.6699119,
+    "ast_hash": "12aedda483427a447e71436225bbc22b",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/PlanningView.tsx": {
@@ -1959,6 +1959,12 @@
     "mtime": 1792184898.9347649,
     "seen": 1792188873.0774658,
     "ast_hash": "abc164944062282919290df32056cb03",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/components/question-list.test.tsx": {
+    "mtime": 1792212679.674524,
+    "seen": 1792213261.667743,
+    "ast_hash": "2ae762197a6344dfb380e88e4cf42ede",
     "semantic_hash": ""
   }
 }

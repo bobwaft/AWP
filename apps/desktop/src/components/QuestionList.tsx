@@ -11,7 +11,7 @@ export function QuestionList({
   return (
     <section
       aria-label="Open questions"
-      className="flex flex-col gap-1 border-t border-line p-3"
+      className="flex max-h-[35%] min-h-24 shrink-0 flex-col gap-1 border-t border-line p-3"
     >
       <h2 className="hud">Open questions ({qs.length})</h2>
       {qs.length === 0 && (
@@ -19,7 +19,7 @@ export function QuestionList({
           {critique ? 'None. Nothing is blocking.' : 'Not reviewed yet.'}
         </p>
       )}
-      <ul className="flex flex-col gap-1">
+      <ul className="flex min-h-0 flex-col gap-1 overflow-auto">
         {qs.map((q) => (
           <li key={q.id}>
             <button

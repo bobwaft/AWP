@@ -23,7 +23,7 @@
 - Actual: reads "engine version unavailable". Setup stays on "Checking…" forever and the dashboard shows "No projects yet".
 - Root cause: `engine_request` (Rust) serializes a missing `params` as `"params": null`; every param-less method schema is `undefined | {}`, so the engine answers INVALID_PARAMS for `ping`, `version`, `project.list`, `setup.detect`, `setup.freshEnv`, `design.refs`, `plan.phases`. Unit tests never cross the Rust bridge, so nothing caught it. The UI swallows the errors (`catch {}`), so nothing is shown.
 - Severity: critical (blocks the whole app)
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-004
 - Phase: 2
@@ -31,7 +31,7 @@
 - Expected: the supervisor restarts the engine, a toast tells the user, and the app recovers.
 - Actual: restart and toast work (verified). But in dev the engine runs as `bun.exe`, not `awp-engine` (so the "You test" step names a process that does not exist in dev), and after a restart the UI never re-fetches (Setup/projects stay stale until reload).
 - Severity: medium
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-005
 - Phase: 3
@@ -39,7 +39,7 @@
 - Expected: events stream in promptly.
 - Actual: ~12 s and ~$0.15 per run. Folder defaults to `.`, which is the engine cwd `apps/desktop/src-tauri` (3.3 GB `target/`), and no model is passed, so the CLI default (Opus) is used.
 - Severity: medium
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-006
 - Phase: 3
@@ -47,7 +47,7 @@
 - Expected: the run ends within 5 s.
 - Actual: Stop is silently ignored and the run completes (~12 s). `useRun.stop()` returns early while `runId` is still null (before `agent.run` resolves). Stop after the first event works (~0.5 s).
 - Severity: high
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-007
 - Phase: 5
@@ -63,7 +63,7 @@
 - Expected: no page-level scrollbar.
 - Actual: a full-height window scrollbar is always shown. The collapsed drawer's `h-7` button sits inside a section with `border-t`, overhanging the viewport by <1 px; `html/body` don't clip.
 - Severity: medium (visible on every screen)
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-009
 - Phase: 6
@@ -71,7 +71,7 @@
 - Expected: editor matches DESIGN.md tokens in dark and light.
 - Actual: CodeMirror uses its default light styling: white line-number gutter, grey active-line bar on the dark panel.
 - Severity: medium
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-010
 - Phase: 4
@@ -79,7 +79,7 @@
 - Expected: DESIGN.md §150: minimum window 1100 × 700; layouts fit.
 - Actual: no `minWidth/minHeight` in tauri.conf.json; Setup's fixed 28 rem column + terminal pane overflow: token input spills outside its card, "Save token" is off-screen, horizontal scrollbar.
 - Severity: medium
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-011
 - Phase: 1
@@ -87,7 +87,7 @@
 - Expected: scrollbars follow the theme.
 - Actual: unstyled Windows scrollbars (light grey with arrow buttons) on the dark UI.
 - Severity: low
-- Status: fixed (verified in the live app); awaiting re-test
+- Status: closed (re-tested 2026-10-17: pass)
 
 ## BUG-012
 - Phase: 2
@@ -104,3 +104,11 @@
 - Actual: the path resolved against the engine cwd (`apps/desktop/src-tauri` in dev) and the project was scaffolded inside the repo.
 - Severity: medium
 - Status: fixed (engine refuses with `PATH_NOT_ABSOLUTE`; Create disabled for non-absolute paths); awaiting re-test
+
+## BUG-014
+- Phase: 6
+- Steps: Ideation; run until the critic returns several open questions.
+- Expected: the open-questions list stays in its area and scrolls; chat, input and Complete stay usable.
+- Actual: the list covers other content, so forms and the gate can't be tested. `QuestionList` has no max height or overflow, and the chat column doesn't clip, so a long list spills over the chat, input and the panes below.
+- Severity: high (blocks Phase 6 tests)
+- Status: fixed (scrollable, height-capped list; column clips); awaiting re-test

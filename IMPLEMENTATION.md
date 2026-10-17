@@ -57,8 +57,8 @@
 **Done when:** `bun install && bun run dev` opens a window titled "AWP"; `bun run check` passes; CI green on both OSes.
 
 **You test**
-- [ ] App window opens on your Windows machine.
-- [ ] `bun run check` passes locally.
+- [x] App window opens on your Windows machine.
+- [x] `bun run check` passes locally.
 
 ## Phase 1 — App shell + design system
 **Goal:** the 2D frame of the app, matching DESIGN.md.
@@ -74,11 +74,11 @@
 **Done when:** all views render with mock data; keyboard navigation works; focus rings visible; contrast meets AA.
 
 **You test**
-- [ ] Stage rail switches stages by click and keys 1–0.
-- [ ] Hotspots on the 2D rifle open the matching stage.
-- [ ] Command palette opens and jumps to a stage.
-- [ ] The look matches DESIGN.md (colors, type, spacing).
-- [ ] Switch System / Dark / Light; both themes read well, and System follows your Windows setting.
+- [x] Stage rail switches stages by click and keys 1–0.
+- [x] Hotspots on the 2D rifle open the matching stage.
+- [x] Command palette opens and jumps to a stage.
+- [x] The look matches DESIGN.md (colors, type, spacing).
+- [x] Switch System / Dark / Light; both themes read well, and System follows your Windows setting.
 
 ## Phase 2 — Engine sidecar + protocol
 **Goal:** UI talks to a bundled TypeScript engine through Rust.
@@ -92,8 +92,8 @@
 **Done when:** UI shows engine version from a real round-trip; killing the engine process triggers restart and a toast.
 
 **You test**
-- [ ] Settings → About shows the engine version.
-- [ ] Kill `awp-engine` in Task Manager: app recovers and tells you.
+- [x] Settings → About shows the engine version.
+- [x] Kill `awp-engine` in Task Manager: app recovers and tells you.
 
 ## Phase 3 — Claude adapter + run stream
 **Goal:** run a prompt through Claude Code and watch it live.
@@ -108,8 +108,8 @@
 **Done when:** a dev prompt runs end-to-end on Claude Code and on FakeAdapter; Stop ends the run within 5 s.
 
 **You test**
-- [ ] Run "list the files in this folder" with Claude Code; events stream in.
-- [ ] Stop mid-run works.
+- [x] Run "list the files in this folder" with Claude Code; events stream in.
+- [x] Stop mid-run works.
 
 ## Phase 4 — Setup stage
 **Goal:** the user connects Claude Code and accounts, using AWP's built-in terminal.
@@ -127,11 +127,11 @@
 **Done when:** detection is correct on Windows and macOS; tokens survive restart and never appear in any file.
 
 **You test**
-- [ ] Setup shows the right status for each tool you have.
-- [ ] Rename `claude` temporarily: Setup reports it missing; "Fix in terminal" types the install command in a new tab; after it runs, the card turns ready **without restarting AWP**.
-- [ ] Sign out of Claude Code, then sign in via Fix in terminal (`/login`): the card updates while the session is still open and shows your account.
-- [ ] Open the terminal with `` Ctrl+` `` on any screen; run an interactive program (e.g. `claude`) and resize the drawer.
-- [ ] Add a Figma token, restart AWP, it is still connected; search your disk/repo for it — not found.
+- [x] Setup shows the right status for each tool you have.
+- [x] Rename `claude` temporarily: Setup reports it missing; "Fix in terminal" types the install command in a new tab; after it runs, the card turns ready **without restarting AWP**.
+- [x] Sign out of Claude Code, then sign in via Fix in terminal (`/login`): the card updates while the session is still open and shows your account.
+- [x] Open the terminal with `` Ctrl+` `` on any screen; run an interactive program (e.g. `claude`) and resize the drawer.
+- [x] Add a Figma token, restart AWP, it is still connected; search your disk/repo for it — not found.
 
 ## Phase 5 — Projects, git, state machine
 **Goal:** create and reopen projects with persistent state.
@@ -145,8 +145,8 @@
 **Done when:** state survives restart; stale propagation unit-tested; git ops work in temp repos in tests.
 
 **You test**
-- [ ] Create a project; folder has the expected files.
-- [ ] Quit and reopen: you land on the same stage.
+- [x] Create a project; folder has the expected files.
+- [x] Quit and reopen: you land on the same stage.
 
 ## Phase 6 — Spec engine + Ideation
 **Goal:** the interview → synthesize → critique loop, producing PRD.md.
@@ -164,11 +164,11 @@
 **Done when:** a full Ideation run on FakeAdapter reaches zero blocking questions and completes in tests; the round cap is tested; a real run produces a usable PRD.md.
 
 **You test**
-- [ ] Describe a small app; AWP asks focused questions with clickable choices.
-- [ ] PRD.md updates live; your manual edits are kept.
+- [x] Describe a small app; AWP asks focused questions with clickable choices.
+- [x] PRD.md updates live; your manual edits are kept.
 - [ ] Complete stage is disabled while blocking questions exist.
 - [ ] After 3 critic rounds with blockers left, you can complete with a reason.
-- [ ] AWP asks for a feature as a form, prefilled from what you said; you fill it, it lands in PRD.md.
+- [x] AWP asks for a feature as a form, prefilled from what you said; you fill it, it lands in PRD.md.
 - [ ] Mark a required field "Not sure": it shows up as an open question. Ask a question about the form: the draft survives.
 - [ ] "Answer in chat instead" works, and AWP doesn't immediately re-offer the same form. A half-filled form survives switching stages.
 

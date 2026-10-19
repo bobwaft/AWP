@@ -1329,7 +1329,9 @@
       "summary": "Recommends project-specific automations (read-only). Used by AWP's discovery step, not suggested to users.",
       "source": {
         "repo": "https://github.com/anthropics/claude-plugins-official",
-        "sha": "ea10b213686c90bb1984b2016937310e05336cf3"
+        "sha": "ea10b213686c90bb1984b2016937310e05336cf3",
+        "path": "plugins/claude-code-setup",
+        "tree": "e99b04c69709c7e3e07a0d9cd4e7897c9dd2010b"
       },
       "license": "Apache-2.0",
       "verified": true,

@@ -3,6 +3,7 @@ import { AdapterId, AgentEvent } from './agent';
 import { DesignRefs } from './design';
 import { Phase, VerifyCommands } from './planning';
 import { ProjectState, ProjectSummary, StageId } from './project';
+import { InstallPreview, InstallResult, SuggestionsState } from './registry';
 import { SetupDetectResult } from './setup';
 import { FormValues, SpecSnapshot } from './spec';
 
@@ -191,6 +192,41 @@ export const methods = {
     params: z.object({ phases: z.array(Phase) }),
     result: z.object({ errors: z.array(z.string()) }),
   },
+  'registry.suggest': {
+    params: z.object({ refresh: z.boolean().optional() }).or(z.undefined()),
+    result: SuggestionsState,
+  },
+  'registry.decide': {
+    params: z.object({
+      id: z.string(),
+      decision: z.enum(['approve', 'reject', 'undo']),
+      reason: z.string().optional(),
+      variant: z.string().optional(),
+    }),
+    result: SuggestionsState,
+  },
+  'registry.preview': {
+    params: z.object({ id: z.string() }),
+    result: InstallPreview,
+  },
+  'registry.install': {
+    params: z.object({
+      id: z.string(),
+      previewId: z.string().optional(),
+      confirmScripts: z.boolean().optional(),
+      acknowledged: z.boolean().optional(),
+    }),
+    result: z.object({ result: InstallResult, state: SuggestionsState }),
+  },
+  'registry.addCustom': {
+    params: z.object({
+      repoUrl: z.string().optional(),
+      sha: z.string().optional(),
+      path: z.string().optional(),
+      localPath: z.string().optional(),
+    }),
+    result: SuggestionsState,
+  },
   'agent.run': {
     params: z.object({
       prompt: z.string().min(1),
@@ -218,6 +254,7 @@ export const notifications = {
   'state.changed': ProjectState,
   'spec.changed': z.object({ file: z.string() }),
   'spec.state': SpecSnapshot,
+  'registry.state': SuggestionsState,
   'question.asked': z.unknown(),
   'form.requested': z.unknown(),
   'permission.requested': z.unknown(),

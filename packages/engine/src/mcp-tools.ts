@@ -3,6 +3,7 @@ import {
   FormRequest,
   PhasePlanInput,
   StackOptionsInput,
+  SuggestionsInput,
   ThemesInput,
 } from '@awp/protocol';
 import { z } from 'zod';
@@ -57,8 +58,9 @@ export const TOOLS = {
     input: PhasePlanInput,
   },
   submit_suggestions: {
-    description: 'Connectors: registry suggestions.',
-    input: z.unknown(),
+    description:
+      'Connectors: your final list of suggestions. Registry items by id, anything else by name, kind, category and why (plus repoUrl and installCommand only when sure). Call once.',
+    input: SuggestionsInput,
   },
   report_phase_result: {
     description: 'Phase runner: what was built.',

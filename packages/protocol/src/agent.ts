@@ -54,6 +54,9 @@ export const RunRequest = z.object({
   systemAppend: z.string().optional(),
   model: z.string().optional(),
   allowedTools: z.array(z.string()).optional(),
+  disallowedTools: z.array(z.string()).optional(),
+  /** Plugins loaded for this run only (`--plugin-dir`). */
+  pluginDirs: z.array(z.string()).optional(),
   mcpConfigPath: z.string().optional(),
   env: z.record(z.string(), z.string()).optional(),
   maxTurns: z.number().int().positive().optional(),

@@ -211,7 +211,7 @@
 - [x] `registry/registry.json` schema + seed entries (each with source, pinned SHA, license, verified by the owner).
 - [x] Fetch + cache + bundled fallback; install by pinned SHA with tree-hash check and file preview.
 - [x] Writers: `.claude/skills/`, `.mcp.json` (with `${VAR}`).
-- [ ] On Planning completion, run `claude-code-setup`'s recommender (headless) against the specs and scaffold; parse its recommendations into registry-shaped items.
+- [x] On Planning completion, run `claude-code-setup`'s recommender (headless) against the specs and scaffold; parse its recommendations into registry-shaped items.
 - [x] Merge recommender output with registry matches: registry items verified, recommender-only items "unverified"; at most one suggestion per overlap group by default.
 - [ ] `submit_suggestions` tool + `connectors.suggester` prompt; `SuggestionCard` approve/reject; account prompts for items needing tokens.
 - [ ] `docs/TOOLING.md` generation; AWP-native skills (`awp-interview`, `awp-phase-runner`, `awp-test-checklist`, `awp-security-review`) in `registry/skills/`.

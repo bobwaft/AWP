@@ -135,6 +135,14 @@ test('caveman never runs in interview, design or planning stages', () => {
   );
 });
 
+test('the discovery plugin is pinned to a commit, a folder and its git tree hash', () => {
+  expect(item('claude-code-setup').source).toMatchObject({
+    sha: 'ea10b213686c90bb1984b2016937310e05336cf3',
+    path: 'plugins/claude-code-setup',
+    tree: 'e99b04c69709c7e3e07a0d9cd4e7897c9dd2010b',
+  });
+});
+
 test('internal items (used by AWP itself) are tagged so they are not suggested', () => {
   expect(item('claude-code-setup').tags).toContain('internal');
 });

@@ -398,7 +398,13 @@ test('agent tool args are validated and unknown tools refused', async () => {
         code: 'TOOL_UNKNOWN',
       });
       await expect(
-        s.callTool(req.runId, 'submit_suggestions', {}),
+        s.callTool(req.runId, 'report_phase_result', {}),
+      ).rejects.toMatchObject({ code: 'NOT_AVAILABLE' });
+      // valid suggestions from a spec-stage run are refused: only the Connectors discovery run submits them
+      await expect(
+        s.callTool(req.runId, 'submit_suggestions', {
+          suggestions: [{ id: 'context7', why: 'x' }],
+        }),
       ).rejects.toMatchObject({ code: 'NOT_AVAILABLE' });
       await expect(
         s.callTool('missing', 'remember', { fact: 'x' }),

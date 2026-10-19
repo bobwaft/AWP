@@ -243,3 +243,75 @@ export const Suggestion = z.object({
   at: z.string(),
 });
 export type Suggestion = z.infer<typeof Suggestion>;
+
+// ---- what the UI sees ----
+
+export const DiscoveryInfo = z.object({
+  status: z.enum(['idle', 'running', 'done', 'failed']),
+  source: z.enum(['tool', 'markdown', 'registry-only']).optional(),
+  at: z.string().optional(),
+  note: z.string().optional(),
+});
+export type DiscoveryInfo = z.infer<typeof DiscoveryInfo>;
+
+export const LicenseView = z.object({
+  status: z.enum(['ok', 'review', 'blocked']),
+  note: z.string(),
+});
+
+/** A stored suggestion plus everything the card needs. */
+export const SuggestionView = Suggestion.extend({
+  item: RegistryItem,
+  license: LicenseView,
+  /** Required secrets that are not stored yet: Approve turns into "Connect account". */
+  missingSecrets: z.array(
+    z.object({
+      name: z.string(),
+      secretKey: z.string(),
+      help: z.string().optional(),
+    }),
+  ),
+  /** What installing does, so the card can say it before the user approves. */
+  action: z.enum(['preview', 'mcp', 'plugin', 'installer', 'doc']),
+  /** The command shown on the card for installer and doc items. */
+  command: z.string().optional(),
+  /** Plugins: Claude Code installs the marketplace's latest commit. */
+  notPinned: z.boolean(),
+});
+export type SuggestionView = z.infer<typeof SuggestionView>;
+
+export const SuggestionsState = z.object({
+  discovery: DiscoveryInfo,
+  items: z.array(SuggestionView),
+});
+export type SuggestionsState = z.infer<typeof SuggestionsState>;
+
+export const InstallPreview = z.object({
+  id: z.string(),
+  previewId: z.string(),
+  repo: z.string().optional(),
+  sha: z.string().optional(),
+  tree: z.string(),
+  license: z.string(),
+  /** Where the files will go, relative to the project. */
+  target: z.string(),
+  files: z.array(
+    z.object({
+      path: z.string(),
+      size: z.number(),
+      mode: z.string(),
+      flags: z.array(z.string()),
+    }),
+  ),
+  skillMd: z.string(),
+  scripts: z.array(z.object({ path: z.string(), text: z.string() })),
+  needsScriptConfirm: z.boolean(),
+});
+export type InstallPreview = z.infer<typeof InstallPreview>;
+
+export const InstallResult = z.object({
+  status: z.enum(['installed', 'recorded']),
+  output: z.string().optional(),
+  note: z.string().optional(),
+});
+export type InstallResult = z.infer<typeof InstallResult>;

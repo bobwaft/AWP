@@ -5,6 +5,7 @@ import stackConstraints from '../forms/stack_constraints.json';
 import designSections from '../schemas/design.sections.json';
 import planningSections from '../schemas/planning.sections.json';
 import prdSections from '../schemas/prd.sections.json';
+import connectorsSuggester from './library/connectors.suggester';
 import designCritic from './library/design.critic';
 import designInterviewer from './library/design.interviewer';
 import designThemer from './library/design.themer';
@@ -20,6 +21,7 @@ export const name = '@awp/prompts';
 export { type Prompt, parsePrompt, render };
 
 const LIBRARY: Record<string, string> = {
+  'connectors.suggester': connectorsSuggester,
   'ideation.interviewer': ideationInterviewer,
   'ideation.synthesizer': ideationSynthesizer,
   'ideation.critic': ideationCritic,

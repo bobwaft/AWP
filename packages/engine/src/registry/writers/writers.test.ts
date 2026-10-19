@@ -107,14 +107,17 @@ test('only ${VAR} references reach the file; a known secret value never does', a
     'MCP_ENTRY_INVALID',
   );
   // defense in depth: a secret value that sneaks into an otherwise valid entry is caught
-  const sneaky = { type: 'http' as const, url: 'https://x.test/mcp?k=hunter2' };
+  const sneaky = {
+    type: 'http' as const,
+    url: 'https://x.test/mcp?k=hunter2secret',
+  };
   expect(
     await code(
       writeMcpEntry({
         root: r,
         name: 'm3',
         entry: sneaky,
-        secrets: ['hunter2'],
+        secrets: ['hunter2secret'],
       }),
     ),
   ).toBe('SECRET_IN_CONFIG');

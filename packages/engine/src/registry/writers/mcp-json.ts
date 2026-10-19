@@ -4,6 +4,7 @@ import { McpEntry } from '@awp/protocol';
 import { EngineError } from '../../errors';
 
 const NAME = /^[A-Za-z0-9][\w.-]*$/;
+const MIN_SECRET = 8;
 
 export type McpWrite = {
   /** Project root; the file is `<root>/.mcp.json`. */
@@ -72,8 +73,9 @@ export async function writeMcpEntry(w: McpWrite): Promise<void> {
   servers[w.name] = entry;
 
   const text = `${JSON.stringify(doc, null, 2)}\n`;
+  // Only values long enough to be real secrets: a 1-3 character value would match ordinary text.
   for (const s of w.secrets ?? [])
-    if (s && text.includes(s))
+    if (s.length >= MIN_SECRET && text.includes(s))
       throw new EngineError(
         'SECRET_IN_CONFIG',
         'A secret value would have been written into .mcp.json.',

@@ -20,6 +20,11 @@ export type SpecServiceOpts = {
 export class SpecService {
   private sessions = new Map<string, SpecSession>();
   private byRun = new Map<string, SpecSession>();
+  /** Tool handlers for runs that are not spec sessions (the Connectors discovery run). */
+  private sinks = new Map<
+    string,
+    (name: string, args: unknown) => Promise<unknown>
+  >();
 
   constructor(
     private projects: ProjectService,
@@ -34,6 +39,25 @@ export class SpecService {
           .then((s) => s.refreshReadiness())
           .catch(() => {});
     };
+  }
+
+  /** Routes this run's tool calls to `fn`; returns the unregister function. */
+  registerSink(
+    runId: string,
+    fn: (name: string, args: unknown) => Promise<unknown>,
+  ): () => void {
+    this.sinks.set(runId, fn);
+    return () => void this.sinks.delete(runId);
+  }
+
+  get mcp() {
+    return this.opts.mcp;
+  }
+  get adapter() {
+    return this.opts.adapter;
+  }
+  get model() {
+    return this.opts.model;
   }
 
   async session(stage: StageId): Promise<SpecSession> {
@@ -132,6 +156,8 @@ export class SpecService {
   async callTool(runId: string, name: string, args: unknown): Promise<unknown> {
     if (!isToolName(name))
       throw new EngineError('TOOL_UNKNOWN', `No tool ${name}`);
+    const sink = this.sinks.get(runId);
+    if (sink) return sink(name, args);
     const session = this.byRun.get(runId);
     if (!session)
       throw new EngineError('RUN_UNKNOWN', 'No spec session for this run');

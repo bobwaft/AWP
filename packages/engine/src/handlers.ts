@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -6,11 +7,16 @@ import {
   type Phase,
   parsePhasesMd,
   type StageId,
+  SuggestionsInput,
   type VerifyCommands,
   validatePhases,
 } from '@awp/protocol';
 import pkg from '../package.json';
+import { EngineError } from './errors';
 import { ProjectService } from './project';
+import { loadRegistry } from './registry/load';
+import { ensurePluginDir } from './registry/plugin-cache';
+import { RegistryService } from './registry/service';
 import { type AdapterFactory, type Notify, RunManager } from './runs';
 import type { Handlers } from './server';
 import { detectTools, freshEnv } from './setup';
@@ -23,6 +29,8 @@ export type HandlerOpts = {
   withMcp?: boolean;
   /** Reads a keychain secret via the Rust core (see outbound.ts). */
   getSecret?: (key: string) => Promise<string | null>;
+  /** Tests: replaces fetching the recommender plugin. */
+  ensurePlugin?: () => Promise<string | null>;
 };
 
 export function createHandlers(
@@ -61,6 +69,91 @@ export function createHandlers(
     })();
     return spec;
   };
+
+  // Connectors: discovery, decisions and installs (one service for the process; state is per project).
+  const registryFile = () =>
+    loadRegistry({
+      dataDir,
+      fetchRemote: process.env.AWP_REGISTRY_URL
+        ? async () => {
+            const r = await fetch(process.env.AWP_REGISTRY_URL as string, {
+              signal: AbortSignal.timeout(8000),
+            });
+            if (!r.ok) throw new Error(`registry fetch failed: ${r.status}`);
+            return r.json();
+          }
+        : undefined,
+    }).then((r) => r.registry);
+  const readDoc = (name: string) =>
+    readFile(join(projects.root, 'docs', name), 'utf8').catch(() => '');
+  let registrySvc: RegistryService | undefined;
+  const getRegistry = () => {
+    registrySvc ??= new RegistryService({
+      root: () => projects.root,
+      cacheDir: join(dataDir, 'registry-git'),
+      notify,
+      registry: registryFile,
+      readSpecs: async () => ({
+        prd: await readDoc('PRD.md'),
+        design: await readDoc('DESIGN.md'),
+        architecture: await readDoc('ARCHITECTURE.md'),
+      }),
+      ensurePlugin:
+        opts.ensurePlugin ??
+        (async () => {
+          const item = (await registryFile()).items.find(
+            (i) => i.id === 'claude-code-setup',
+          );
+          return item
+            ? ensurePluginDir({ dataDir, source: item.source })
+            : null;
+        }),
+      getSecret: opts.getSecret,
+      runAgent: async (req) => {
+        const spec = await getSpec();
+        const runId = randomUUID();
+        let submitted: SuggestionsInput | null = null;
+        const off = spec.registerSink(runId, async (name, args) => {
+          if (name !== 'submit_suggestions')
+            throw new EngineError(
+              'NOT_AVAILABLE',
+              `${name} is not available during discovery`,
+            );
+          const p = SuggestionsInput.safeParse(args);
+          if (!p.success)
+            throw new EngineError(
+              'TOOL_ARGS_INVALID',
+              p.error.issues
+                .map((i) => `${i.path.join('.')}: ${i.message}`)
+                .join('; '),
+            );
+          submitted = p.data;
+          return { ok: true, count: p.data.suggestions.length };
+        });
+        try {
+          const mcp = await spec.mcp?.(runId, { figma: false });
+          const { done } = runs.exec({
+            adapter: spec.adapter,
+            runId,
+            cwd: projects.root,
+            prompt: req.prompt,
+            model: spec.model ?? 'sonnet', // dev default until routing (Phase 10)
+            allowedTools: req.allowedTools,
+            disallowedTools: req.disallowedTools,
+            pluginDirs: req.pluginDirs,
+            mcpConfigPath: mcp?.path,
+            env: mcp?.env,
+            maxTurns: 30,
+          });
+          const out = await done;
+          return { status: out.status, text: out.text, submitted };
+        } finally {
+          off();
+        }
+      },
+    });
+    return registrySvc;
+  };
   const owner = async <K extends 'question' | 'form' | 'permission'>(
     kind: K,
     id: string,
@@ -86,7 +179,22 @@ export function createHandlers(
         overrideReason?: string;
       };
       await (await getSpec()).checkGate(stage, overrideReason);
-      return projects.complete(stage, overrideReason);
+      if (stage === 'connectors') {
+        const problem = await getRegistry().gateProblem();
+        if (problem && !overrideReason?.trim())
+          throw new EngineError(
+            'GATE_BLOCKED',
+            problem,
+            'Install or undo the approved items first.',
+          );
+      }
+      const next = await projects.complete(stage, overrideReason);
+      // Planning is the last spec stage: discovery of tools, skills and MCPs starts in the background.
+      if (stage === 'planning')
+        void getRegistry()
+          .beginDiscovery()
+          .catch(() => {});
+      return next;
     },
     'stage.reopen': (p) => projects.reopen((p as { stage: StageId }).stage),
     'spec.get': async (p) =>
@@ -214,6 +322,27 @@ export function createHandlers(
       );
       return 'ok';
     },
+    'registry.suggest': (p) =>
+      getRegistry().suggest((p as { refresh?: boolean } | undefined)?.refresh),
+    'registry.decide': (p) =>
+      getRegistry().decide(
+        p as {
+          id: string;
+          decision: 'approve' | 'reject' | 'undo';
+          reason?: string;
+          variant?: string;
+        },
+      ),
+    'registry.preview': (p) => getRegistry().preview((p as { id: string }).id),
+    'registry.install': (p) =>
+      getRegistry().install(
+        p as {
+          id: string;
+          previewId?: string;
+          confirmScripts?: boolean;
+          acknowledged?: boolean;
+        },
+      ),
     'agent.run': (p) => ({
       runId: runs.start(p as Parameters<RunManager['start']>[0]),
     }),

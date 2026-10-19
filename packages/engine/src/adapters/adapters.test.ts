@@ -60,6 +60,26 @@ test('parser ignores garbage lines', () => {
   expect(createClaudeParser()('not json')).toEqual([]);
 });
 
+test('buildArgs passes plugin dirs and disallowed tools without swallowing the prompt', () => {
+  const a = buildArgs({
+    runId: 'r',
+    cwd: '/x',
+    prompt: 'go',
+    allowedTools: ['Read', 'Glob'],
+    disallowedTools: ['Bash', 'Write', 'Edit'],
+    pluginDirs: ['/p/one', '/p/two'],
+  });
+  expect(a.slice(-2)).toEqual(['--', 'go']);
+  const at = (flag: string) => a.indexOf(flag);
+  expect(
+    a.slice(at('--disallowedTools') + 1, at('--disallowedTools') + 4),
+  ).toEqual(['Bash', 'Write', 'Edit']);
+  // --plugin-dir is repeated once per directory
+  expect(a.filter((x) => x === '--plugin-dir').length).toBe(2);
+  expect(a[a.indexOf('/p/one') - 1]).toBe('--plugin-dir');
+  expect(a[a.indexOf('/p/two') - 1]).toBe('--plugin-dir');
+});
+
 test('buildArgs puts prompt after -- and includes options', () => {
   const a = buildArgs(
     {

@@ -1,6 +1,6 @@
 # AWP — Registry seed list
 
-**Status:** draft v0.1 (2026-10-15). Researched by Claude, **not yet verified by the owner**. Every entry needs its source, license and pinned SHA checked before it goes into `registry/registry.json` (Phase 9).
+**Status:** v0.2 (2026-10-19). Researched by Claude; **owner-verified 2026-10-19** for the entries marked approved below (serena and claude-mem not approved). G10 additions owner-approved 2026-10-19. Every entry needs its source, license and pinned SHA checked before it goes into `registry/registry.json` (Phase 9).
 **Source of data:** each repo's README and LICENSE, plus authenticated `gh api` on 2026-10-15. Short SHAs appear in the group tables; full SHAs, stars and push dates are in [Pinned metadata](#pinned-metadata).
 
 How this list is used (PRD §5.5):
@@ -34,13 +34,13 @@ Overlap: all three give the agent a map of the code so it reads less.
 |---|---|---|---|---|---|---|---|
 | `graphify` | skill + CLI | Local tree-sitter knowledge graph of code; query/path/explain | `uv tool install graphifyy` then `graphify install --project` | Apache-2.0 | 10130e79 (branch `v8`) | Python 3.10+, uv. Code graph needs no LLM; docs/media pass uses the model | **Default** |
 | `understand-anything` | plugin | Multi-agent knowledge graph + browser dashboard | `/plugin marketplace add Egonex-AI/Understand-Anything` | MIT | f2d0164f | First `/understand` is token-heavy on large repos; Node ≥ 18 for the dashboard | Alt: user wants a visual dashboard |
-| `serena` | mcp | Semantic retrieval and **editing** via language servers (40+ languages) | `uv tool install -p 3.13 serena-agent`, `serena init`; README says don't use the marketplace | GPL-3.0-or-later (app); MIT (SolidLSP) | d9e4c796 | GPL: suggest only as a user-installed tool, **never bundle**. Windows support unverified | Alt: large typed codebases |
+| `serena` | mcp | Semantic retrieval and **editing** via language servers (40+ languages) | `uv tool install -p 3.13 serena-agent`, `serena init`; README says don't use the marketplace | GPL-3.0-or-later (app); MIT (SolidLSP) | d9e4c796 | GPL: suggest only as a user-installed tool, **never bundle**. Windows not mentioned in README; open Windows issues #1022, #1182 | **Not approved by owner (2026-10-19)** |
 
 ### G2 · Library docs lookup — *pick one*
 
 | ID | Kind | Purpose | Install | License | SHA | Flags | Default |
 |---|---|---|---|---|---|---|---|
-| `context7` | mcp | Version-specific library/API docs on demand | `.mcp.json` entry (also in claude-plugins-official external plugins) | MIT | 1658cc42 | Optional API key (unverified) | **Default** for any stack with third-party libraries |
+| `context7` | mcp | Version-specific library/API docs on demand | `.mcp.json` entry (also in claude-plugins-official external plugins) | MIT | 1658cc42 | Works without a key; a free key raises rate limits, sent as header `Authorization: Bearer <key>` (no documented env var for a committed `.mcp.json`) | **Default** for any stack with third-party libraries |
 
 ### G3 · Token saving and output style — *complementary* (with care)
 Overlap: both cut tokens, but in different places. ponytail cuts **code** (smallest change); caveman cuts **prose** (terse replies, trimmed tool output).
@@ -55,7 +55,7 @@ Overlap with AWP: AWP already keeps `MEMORY.md` via its `remember` tool.
 
 | ID | Kind | Purpose | Install | License | SHA | Flags | Default |
 |---|---|---|---|---|---|---|---|
-| `claude-mem` | plugin (hooks + worker + MCP search) | Captures and compresses tool-use observations, injects them into later sessions | `/plugin marketplace add thedotmack/claude-mem`, `/plugin install claude-mem` | Apache-2.0 | b8fc2ef9 | Installer nudges toward a hosted observer account (trial, then paid). AWP installs with `CLAUDE_MEM_ONLINE_OPTIN=false` / local provider only | Off; suggest for long projects (8+ phases) |
+| `claude-mem` | plugin (hooks + worker + MCP search) | Captures and compresses tool-use observations, injects them into later sessions | `/plugin marketplace add thedotmack/claude-mem`, `/plugin install claude-mem` | Apache-2.0 | b8fc2ef9 | Installer nudges toward a hosted observer account (trial, then paid). AWP installs with `CLAUDE_MEM_ONLINE_OPTIN=false` / local provider only | **Not approved by owner (2026-10-19)** |
 
 ### G5 · Design direction and taste — *pick one*
 Overlap: all four steer the agent away from generic AI-looking UI. They power AWP's Design stage themer and UI phases.
@@ -65,7 +65,7 @@ Overlap: all four steer the agent away from generic AI-looking UI. They power AW
 | `impeccable` | skill + CLI (also a plugin) | 24 `/impeccable` commands, 59 detector rules; design, critique, polish, harden | `npx impeccable install` (Claude Code), `/impeccable init` | Apache-2.0 | 5bf0a069 | Telemetry on by default (accepted; shown on the card; opt-out `npx impeccable telemetry off`). Calls impeccable.style API at design start; installs a UI-edit hook into `.claude/settings.local.json`; downloads an engine binary | **Default** (AWP itself uses it) |
 | `taste-skill` | skill / plugin | Art direction + browser self-check for distinctive sites | `/plugin marketplace add Leonxlnx/taste-skill`, `/plugin install taste-skill@taste-skill` | MIT | f624f37a | Node 22+, Chromium browser. Network for image search (Wikimedia, Openverse, Met) | Alt: marketing / landing sites |
 | `ui-ux-pro-max` | skill / plugin + CLI | Generates design systems (styles, palettes, type, patterns) for web and mobile | `/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill`, `/plugin install ui-ux-pro-max@ui-ux-pro-max-skill` | MIT | 56ea9cf1 | Python 3 (stdlib). Known symlink error before v2.5.1 | Alt: mobile apps, or users wanting many style options |
-| `frontend-design` | plugin (Anthropic official) | Distinctive frontend UI generation | claude-plugins-official | Apache-2.0 (repo) | ea10b213 | Plugin-level license file not yet read | Alt: lightest-weight option |
+| `frontend-design` | plugin (Anthropic official) | Distinctive frontend UI generation | claude-plugins-official | Apache-2.0 (plugin LICENSE confirmed 2026-10-19) | ea10b213 | — | Alt: lightest-weight option |
 
 ### G6 · UI components — *optional*
 
@@ -107,12 +107,30 @@ AWP's Security stage already runs gitleaks, osv-scanner and Semgrep directly (AR
 | `github-mcp` | mcp | Repos, issues, PRs, Actions | `.mcp.json` entry | MIT | e3809fe9 | GitHub PAT or OAuth. AWP itself uses `gh` for git ops; this is for the agent | When the project uses GitHub issues/Actions |
 | `supabase` | connector / mcp | Projects, DB, migrations, edge functions | `.mcp.json` → `mcp.supabase.com/mcp` | Apache-2.0 | f46b3d29 | Supabase OAuth or token | When the stack picks Supabase |
 | `blender-mcp` | mcp + Blender add-on | Agent drives Blender scenes and 3D assets | per README (repo now `ahujasid/mcp-for-blender`) | MIT | 7a0373ec | Local Blender 3.0+, uv. **Also a candidate for building AWP's own rifle model** (Phase 14) | When the PRD needs 3D assets |
+| `stripe` | connector | Payments: customers, products, invoices, refunds | `.mcp.json` → `mcp.stripe.com` (OAuth) | MIT (stripe/ai) | a8813a70 | Write tools incl. refunds/payouts; some writes need human approval. Full-access and restricted keys stop working Dec 2026 (use OAuth or agent keys) | When the PRD takes payments |
+| `vercel` | connector | Deployments, projects, logs | `.mcp.json` → `mcp.vercel.com` (OAuth) | hosted, Vercel terms | — | Can deploy and make purchases; card asks for confirmation on writes | When the stack deploys to Vercel |
+| `cloudflare` | connector | Workers, DNS, R2, account resources | `.mcp.json` → `mcp.cloudflare.com/mcp` (OAuth or API token as Bearer) | Apache-2.0 | 45384abd | Can change account resources; some features need a paid Workers plan; exact Claude Code line unverified | When the stack uses Cloudflare |
+| `aws` | mcp | AWS API via CLI commands | `uvx awslabs.aws-api-mcp-server@latest` | Apache-2.0 (awslabs/mcp, labs tier) | 788d9642 | Runs arbitrary AWS CLI: AWP sets `READ_OPERATIONS_ONLY=true` and suggests a ReadOnly IAM role by default | When the stack uses AWS |
+| `firebase` | mcp | Firebase projects, Firestore, Auth, deploy | Plugin `firebase@firebase`, or `npx -y firebase-tools@latest mcp` | MIT (firebase-tools) | 1d5f1417 | Deploy and data-write tools | When the stack uses Firebase |
+| `sentry` | connector | Errors, issues, releases | `.mcp.json` → `mcp.sentry.dev/mcp/<org>/<project>` (OAuth) | hosted; local package is FSL-1.1 (source-available) so **hosted only** | 44a8c1cf (getsentry/toolkit) | Experimental tools off | When the project uses Sentry |
+| `linear` | connector | Issues and projects | `.mcp.json` → `mcp.linear.app/mcp/readonly` by default (OAuth) | hosted, Linear terms | — | Read-only endpoint by default; write endpoint on request | When the team tracks work in Linear |
+| `atlassian` | connector | Jira and Confluence | `.mcp.json` → `mcp.atlassian.com/v2/mcp` (OAuth or API token) | Apache-2.0 | b74220d4 | Likely Cloud-only (unverified); v1 endpoint moves to v2 on 2027-03-01 | When the team uses Jira/Confluence |
+| `slack` | plugin / connector | Read and post in Slack | `/plugin install slack@claude-plugins-official` (hosted `mcp.slack.com`, OAuth) | MIT (plugin) | — | Needs workspace admin approval | When the PRD/team uses Slack |
+| `gitlab` | connector | Repos, MRs, issues, pipelines | `.mcp.json` → `<host>/api/v4/mcp` (OAuth `mcp` scope or fine-grained PAT) | hosted, GitLab terms | — | Docs warn about prompt injection; rate limits; admin must allow it | When the project is on GitLab |
+| `notion` | connector | Pages and databases | `.mcp.json` → `mcp.notion.com/mcp` (OAuth) | hosted, Notion terms | — | Hosted URL from a third-party guide: verify before writing `registry.json`. Local server is unmaintained, not used | When the team uses Notion |
+| `neon` | connector | Serverless Postgres: projects, branches, SQL | `.mcp.json` → `mcp.neon.tech/mcp?readonly=true` (OAuth or API key) | MIT | 1f341ee8 | Can delete projects/branches; **read-only by default**; docs say dev/test use | When the stack picks Neon |
+| `mongodb` | mcp | MongoDB / Atlas | `npx -y mongodb-mcp-server@latest --readOnly --telemetry disabled` | Apache-2.0 | 0cfe62ab | Connection string via `MDB_MCP_CONNECTION_STRING`; **read-only and telemetry off by default** | When the stack picks MongoDB |
+| `planetscale` | connector | MySQL/Postgres on PlanetScale | `.mcp.json` → `mcp.pscale.dev/mcp/planetscale` (OAuth) | hosted, PlanetScale terms | — | Read-only via OAuth scopes by default; blocks unbounded UPDATE/DELETE; prompts for DDL | When the stack picks PlanetScale |
+| `upstash` | connector | Redis, QStash, Vector | `.mcp.json` → `mcp.upstash.com/mcp` (OAuth or API key) | MIT | f85a67bc | Read-only keys supported and preferred | When the stack picks Upstash |
+| `prisma` | connector | Prisma Postgres management | `.mcp.json` → `mcp.prisma.io/mcp` (OAuth) | hosted, Prisma terms | — | Can delete databases and restore backups; CLI guardrails don't apply; **no read-only mode**, card warns | When the stack uses Prisma Postgres |
+| `turso` | mcp | Local libSQL/SQLite database | `tursodb <file>.db --mcp` | MIT (tursodatabase/turso) | a504787e | Write and schema-change tools; read-only flag unverified | When the stack picks Turso/SQLite |
+| `convex` | mcp | Convex deployments, data, functions | `npx -y convex@latest mcp start` | Apache-2.0 (convex-js) | 322c3951 | Production off by default; never pass `--dangerously-enable-production-deployments` | When the stack picks Convex |
 
 ### G11 · Meta and setup — *used by AWP, not suggested to users by default*
 
 | ID | Kind | Purpose | Install | License | SHA | Flags | Role in AWP |
 |---|---|---|---|---|---|---|---|
-| `claude-code-setup` | plugin (Anthropic official) | `claude-automation-recommender`: scans manifests, frameworks, `.claude/`, CLAUDE.md; recommends top 1–2 MCPs, skills, hooks, subagents and plugins per category | claude-plugins-official | Apache-2.0 (repo; plugin LICENSE not yet read) | ea10b213 | **Read-only**: prints install commands as text, never installs. Its SKILL.md says "use web search" but it lists no web tool, so AWP's headless run must allow WebSearch. Non-interactive use is unverified | **Engine of the discovery step** after Planning (PRD §5.5) |
+| `claude-code-setup` | plugin (Anthropic official) | `claude-automation-recommender`: scans manifests, frameworks, `.claude/`, CLAUDE.md; recommends top 1–2 MCPs, skills, hooks, subagents and plugins per category | claude-plugins-official | Apache-2.0 (plugin LICENSE confirmed 2026-10-19) | ea10b213 | Output is Markdown with fixed headings (`## Claude Code Automation Recommendations`, `### <category>`) and per-item **Why**/**Install** lines. **Read-only**: prints install commands as text, never installs. Its SKILL.md says "use web search" but it lists no web tool, so AWP's headless run must allow WebSearch. Non-interactive use is unverified | **Engine of the discovery step** after Planning (PRD §5.5) |
 | `skill-creator` | plugin (Anthropic official) | Create, edit, eval and tune skills | claude-plugins-official | Apache-2.0 (repo) | ea10b213 | — | Used to build AWP's native `awp-*` skills; offered to users who add their own skills |
 | `task-observer` (one-skill-to-rule-them-all) | skill | Watches sessions, flags corrections and skill gaps, proposes skill updates | `npx skills add rebelytics/one-skill-to-rule-them-all --skill task-observer` | CC-BY-4.0 (README/API; no LICENSE file on main) | 56e89071 | Attribution required. Needs an activation line in CLAUDE.md or a session-start hook | Optional; could feed AWP's MEMORY.md / prompt improvements |
 | `anthropic-skills` | skill bundle (Anthropic official) | frontend-design, webapp-testing, mcp-builder, claude-api, docx/pdf/pptx/xlsx | `/plugin marketplace add anthropics/skills` | Apache-2.0 for most; **docx/pdf/pptx/xlsx are source-available, not open** | dbd4588f | Suggest individual skills, not the bundle | Pick per need (e.g. `webapp-testing` overlaps G8) |
@@ -149,6 +167,8 @@ Everything else is suggested only on a signal from the specs or `claude-code-set
 - [x] Star counts, licenses, push dates and full SHAs fetched with authenticated `gh` (see Pinned metadata). The high star counts are real.
 - [x] `animejs` pinned.
 - [x] Headless `claude-code-setup` run approved by the owner; the Phase 9 TODO verifies it returns parseable output.
+- [x] Owner verification 2026-10-19: approved G1 graphify, understand-anything; G2 context7; G3 ponytail, caveman; G5 all four; G6 react-bits; G7 all three; G8 both; G9 security-guidance, trailofbits-skills; G10 figma, github-mcp, supabase, blender-mcp; G11 all four. Not approved: serena, claude-mem. G12 and Excluded stay out of `registry.json`.
+- [x] G10 additions researched 2026-10-19 (vendor-official, maintained, clear license) and owner-approved: stripe, vercel, cloudflare, aws, firebase, sentry, linear, atlassian, slack, gitlab, notion, neon, mongodb, planetscale, upstash, prisma, turso, convex. Not approved: netlify (no LICENSE in repo). Write-capable connectors default to read-only where the service supports it.
 - [ ] Re-fetch SHAs right before writing `registry.json` if more than a few weeks have passed.
 
 ## Pinned metadata

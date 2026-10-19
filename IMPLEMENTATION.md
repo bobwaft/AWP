@@ -185,9 +185,9 @@
 **Done when:** themes render as real previews; picked theme writes valid tokens; design gate works.
 
 **You test**
-- [ ] Upload two inspiration images; themes reflect them.
-- [ ] Preview shows buttons, inputs, cards in each theme.
-- [ ] DESIGN.md and tokens.json match the theme you picked.
+- [x] Upload two inspiration images; themes reflect them.
+- [x] Preview shows buttons, inputs, cards in each theme.
+- [x] DESIGN.md and tokens.json match the theme you picked.
 
 ## Phase 8 — Planning stage
 **Goal:** ARCHITECTURE.md and PHASES.md the phase runner can execute.
@@ -200,9 +200,9 @@
 **Done when:** PHASES.md round-trips through the parser; validator rejects phases without acceptance criteria.
 
 **You test**
-- [ ] You get 2–3 stack options with clear trade-offs.
-- [ ] Phases are small and each has a test checklist.
-- [ ] Editing PHASES.md by hand still parses.
+- [x] You get 2–3 stack options with clear trade-offs.
+- [x] Phases are small and each has a test checklist.
+- [x] Editing PHASES.md by hand still parses.
 
 ## Phase 9 — Registry + Connectors
 **Goal:** suggest, approve, and install skills, MCPs, libraries, tools.

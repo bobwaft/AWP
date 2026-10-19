@@ -89,7 +89,8 @@ export function SpecStageView({
           <span className="text-sm text-text-2">
             {!snap.critique
               ? 'Not reviewed yet'
-              : `${snap.blocking} blocking${snap.rounds > 0 ? ` · review ${snap.rounds}/${MAX_ROUNDS}` : ''}`}
+              : // Rounds reset per stage visit (PRD §5.2.1); the critique itself persists.
+                `${snap.blocking} blocking · review ${snap.rounds}/${MAX_ROUNDS} this visit`}
           </span>
           {capped && snap.blocking > 0 ? (
             <Button className="ml-auto" onClick={() => setAnyway(true)}>

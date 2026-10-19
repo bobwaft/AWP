@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "BUGS.md": {
-    "mtime": 1792439162.7463691,
-    "seen": 1792439523.4636085,
-    "ast_hash": "54dd4b82ec2e7801f1339f3b49ef106d",
+    "mtime": 1792440246.8696363,
+    "seen": 1792440255.8154585,
+    "ast_hash": "7944314052f61cce843ab9832782cb5f",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1566,9 +1566,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/IdeationView.tsx": {
-    "mtime": 1792439392.413749,
-    "seen": 1792439523.424313,
-    "ast_hash": "1da74e1c26ac9c085f1aad63bdd34b45",
+    "mtime": 1792440174.513854,
+    "seen": 1792440255.7999218,
+    "ast_hash": "2350f0867fc1b7152de63efca1cf1ed1",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/PlanningView.tsx": {
@@ -1590,9 +1590,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/ideation.test.tsx": {
-    "mtime": 1792439369.5638988,
-    "seen": 1792439523.4248803,
-    "ast_hash": "3045239a5296945cb4d2741b3022bf78",
+    "mtime": 1792440184.1345756,
+    "seen": 1792440255.800181,
+    "ast_hash": "fd878adfc00ddadf80a6160996186f7e",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/setup-view.test.tsx": {

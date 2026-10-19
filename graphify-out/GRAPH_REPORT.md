@@ -1,7 +1,7 @@
 # Graph Report - AWP  (2026-10-19)
 
 ## Corpus Check
-- 283 files · ~362,218 words
+- 283 files · ~362,291 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: (none) 8, .css 3, .jsonl 3)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7937dd08`
+- Built from commit: `4b87d928`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

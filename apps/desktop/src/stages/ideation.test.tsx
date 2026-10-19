@@ -216,4 +216,6 @@ test('a pending question can be answered while the run is busy (regression)', as
 test('BUG-018: after a stage revisit (rounds reset to 0) a recorded critique still enables Complete', async () => {
   mount({ rounds: 0, blocking: 0, critique: critique(0), readiness: 90 });
   await waitFor(() => expect(completeBtn().disabled).toBe(false));
+  // the review status stays visible after the revisit
+  screen.getByText('0 blocking · review 0/3 this visit');
 });

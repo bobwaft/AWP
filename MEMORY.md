@@ -88,3 +88,13 @@
 - 2026-10-17 decision (owner): forms are stepped, one field per step, with a clickable chip strip (empty / ✓ / ? / !) and Back/Next, like AskUserQuestion. Ctrl+Enter submits from any step; errors jump to the first failing step. DESIGN.md §3.5 updated. Reason: multi-field forms overflowed the input dock (BUG-015).
 - 2026-10-17 decision (owner): readiness keeps updating after the critic cap — engine recomputes per section after each spec change (unchanged critic-scored sections keep the critic score; others 0 empty / 100 filled; average of required sections). PRD §5.2 + ARCHITECTURE.md updated (BUG-019).
 - Dev loop: Vite hot-reloads the UI, but the engine (bun child of Tauri) and Rust only load new code on a full restart of `bun run dev`. A BUG-019 re-test failed only because of this (2026-10-19).
+
+## Phase 9 decisions (owner, 2026-10-19)
+- Registry seed list owner-verified (REGISTRY.md v0.2). Not approved: serena, claude-mem, netlify.
+- Plugins: AWP writes config only (pinned if Claude Code supports it, else "not pinned" + command). No byte verification for plugins.
+- Remote installers (npx impeccable install, graphify install, caveman): AWP RUNS them, owner chose this over "you run it in a tab". Scoped for safety: only owner-verified registry items, command from registry data (never recommender text), shown on the approval card, execFile with fixed argv (no PTY).
+- Skill scripts/executables in a preview: Approve needs a second confirm ("I read these scripts").
+- Unverified (recommender-only) items: user acknowledgement after seeing repo, SHA, license read at that SHA, and file preview.
+- registry.json: fetch from a release tag, schema-valid, version >= bundled, else bundled copy.
+- `.awp/suggestions.json` is committed to the user's repo (no secrets).
+- Install design by Opus architect: git plumbing fetch (no checkout) into a bare cache, tree SHA check, caps 200 files/512 KB/2 MB, previewId = hash of manifest, atomic rename. ARCHITECTURE.md updated.

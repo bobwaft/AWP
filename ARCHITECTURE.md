@@ -153,7 +153,7 @@ type AgentEvent =
 | `submit_themes` | Design | 2–3 theme proposals with tokens |
 | `submit_stack_options` | Planning | Stack options with trade-offs |
 | `submit_phase_plan` | Planning | Phases with tasks, acceptance criteria, test checklist |
-| `submit_suggestions` | Connectors | Registry item IDs + reasons |
+| `submit_suggestions` | Connectors | Registry IDs, or recommender items `{name, kind, repoUrl?, installCommand?, category, why}`, plus reasons |
 | `report_phase_result` | Executor, verifier | What was built, checks run, known issues |
 | `log_bug` / `update_bug` | Testing, fixer | Writes BUGS.md entries |
 | `remember` | Any | Appends a durable fact to MEMORY.md |
@@ -170,16 +170,24 @@ type AgentEvent =
   "id": "gsap-skill",
   "kind": "skill",                       // skill | mcp | library | tool
   "name": "GSAP",
-  "source": { "repo": "https://github.com/<owner>/<repo>", "path": "skills/gsap", "sha": "<pinned commit>" },
+  "source": { "repo": "https://github.com/<owner>/<repo>", "path": "skills/gsap", "sha": "<pinned commit>", "tree": "<git tree sha of path>" },
+  "group": "G7", "groupMode": "pick-one | complementary",
+  "install": { "...": "per-kind template: .mcp.json entry, plugin marketplace + name, or installer command" },
+  "variants": [{ "id": "readonly", "label": "...", "safe": true, "install": { "...": "..." } }],
+  "guards": [{ "when": "...", "action": "skip", "note": "..." }], "neverStages": [],
+  "flags": { "telemetry": false, "cost": "...", "writes": false },
   "license": "MIT",
   "agents": ["claude", "codex"],
   "stages": ["design", "implementation"],
   "tags": ["animation", "web"],
-  "requires": { "accounts": [], "env": [] },
+  "requires": { "accounts": [], "env": [{ "name": "X", "secretKey": "awp/x/default", "optional": false, "help": "..." }] },
   "summary": "Animation patterns and API guidance for GSAP."
 }
 ```
-- Install = download at the pinned SHA, verify the tree hash, show the skill's files to the user, then copy into `.claude/skills/<id>/`.
+- Skill install = `git fetch` of the pinned commit into a bare cache (no checkout), compare the git tree SHA of `path` with `source.tree`, reject symlinks, submodules and unsafe paths, and enforce caps (200 files, 512 KB each, 2 MB total). Preview every file (scripts and executables are flagged; Approve needs a second confirm for them), then install exactly the previewed bytes (`previewId` = hash of the file manifest) via a temp folder and atomic rename into `.claude/skills/<id>/`. A SHA that is gone from the remote gives `SOURCE_GONE`; AWP never falls back to a branch.
+- Plugins: AWP writes config only (`.claude/settings.json` marketplace entry + `enabledPlugins`), pinned when Claude Code supports it, otherwise shown as "not pinned" with the command.
+- Remote installers (e.g. `npx impeccable install`): run by AWP only for owner-verified registry items, from registry data (never recommender text), after the user approves a card that shows the exact command.
+- Registry fetch: from a tagged release; accepted only if it validates against the schema and its version is at or above the bundled snapshot, otherwise the bundled copy is used. Per-project state lives in `.awp/suggestions.json` (committed; no secrets): approved, rejected and installed items so rejections are not re-suggested.
 - MCP items write into `.mcp.json` (env vars referenced as `${VAR}`).
 - v1 only suggests entries whose `agents` include `claude`. The field stays so Codex can use the same registry later.
 - Libraries are recorded in `docs/TOOLING.md`; the executor installs them during the relevant phase.

@@ -423,6 +423,18 @@
           "args": ["@playwright/mcp@latest"]
         }
       },
+      "defaultWhen": [
+        "web app",
+        "website",
+        "web",
+        "browser",
+        "frontend",
+        "react",
+        "vue",
+        "svelte",
+        "next.js",
+        "vite"
+      ],
       "group": "G8",
       "groupMode": "pick-one"
     },
@@ -1053,7 +1065,7 @@
       "verified": true,
       "agents": ["claude"],
       "stages": ["implementation"],
-      "tags": ["neon", "postgres"],
+      "tags": ["neon"],
       "default": false,
       "install": {
         "type": "mcp",

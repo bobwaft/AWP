@@ -114,6 +114,8 @@ export const RegistryItem = z
     groupMode: z.enum(['pick-one', 'complementary']).default('complementary'),
     /** Pre-checked when a project reaches Connectors (REGISTRY.md "Defaults"). */
     default: z.boolean().default(false),
+    /** A default is only pre-checked when the specs mention one of these (e.g. web-app words). */
+    defaultWhen: z.array(z.string().min(1)).optional(),
     install: Install,
     variants: z
       .array(
@@ -227,6 +229,11 @@ export const Suggestion = z.object({
   repoKey: z.string().optional(),
   source: z.enum(['registry', 'recommender', 'user']),
   verified: z.boolean(),
+  /** A recommender idea with nothing AWP can install (a hook, subagent, command or skill to write). */
+  idea: z.boolean().default(false),
+  category: z.string().optional(),
+  /** Another item from the same pick-one group that was not chosen. */
+  alternatives: z.array(z.string()).default([]),
   status: SuggestionStatus,
   reason: z.string(),
   /** Display data for items that are not in the registry. */

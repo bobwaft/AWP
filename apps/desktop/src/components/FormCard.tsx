@@ -443,11 +443,16 @@ export function FormCard({
           Back
         </Button>
         {last ? (
-          <Button type="submit" variant="primary">
+          // Distinct keys: one DOM button must never flip from Next to Submit mid-click.
+          <Button key="submit" type="submit" variant="primary">
             {submitLabel}
           </Button>
         ) : (
-          <Button variant="primary" onClick={() => setStep((n) => n + 1)}>
+          <Button
+            key="next"
+            variant="primary"
+            onClick={() => setStep((n) => n + 1)}
+          >
             Next
           </Button>
         )}

@@ -4,6 +4,7 @@ import { open as pickFiles } from '@tauri-apps/plugin-dialog';
 import { useEffect, useRef, useState } from 'react';
 import type { useSpec } from '../lib/spec';
 import { Button } from './Button';
+import { ChatMarkdown } from './ChatMarkdown';
 import { Chip } from './Chip';
 import { FormCard } from './FormCard';
 import { FormSummaryCard } from './FormSummaryCard';
@@ -88,17 +89,15 @@ export function ChatPanel({ spec, snap, draft, onDraft }: Props) {
                   : undefined
               }
             />
-          ) : (
+          ) : m.role === 'user' ? (
             <p
               key={m.id}
-              className={
-                m.role === 'user'
-                  ? 'self-end rounded-md bg-bg-3 px-3 py-2'
-                  : 'whitespace-pre-wrap'
-              }
+              className="self-end whitespace-pre-wrap rounded-md bg-bg-3 px-3 py-2"
             >
               {m.text}
             </p>
+          ) : (
+            <ChatMarkdown key={m.id} text={m.text} />
           ),
         )}
         {snap.busy && (

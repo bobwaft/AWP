@@ -1,6 +1,6 @@
 export default `---
 id: design.interviewer
-version: 1
+version: 2
 taskType: interview
 requiredTools: mcp__awp__ask_user, mcp__awp__request_form, mcp__awp__remember, Read
 ---
@@ -43,4 +43,5 @@ Rules:
 - Look at any reference images with Read before asking about them.
 - Do NOT edit files. Keep every message short and plain.
 - Forms the user declined: {{declined}}.
+- Open questions rule: when <open_questions> is not "(none)", never say there are no open questions or that nothing is left. Ask about the blocking ones first. If only optional ones remain, say briefly that the rest are optional and can be answered from the Open questions list or left as they are.
 `;

@@ -116,8 +116,12 @@ test('full ideation run: blocking question, then zero blocking, then stage compl
   let s = await idle();
   expect(s.rounds).toBe(1);
   expect(s.blocking).toBe(1);
-  expect(s.readiness).toBe(50);
-  expect(s.chat.map((m) => m.role)).toEqual(['user', 'assistant']);
+  // 7 required sections: problem 80 + users 20 kept from the critic, the other 5 are unwritten (0).
+  expect(s.readiness).toBe(14);
+  expect(s.chat.map((m) => m.role)).toEqual(['user', 'assistant', 'assistant']);
+  expect(s.chat.at(-1)?.text).toBe(
+    'Review 1/3: 1 blocking, 1 optional open question (see Open questions).',
+  );
   await expect(
     call('stage.complete', { stage: 'ideation' }),
   ).rejects.toMatchObject({ code: 'GATE_BLOCKED' });
@@ -500,4 +504,60 @@ test('an open form from another stage is not offered here', async () => {
   await waitFor(() => notes.find((n) => n.m === 'form.requested'));
   const design = await call('spec.get', { stage: 'design' });
   expect(design.pending.form).toBeNull();
+});
+
+test('BUG-018: the gate uses the recorded critique, so it survives leaving and re-entering the stage', async () => {
+  await setup(standard(0));
+  await send('A todo app for dogs');
+  await idle();
+  await call('stage.enter', { stage: 'design' }).catch(() => {});
+  await call('stage.enter', { stage: 'setup' }).catch(() => {});
+  await call('stage.enter', { stage: 'ideation' });
+  expect((await snap()).rounds).toBe(0); // per-visit counter reset
+  const done = await call('stage.complete', { stage: 'ideation' });
+  expect(done.stages.ideation.status).toBe('complete');
+});
+
+test('BUG-018: no critique ever recorded stays blocked', async () => {
+  await setup(standard(0));
+  await expect(
+    call('stage.complete', { stage: 'ideation' }),
+  ).rejects.toMatchObject({ code: 'GATE_BLOCKED' });
+});
+
+test('BUG-019: readiness keeps moving after the round cap when the spec is edited', async () => {
+  await setup(standard(99));
+  for (let i = 0; i < 3; i++) {
+    await send(`message ${i}`);
+    await idle();
+  }
+  const before = (await snap()).readiness;
+  expect((await snap()).rounds).toBe(3);
+  await call('spec.save', {
+    file: 'docs/PRD.md',
+    content:
+      '# PRD\n## Problem\nChanged.\n## Users\nPeople.\n## Features\nF.\n',
+  });
+  const after = (await snap()).readiness;
+  expect(after).not.toBe(before);
+  expect(after).toBeGreaterThan(before ?? 0);
+  expect(
+    notes.some((n) => n.m === 'spec.state' && n.p.readiness === after),
+  ).toBe(true);
+});
+
+test('BUG-017: after a critique with no blocking questions the chat says so', async () => {
+  const script: Script = async function* (req, s, phase) {
+    if (phase === 'critic')
+      await s.callTool(req.runId, 'submit_critique', {
+        questions: [{ text: 'Colors?', blocking: false }],
+        readiness: {},
+      });
+  };
+  await setup(script);
+  await send('hi');
+  const s = await idle();
+  expect(s.chat.at(-1)?.text).toBe(
+    'Review 1/3: nothing blocking, 1 optional open question (see Open questions).',
+  );
 });

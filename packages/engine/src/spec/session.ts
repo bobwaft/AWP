@@ -47,6 +47,7 @@ import {
   tokensFromFormValues,
 } from './design';
 import { resolveFields } from './forms';
+import { hashSections, scoreReadiness } from './readiness';
 
 export type McpLauncher = (
   runId: string,
@@ -77,6 +78,8 @@ type Persisted = {
   picked?: SpecSnapshot['picked'];
   stackOptions?: StackOption[] | null;
   stackPicked?: SpecSnapshot['stackPicked'];
+  /** Hash of each required section when the critique was recorded. */
+  hashes?: Record<string, string>;
 };
 
 type Deferred<T> = { resolve: (v: T) => void };
@@ -119,6 +122,8 @@ export class SpecSession {
   private permWait?: Deferred<{ allow: boolean; message?: string }>;
   private formsThisTurn = 0;
   private critiqueThisRun = false;
+  private hashes: Record<string, string> = {};
+  private readiness: number | null = null;
 
   constructor(private d: SessionDeps) {}
 
@@ -137,6 +142,7 @@ export class SpecSession {
       this.stackOptions = p.stackOptions ?? null;
       this.stackPicked = p.stackPicked ?? null;
       this.picked = p.picked ?? null;
+      this.hashes = p.hashes ?? {};
     } catch {}
     // A form left open by an interrupted run is offered again as "Continue this form".
     try {
@@ -151,6 +157,7 @@ export class SpecSession {
           };
       }
     } catch {}
+    await this.refreshReadiness(false);
     return this;
   }
 
@@ -165,6 +172,7 @@ export class SpecSession {
       picked: this.picked,
       stackOptions: this.stackOptions,
       stackPicked: this.stackPicked,
+      hashes: this.hashes,
     };
     await writeFile(this.file, JSON.stringify(p, null, 2));
   }
@@ -178,7 +186,6 @@ export class SpecSession {
   }
 
   snapshot(): SpecSnapshot {
-    const scores = Object.values(this.critique?.readiness ?? {});
     return {
       stage: this.d.cfg.stage,
       specFile: this.d.cfg.specFile,
@@ -186,9 +193,7 @@ export class SpecSession {
       chat: this.chat,
       critique: this.critique,
       rounds: this.rounds,
-      readiness: scores.length
-        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-        : null,
+      readiness: this.readiness,
       blocking: this.blocking,
       pending: {
         question: this.question,
@@ -202,6 +207,19 @@ export class SpecSession {
       stackOptions: this.stackOptions,
       stackPicked: this.stackPicked,
     };
+  }
+
+  /** Recomputes readiness from the spec on disk (no agent call); emits when it moved. */
+  async refreshReadiness(emit = true) {
+    const schema = SECTION_SCHEMAS[this.d.cfg.schemaId];
+    if (!schema) return;
+    const next = scoreReadiness(schema, await this.readSpec(), {
+      readiness: this.critique?.readiness ?? {},
+      hashes: this.hashes,
+    });
+    if (next === this.readiness) return;
+    this.readiness = next;
+    if (emit) this.emit();
   }
 
   private emit() {
@@ -399,8 +417,25 @@ export class SpecSession {
       questions: parsed.data.questions.map((q) => ({ id: randomUUID(), ...q })),
       readiness: parsed.data.readiness,
     };
+    const schema = SECTION_SCHEMAS[this.d.cfg.schemaId];
+    this.hashes = schema ? hashSections(schema, await this.readSpec()) : {};
+    await this.refreshReadiness(false);
     await this.persist();
     this.emit();
+    // One line so the chat agrees with the Open questions panel.
+    const qs = this.critique.questions;
+    if (qs.length) {
+      const optional = qs.length - this.blocking;
+      const head = `Review ${this.rounds}/${this.d.cfg.maxRounds}:`;
+      await this.addMessage(
+        msg(
+          'assistant',
+          this.blocking
+            ? `${head} ${this.blocking} blocking, ${optional} optional open question${optional === 1 ? '' : 's'} (see Open questions).`
+            : `${head} nothing blocking, ${optional} optional open question${optional === 1 ? '' : 's'} (see Open questions).`,
+        ),
+      );
+    }
     return { ok: true, blocking: this.blocking };
   }
 
@@ -842,6 +877,7 @@ export class SpecSession {
         this.emit();
         await this.writeBase();
         await this.runPhase('synthesizer', text);
+        await this.refreshReadiness();
       }
 
       if (this.rounds < this.d.cfg.maxRounds) {

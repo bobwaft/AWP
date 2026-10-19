@@ -128,3 +128,43 @@
 - Actual: "○ optional" / "● blocking" wraps onto two lines, wasting space.
 - Severity: low
 - Status: closed (re-tested 2026-10-19: pass)
+
+## BUG-017
+- Phase: 6
+- Steps: Ideation; keep answering until the interviewer runs out of questions while the critic still lists open (optional) questions.
+- Expected: the chat never claims there are no open questions while the Open questions list has entries.
+- Actual: the agent says "no open questions" while the list shows several. Each turn runs interviewer → synthesizer → critic, so the interviewer speaks from the previous review, and its prompt says to report "nothing left" with no mention of optional questions. The new critique then adds questions the chat never mentions.
+- Severity: medium
+- Status: fixed; awaiting re-test
+
+## BUG-018
+- Phase: 6
+- Steps: Ideation with 0 blocking (Complete stage enabled); switch to stage 01, then back to 02.
+- Expected: Complete stage stays enabled; the recorded critique still applies.
+- Actual: Complete stage is disabled. `enterStage` resets `criticRounds` to 0 per visit (as PRD §5.2.1 says), but the gate also requires ≥1 critic round in the current visit instead of a recorded critique.
+- Severity: high
+- Status: fixed; awaiting re-test
+
+## BUG-019
+- Phase: 6
+- Steps: Ideation; keep sending messages after review 3/3.
+- Expected: readiness reflects spec changes.
+- Actual: the score never changes. It comes only from the critic, which stops after 3 rounds per visit. Fix per owner decision 2026-10-17: the engine recomputes readiness after every spec change (PRD §5.2 and ARCHITECTURE.md updated).
+- Severity: medium
+- Status: fixed; awaiting re-test
+
+## BUG-020
+- Phase: 6
+- Steps: stepped form; on the second-to-last step, click Next.
+- Expected: the last step is shown.
+- Actual: the form submits and the last question is skipped. Next and Submit are the same element position, so React reuses the DOM button and its type flips to `submit` during the click.
+- Severity: high
+- Status: fixed; awaiting re-test
+
+## BUG-021
+- Phase: 6
+- Steps: Ideation; the agent replies with Markdown (bold, lists).
+- Expected: Markdown is rendered.
+- Actual: raw `**…**` and `- ` show as plain text (ChatPanel renders `m.text` with `whitespace-pre-wrap`).
+- Severity: medium
+- Status: fixed; awaiting re-test

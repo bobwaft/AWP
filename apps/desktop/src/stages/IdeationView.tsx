@@ -31,7 +31,8 @@ export function SpecStageView({
     );
 
   const capped = snap.rounds >= MAX_ROUNDS;
-  const gateOpen = snap.rounds > 0 && snap.blocking === 0;
+  // A recorded critique counts across visits (rounds reset on each visit).
+  const gateOpen = snap.critique !== null && snap.blocking === 0;
   const complete = async (overrideReason?: string) => {
     try {
       await spec.complete(overrideReason);
@@ -86,9 +87,9 @@ export function SpecStageView({
         <div className="flex items-center gap-4 border-t border-line p-3">
           <ReadinessReticle value={snap.readiness} />
           <span className="text-sm text-text-2">
-            {snap.rounds === 0
+            {!snap.critique
               ? 'Not reviewed yet'
-              : `${snap.blocking} blocking · review ${snap.rounds}/${MAX_ROUNDS}`}
+              : `${snap.blocking} blocking${snap.rounds > 0 ? ` · review ${snap.rounds}/${MAX_ROUNDS}` : ''}`}
           </span>
           {capped && snap.blocking > 0 ? (
             <Button className="ml-auto" onClick={() => setAnyway(true)}>

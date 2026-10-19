@@ -26,7 +26,15 @@ export class SpecService {
     private notify: Notify,
     private runs: RunManager,
     private opts: SpecServiceOpts,
-  ) {}
+  ) {
+    // Hand edits and agent writes seen by the file watcher keep readiness moving.
+    projects.onSpecEdited = (stage) => {
+      if (SPEC_STAGES[stage])
+        void this.session(stage)
+          .then((s) => s.refreshReadiness())
+          .catch(() => {});
+    };
+  }
 
   async session(stage: StageId): Promise<SpecSession> {
     const cfg = SPEC_STAGES[stage];
@@ -85,6 +93,9 @@ export class SpecService {
     const abs = this.docPath(file);
     await mkdir(dirname(abs), { recursive: true });
     await writeFile(abs, content);
+    const stage = stageForSpec(relative(this.projects.root, abs));
+    if (stage && SPEC_STAGES[stage])
+      await (await this.session(stage)).refreshReadiness();
   }
 
   /** Gate (PRD 5.2.1): zero blocking after at least one critic round, or override after the cap. */
@@ -99,7 +110,8 @@ export class SpecService {
     if (state.stages[stage].status === 'stale') return; // re-confirming after an upstream change
     const problem = await cached.planGateProblem();
     if (problem) throw new EngineError('GATE_BLOCKED', problem);
-    if (rounds === 0 && !cached?.critique)
+    // A recorded critique counts across visits; rounds reset per visit (PRD 5.2.1).
+    if (!cached?.critique)
       throw new EngineError(
         'GATE_BLOCKED',
         'The review step has not run yet',

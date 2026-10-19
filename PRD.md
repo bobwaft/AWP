@@ -71,7 +71,7 @@ AWP runs ten stages in order. In Phased mode, stages 6 and 7 loop per phase; in 
 ### 5.2 Ideation
 - Chat interview on the left, live `PRD.md` on the right (editable). AWP asks for: problem, users, core features, user stories, data, integrations, platforms, non-goals, success criteria.
 - A **critic pass** lists open questions as blocking or non-blocking.
-- A **readiness score** (0–100) shows how complete each required section is. It is informational only and never blocks.
+- A **readiness score** (0–100) shows how complete each required section is. It is informational only and never blocks. It updates after every change to the spec, without an extra AI call: a section the critic scored and that hasn't changed since keeps the critic's score; any other required section scores 0 if empty, 100 if filled. The total is the average over required sections.
 - *After v1, brownfield:* the user selects a local repo or GitHub URL, AWP writes an as-is summary, then interviews for new features ("Existing" and "New" PRD sections).
 
 ### 5.2.1 Spec gate rule (Ideation, Design, Planning)

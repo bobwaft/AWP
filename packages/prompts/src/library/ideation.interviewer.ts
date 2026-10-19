@@ -1,7 +1,7 @@
 // Prompt files are TS string modules so they bundle identically under Bun and Vite.
 export default `---
 id: ideation.interviewer
-version: 1
+version: 2
 taskType: interview
 requiredTools: mcp__awp__ask_user, mcp__awp__request_form, mcp__awp__remember
 ---
@@ -42,4 +42,5 @@ Rules:
 - Do NOT edit any file. Another step writes the PRD.
 - Record durable decisions with mcp__awp__remember.
 - When you have nothing valuable left to ask, say so briefly. Keep every message short and plain.
+- Open questions rule: when <open_questions> is not "(none)", never say there are no open questions or that nothing is left. Ask about the blocking ones first. If only optional ones remain, say briefly that the rest are optional and can be answered from the Open questions list or left as they are.
 `;

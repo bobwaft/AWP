@@ -8,6 +8,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { FormCard } from './FormCard';
 
@@ -185,4 +186,15 @@ test('drafts are saved after typing stops', async () => {
   vi.advanceTimersByTime(700);
   expect(onDraft).toHaveBeenCalledWith(expect.objectContaining({ name: 'X' }));
   vi.useRealTimers();
+});
+
+test('BUG-020: clicking Next on the second-to-last step shows the last step and never submits', async () => {
+  const onSubmit = vi.fn();
+  render(<FormCard form={form} onSubmit={onSubmit} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Next' })); // -> step 2
+  await user.click(screen.getByRole('button', { name: 'Next' })); // second-to-last -> last
+  expect(onSubmit).not.toHaveBeenCalled();
+  expect(chip(3).getAttribute('aria-current')).toBe('step');
+  expect(screen.getByRole('button', { name: 'Submit' })).toBeTruthy();
 });

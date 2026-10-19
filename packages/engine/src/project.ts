@@ -158,6 +158,8 @@ export class ProjectService {
   private root_?: string;
   private state_?: ProjectState;
   private watcher?: FSWatcher;
+  /** Called (debounced) when a spec file of `stage` changes on disk. */
+  onSpecEdited?: (stage: StageId) => void;
   private debounce = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(
@@ -293,6 +295,7 @@ export class ProjectService {
             this.debounce.delete(rel);
             this.notify('spec.changed', { file: rel });
             const stage = orch.stageForSpec(rel);
+            if (stage) this.onSpecEdited?.(stage);
             if (stage)
               void this.mutate((s) => orch.specEdited(s, stage)).catch(
                 () => {},

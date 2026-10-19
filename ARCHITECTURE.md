@@ -97,7 +97,7 @@ Stage status: locked → active → complete → stale
 1. *Interviewer* turn: agent reads the current spec and chat, asks the next 1–3 most valuable questions via the `ask_user` MCP tool (with optional choices).
 2. *Synthesizer* turn: agent edits the spec file directly (Edit tool scoped to that one file).
 3. *Critic* turn: agent calls `submit_critique` with open questions (blocking / non-blocking) and per-section readiness scores against the stage's required-section schema.
-4. Gate (PRD §5.2.1): `Complete stage` is enabled when blocking = 0, and the stage completes only on the user's click. Readiness is shown but never gates. The engine counts critic rounds per stage visit (`stages.<id>.criticRounds`). After round 3 it stops re-critiquing automatically and offers "Complete anyway" with a required reason, stored in `stages.<id>.override`.
+4. Gate (PRD §5.2.1): `Complete stage` is enabled when blocking = 0, and the stage completes only on the user's click. Readiness is shown but never gates. The engine recomputes readiness after each synthesizer write and each hand edit (per-section hash vs. the last critique), so it keeps moving after the round cap. The engine counts critic rounds per stage visit (`stages.<id>.criticRounds`). After round 3 it stops re-critiquing automatically and offers "Complete anyway" with a required reason, stored in `stages.<id>.override`.
 
 **Phase runner** — see §6.
 

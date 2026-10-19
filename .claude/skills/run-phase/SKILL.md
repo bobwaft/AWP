@@ -85,6 +85,8 @@ Tell the user, in no more than 5 lines:
 
 Delete `.claude/phase-plan.md`, or keep it if there are deferred items.
 
+Then hand the phase's "You test" checklist to the human with the **manual-test** skill (one `AskUserQuestion` per batch of up to 4 checks), not as a printed list.
+
 ## Cost rules
 
 - Model routing follows CLAUDE.md: code, tests and review on Sonnet; architecture and deep thinking on Opus; lookups on Haiku.

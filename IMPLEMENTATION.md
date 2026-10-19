@@ -169,8 +169,8 @@
 - [ ] Complete stage is disabled while blocking questions exist.
 - [ ] After 3 critic rounds with blockers left, you can complete with a reason.
 - [x] AWP asks for a feature as a form, prefilled from what you said; you fill it, it lands in PRD.md.
-- [ ] Mark a required field "Not sure": it shows up as an open question. Ask a question about the form: the draft survives.
-- [ ] "Answer in chat instead" works, and AWP doesn't immediately re-offer the same form. A half-filled form survives switching stages.
+- [x] Mark a required field "Not sure": it shows up as an open question. Ask a question about the form: the draft survives.
+- [x] "Answer in chat instead" works, and AWP doesn't immediately re-offer the same form. A half-filled form survives switching stages.
 
 ## Phase 7 — Design stage
 **Goal:** DESIGN.md with tokens from the user's taste and references.

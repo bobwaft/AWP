@@ -111,7 +111,7 @@
 - Expected: the open-questions list stays in its area and scrolls; chat, input and Complete stay usable.
 - Actual: the list covers other content, so forms and the gate can't be tested. `QuestionList` has no max height or overflow, and the chat column doesn't clip, so a long list spills over the chat, input and the panes below.
 - Severity: high (blocks Phase 6 tests)
-- Status: fixed (scrollable, height-capped list; column clips); awaiting re-test
+- Status: closed (re-tested 2026-10-19: pass)
 
 ## BUG-015
 - Phase: 6
@@ -119,7 +119,7 @@
 - Expected: the form stays inside the input dock; the open-questions list stays visible.
 - Actual: the form grows past the chat area and bleeds into the open-questions list. The input dock has no max height or scroll.
 - Severity: high (blocks the Phase 6 form tests)
-- Status: fixed (stepped FormCard per DESIGN.md §3.5; dock capped at 60% and scrolls); awaiting re-test
+- Status: closed (re-tested 2026-10-19: pass)
 
 ## BUG-016
 - Phase: 6
@@ -127,4 +127,4 @@
 - Expected: each question's status label sits on one line.
 - Actual: "○ optional" / "● blocking" wraps onto two lines, wasting space.
 - Severity: low
-- Status: fixed (label no-wrap); awaiting re-test
+- Status: closed (re-tested 2026-10-19: pass)

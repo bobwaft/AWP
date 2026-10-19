@@ -12,6 +12,7 @@ The human runs the checks; you ask about them one by one with `AskUserQuestion`,
 - Phase checks: the unticked `- [ ]` items under the phase's **You test** heading in IMPLEMENTATION.md, in order. Work phase by phase; don't skip ahead past a phase with open failures unless the user says so.
 - Re-tests: in BUGS.md, the bugs with status "fixed … awaiting re-test". Re-test only those.
 - If a test needs setup (restart `bun run dev`, open a project, a fresh install), say so in one or two lines before the first question.
+- If anything under `packages/engine/` or `apps/desktop/src-tauri/` changed since the user last started the app, the setup must say: close the AWP window, stop `bun run dev` and start it again. Vite only hot-reloads the UI; the engine and Rust keep running the old code, so a re-test without a full restart can fail for the wrong reason.
 
 ## 2. Ask
 

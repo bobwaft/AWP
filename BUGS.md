@@ -151,7 +151,7 @@
 - Expected: readiness reflects spec changes.
 - Actual: the score never changes. It comes only from the critic, which stops after 3 rounds per visit. Fix per owner decision 2026-10-17: the engine recomputes readiness after every spec change (PRD §5.2 and ARCHITECTURE.md updated).
 - Severity: medium
-- Status: re-test 2026-10-19: the "review N/3" label vanished after a stage revisit (rounds reset to 0 and the label hid at 0). Fixed: label always shows "review N/3 this visit" when a critique exists; score movement still to confirm
+- Status: closed (re-tested 2026-10-19: pass after a full restart; the first re-test ran the old engine)
 
 ## BUG-020
 - Phase: 6
@@ -168,3 +168,11 @@
 - Actual: raw `**…**` and `- ` show as plain text (ChatPanel renders `m.text` with `whitespace-pre-wrap`).
 - Severity: medium
 - Status: closed (re-tested 2026-10-19: pass)
+
+## BUG-022
+- Phase: 6
+- Steps: edit a spec in the SpecPanel Edit tab.
+- Expected: it's clear whether the edit is saved.
+- Actual: edits autosave about 0.6 s after typing stops, with no "Saving… / Saved" indicator, so users don't know whether or how to save.
+- Severity: low
+- Status: open

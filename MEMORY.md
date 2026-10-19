@@ -87,3 +87,4 @@
 - Window minimum 1100 × 700 is enforced in tauri.conf.json; `html/body/#root` are `overflow: hidden` and scrollbars are themed via `scrollbar-color`.
 - 2026-10-17 decision (owner): forms are stepped, one field per step, with a clickable chip strip (empty / ✓ / ? / !) and Back/Next, like AskUserQuestion. Ctrl+Enter submits from any step; errors jump to the first failing step. DESIGN.md §3.5 updated. Reason: multi-field forms overflowed the input dock (BUG-015).
 - 2026-10-17 decision (owner): readiness keeps updating after the critic cap — engine recomputes per section after each spec change (unchanged critic-scored sections keep the critic score; others 0 empty / 100 filled; average of required sections). PRD §5.2 + ARCHITECTURE.md updated (BUG-019).
+- Dev loop: Vite hot-reloads the UI, but the engine (bun child of Tauri) and Rust only load new code on a full restart of `bun run dev`. A BUG-019 re-test failed only because of this (2026-10-19).

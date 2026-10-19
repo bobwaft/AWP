@@ -11,6 +11,7 @@ export * from './design';
 export * from './form-validate';
 export * from './planning';
 export * from './project';
+export * from './registry';
 export * from './setup';
 export * from './spec';
 

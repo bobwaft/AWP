@@ -169,6 +169,7 @@ Everything else is suggested only on a signal from the specs or `claude-code-set
 - [x] Headless `claude-code-setup` run approved by the owner; the Phase 9 TODO verifies it returns parseable output.
 - [x] Owner verification 2026-10-19: approved G1 graphify, understand-anything; G2 context7; G3 ponytail, caveman; G5 all four; G6 react-bits; G7 all three; G8 both; G9 security-guidance, trailofbits-skills; G10 figma, github-mcp, supabase, blender-mcp; G11 all four. Not approved: serena, claude-mem. G12 and Excluded stay out of `registry.json`.
 - [x] G10 additions researched 2026-10-19 (vendor-official, maintained, clear license) and owner-approved: stripe, vercel, cloudflare, aws, firebase, sentry, linear, atlassian, slack, gitlab, notion, neon, mongodb, planetscale, upstash, prisma, turso, convex. Not approved: netlify (no LICENSE in repo). Write-capable connectors default to read-only where the service supports it.
+- [ ] `notion` is approved but not in `registry.json` yet: its hosted MCP URL has no official source (only a third-party guide). Add it once `developers.notion.com` confirms the URL.
 - [ ] Re-fetch SHAs right before writing `registry.json` if more than a few weeks have passed.
 
 ## Pinned metadata

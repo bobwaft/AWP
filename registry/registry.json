@@ -1,0 +1,1416 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "graphify",
+      "kind": "skill",
+      "name": "Graphify",
+      "summary": "Local tree-sitter knowledge graph of the code; query, path and explain commands so the agent reads less.",
+      "source": {
+        "repo": "https://github.com/Graphify-Labs/graphify",
+        "sha": "10130e79ed9caf8f60d998073e097531eaa1a395"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["codebase", "graph", "tokens"],
+      "default": true,
+      "install": {
+        "type": "installer",
+        "commands": [
+          ["uv", "tool", "install", "graphifyy"],
+          ["graphify", "install", "--project"]
+        ]
+      },
+      "group": "G1",
+      "groupMode": "pick-one",
+      "flags": {
+        "notes": [
+          "Needs Python 3.10+ and uv. The code graph needs no LLM; the docs and media pass uses the model."
+        ]
+      }
+    },
+    {
+      "id": "understand-anything",
+      "kind": "plugin",
+      "name": "Understand Anything",
+      "summary": "Multi-agent knowledge graph of the codebase with a browser dashboard.",
+      "source": {
+        "repo": "https://github.com/Egonex-AI/Understand-Anything",
+        "sha": "f2d0164f72fe678805c34245a6df36acededfebd"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["codebase", "dashboard", "visual graph"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "Egonex-AI/Understand-Anything",
+        "plugin": "understand-anything@understand-anything"
+      },
+      "group": "G1",
+      "groupMode": "pick-one",
+      "flags": {
+        "notes": [
+          "The first /understand run is token-heavy on large repos.",
+          "Node 18+ for the dashboard."
+        ]
+      }
+    },
+    {
+      "id": "context7",
+      "kind": "mcp",
+      "name": "Context7",
+      "summary": "Version-specific library and API docs on demand.",
+      "source": {
+        "repo": "https://github.com/upstash/context7",
+        "sha": "1658cc4213e2700d29acff9bc11cdefbdd1eeaa1"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["library", "api", "docs", "framework"],
+      "default": true,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.context7.com/mcp"
+        }
+      },
+      "group": "G2",
+      "groupMode": "pick-one",
+      "variants": [
+        {
+          "id": "api-key",
+          "label": "Use my free API key (higher rate limits)",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "type": "http",
+              "url": "https://mcp.context7.com/mcp",
+              "headers": {
+                "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+              }
+            }
+          }
+        }
+      ],
+      "requires": {
+        "env": [
+          {
+            "name": "CONTEXT7_API_KEY",
+            "secretKey": "awp/context7/default",
+            "optional": true,
+            "help": "Optional. A free key at context7.com/dashboard raises the rate limits."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ponytail",
+      "kind": "plugin",
+      "name": "Ponytail",
+      "summary": "Lazy-senior-dev mode: the smallest change that solves the task, plus review, audit and debt commands.",
+      "source": {
+        "repo": "https://github.com/DietrichGebert/ponytail",
+        "sha": "84740e3d344b69b4a133201fa519eb37a62a2b2a"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["tokens", "code size", "minimal"],
+      "default": true,
+      "install": {
+        "type": "plugin",
+        "marketplace": "DietrichGebert/ponytail",
+        "plugin": "ponytail@ponytail"
+      },
+      "group": "G3",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": ["Savings figures are self-reported by the project."]
+      }
+    },
+    {
+      "id": "caveman",
+      "kind": "tool",
+      "name": "Caveman",
+      "summary": "Terse agent replies and trimmed tool output to save tokens. Build phases only.",
+      "source": {
+        "repo": "https://github.com/JuliusBrussee/caveman",
+        "sha": "d262ab3882952a59312ff3537cd86d894523c5ab"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["tokens", "terse"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "npx @caveman-ai/cli@latest"
+      },
+      "group": "G3",
+      "groupMode": "complementary",
+      "neverStages": ["ideation", "design", "planning"],
+      "flags": {
+        "telemetry": true,
+        "notes": [
+          "Run it yourself: it edits your global ~/.claude/settings.json (hooks and statusline), and its non-interactive mode is unverified.",
+          "Needs Node 22.13+. Keep the cloud features off.",
+          "AWP never enables it for interview or spec stages."
+        ]
+      }
+    },
+    {
+      "id": "impeccable",
+      "kind": "skill",
+      "name": "Impeccable",
+      "summary": "Design skills and detectors: design, critique, polish and harden UI.",
+      "source": {
+        "repo": "https://github.com/pbakaus/impeccable",
+        "sha": "5bf0a069dc857e1b5f4b090e004d9d5b231416ca"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design", "implementation", "polishing"],
+      "tags": ["ui", "design", "frontend", "web"],
+      "default": true,
+      "install": {
+        "type": "installer",
+        "commands": [
+          [
+            "npx",
+            "impeccable",
+            "install",
+            "--providers=claude",
+            "--scope=project"
+          ]
+        ]
+      },
+      "group": "G5",
+      "groupMode": "pick-one",
+      "flags": {
+        "telemetry": true,
+        "notes": [
+          "Telemetry is on by default; opt out with `npx impeccable telemetry off`.",
+          "Calls the impeccable.style API at design start and installs a UI-edit hook into .claude/settings.local.json."
+        ]
+      }
+    },
+    {
+      "id": "taste-skill",
+      "kind": "plugin",
+      "name": "Taste Skill",
+      "summary": "Art direction and a browser self-check for distinctive marketing and landing sites.",
+      "source": {
+        "repo": "https://github.com/Leonxlnx/taste-skill",
+        "sha": "f624f37a8c650b9cc550253104925efe4c8de246"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design", "implementation"],
+      "tags": ["landing page", "marketing site", "website"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "Leonxlnx/taste-skill",
+        "plugin": "taste-skill@taste-skill"
+      },
+      "group": "G5",
+      "groupMode": "pick-one",
+      "flags": {
+        "notes": [
+          "Needs Node 22+ and a Chromium browser; uses network image search."
+        ]
+      }
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "kind": "plugin",
+      "name": "UI/UX Pro Max",
+      "summary": "Generates design systems (styles, palettes, type, patterns) for web and mobile.",
+      "source": {
+        "repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "sha": "56ea9cf174ed86786187daa9de0e6247cb0747e4"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design", "implementation"],
+      "tags": ["mobile app", "design system", "ios", "android"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "plugin": "ui-ux-pro-max@ui-ux-pro-max-skill"
+      },
+      "group": "G5",
+      "groupMode": "pick-one",
+      "flags": {
+        "notes": ["Needs Python 3 (stdlib only)."]
+      }
+    },
+    {
+      "id": "frontend-design",
+      "kind": "plugin",
+      "name": "Frontend Design",
+      "summary": "Anthropic's skill for distinctive frontend UI; the lightest-weight design option.",
+      "source": {
+        "repo": "https://github.com/anthropics/claude-plugins-official",
+        "sha": "ea10b213686c90bb1984b2016937310e05336cf3"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design", "implementation"],
+      "tags": ["ui", "frontend"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/claude-plugins-official",
+        "plugin": "frontend-design@claude-plugins-official"
+      },
+      "group": "G5",
+      "groupMode": "pick-one"
+    },
+    {
+      "id": "react-bits",
+      "kind": "library",
+      "name": "React Bits",
+      "summary": "215+ animated React components and backgrounds, copied into your project.",
+      "source": {
+        "repo": "https://github.com/DavidHDev/react-bits",
+        "sha": "963f4d21dca65326a470956c42b7b467804f3c14"
+      },
+      "license": "MIT + Commons Clause",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["react", "animated components", "animation ui"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "npx shadcn@latest add @react-bits/<Component>"
+      },
+      "group": "G6",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "You may use it in any app, including commercial ones; selling the components themselves is not allowed.",
+          "Some files carry third-party notices to keep."
+        ]
+      }
+    },
+    {
+      "id": "gsap-skills",
+      "kind": "plugin",
+      "name": "GSAP Skills",
+      "summary": "Correct GSAP usage: timelines, ScrollTrigger, plugins and performance.",
+      "source": {
+        "repo": "https://github.com/greensock/gsap-skills",
+        "sha": "aed9cfd3277740755f6bfc1155c7aa645403b760"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design", "implementation"],
+      "tags": ["animation", "scroll", "gsap", "motion"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "greensock/gsap-skills",
+        "plugin": "gsap-skills@gsap-skills"
+      },
+      "group": "G7",
+      "groupMode": "complementary",
+      "guards": [
+        {
+          "when": [
+            "visual animation builder",
+            "no-code animation",
+            "animation tool for non-coders",
+            "no-code visual animation"
+          ],
+          "action": "skip",
+          "note": "GSAP's license bars tools that let users build visual animations without code. Use anime.js instead."
+        }
+      ],
+      "flags": {
+        "notes": [
+          "GSAP itself is free under the Standard No Charge license, including commercial use; it prohibits use in no-code visual animation builders that compete with Webflow.",
+          "The non-binding summary adds \"as long as end users are not charged a fee\"."
+        ]
+      }
+    },
+    {
+      "id": "lenis",
+      "kind": "library",
+      "name": "Lenis",
+      "summary": "Smooth scrolling over native scroll; pairs with GSAP ScrollTrigger.",
+      "source": {
+        "repo": "https://github.com/darkroomengineering/lenis",
+        "sha": "e01eefb1f55cd08bc051521d74f5f8182b71ee9d"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["smooth scroll", "scroll"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "npm i lenis"
+      },
+      "group": "G7",
+      "groupMode": "complementary"
+    },
+    {
+      "id": "animejs",
+      "kind": "library",
+      "name": "Anime.js",
+      "summary": "Lightweight JavaScript animation library (v4); used instead of GSAP when the GSAP guard trips.",
+      "source": {
+        "repo": "https://github.com/juliangarnier/anime",
+        "sha": "01b81be1df6843ccfe0a71c0699a746bf740dd77"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["animation", "motion", "visual animation builder"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "npm i animejs"
+      },
+      "group": "G7",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "License from package.json; the repo has no root LICENSE file."
+        ]
+      }
+    },
+    {
+      "id": "playwright-mcp",
+      "kind": "mcp",
+      "name": "Playwright MCP",
+      "summary": "Browser automation through accessibility snapshots, so the agent can check its own UI.",
+      "source": {
+        "repo": "https://github.com/microsoft/playwright-mcp",
+        "sha": "b8b4183e099f136cbec0388a6088d4aa2f6b9685"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation", "testing"],
+      "tags": ["web app", "website", "browser", "e2e"],
+      "default": true,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "npx",
+          "args": ["@playwright/mcp@latest"]
+        }
+      },
+      "group": "G8",
+      "groupMode": "pick-one"
+    },
+    {
+      "id": "chrome-devtools-mcp",
+      "kind": "mcp",
+      "name": "Chrome DevTools MCP",
+      "summary": "Console, network, performance traces and DOM inspection.",
+      "source": {
+        "repo": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+        "sha": "6606011ab3cdbc018904554dceae6ad6c5477fde"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation", "testing"],
+      "tags": ["performance", "debugging", "web app", "browser"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "npx",
+          "args": ["-y", "chrome-devtools-mcp@latest", "--no-usage-statistics"]
+        }
+      },
+      "group": "G8",
+      "groupMode": "pick-one",
+      "flags": {
+        "notes": [
+          "Needs Chrome. Usage statistics are switched off in the entry."
+        ]
+      }
+    },
+    {
+      "id": "security-guidance",
+      "kind": "plugin",
+      "name": "Security Guidance",
+      "summary": "Hook-based security checks on Claude's edits (Anthropic official).",
+      "source": {
+        "repo": "https://github.com/anthropics/claude-plugins-official",
+        "sha": "ea10b213686c90bb1984b2016937310e05336cf3"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation", "security"],
+      "tags": ["security"],
+      "default": true,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/claude-plugins-official",
+        "plugin": "security-guidance@claude-plugins-official"
+      },
+      "group": "G9",
+      "groupMode": "complementary"
+    },
+    {
+      "id": "trailofbits-skills",
+      "kind": "plugin",
+      "name": "Trail of Bits Skills",
+      "summary": "Code audit, static analysis, Semgrep rule authoring and supply-chain review (installs static-analysis).",
+      "source": {
+        "repo": "https://github.com/trailofbits/skills",
+        "sha": "5c99c03fb8a9ea568432ecbcba5d86e9f4ac2bf0"
+      },
+      "license": "CC-BY-SA-4.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["security"],
+      "tags": [
+        "auth",
+        "payments",
+        "user data",
+        "personal data",
+        "authentication"
+      ],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "trailofbits/skills",
+        "plugin": "static-analysis@trailofbits"
+      },
+      "group": "G9",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "Share-alike license: AWP links and installs it, and never bundles or modifies it.",
+          "The marketplace has ~50 plugins; more can be installed later from your own Claude Code."
+        ]
+      }
+    },
+    {
+      "id": "figma",
+      "kind": "connector",
+      "name": "Figma",
+      "summary": "Design context, Code Connect and canvas write through Figma's hosted MCP.",
+      "source": {},
+      "license": "Figma Developer Terms (hosted)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["design"],
+      "tags": ["figma"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.figma.com/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["figma"]
+      },
+      "flags": {
+        "writes": true,
+        "cost": "Call limits by seat: View/Collab ~20 calls/month, Professional Full/Dev 200/day, Enterprise 600/day; Starter is effectively unusable.",
+        "notes": [
+          "Authenticates with OAuth: run /mcp in Claude Code after install.",
+          "Canvas write needs a Full seat."
+        ]
+      }
+    },
+    {
+      "id": "github-mcp",
+      "kind": "mcp",
+      "name": "GitHub MCP",
+      "summary": "Repos, issues, pull requests and Actions for the agent.",
+      "source": {
+        "repo": "https://github.com/github/github-mcp-server",
+        "sha": "e3809fe91c7546633241006bf0b91f23b2595e28"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["github", "issues", "pull request", "github actions"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://api.githubcopilot.com/mcp/",
+          "headers": {
+            "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+          }
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "env": [
+          {
+            "name": "GITHUB_PERSONAL_ACCESS_TOKEN",
+            "secretKey": "awp/github/default",
+            "optional": false,
+            "help": "A GitHub personal access token with the scopes you want the agent to have."
+          }
+        ]
+      },
+      "flags": {
+        "writes": true
+      }
+    },
+    {
+      "id": "supabase",
+      "kind": "connector",
+      "name": "Supabase",
+      "summary": "Projects, database, migrations and edge functions.",
+      "source": {
+        "repo": "https://github.com/supabase/mcp",
+        "sha": "f46b3d2996d93baad25cce1b94b46440dcc44ecb"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["supabase"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.supabase.com/mcp?read_only=true"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "variants": [
+        {
+          "id": "read-write",
+          "label": "Allow writes (migrations, edge functions)",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "type": "http",
+              "url": "https://mcp.supabase.com/mcp"
+            }
+          }
+        }
+      ],
+      "requires": {
+        "accounts": ["supabase"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Read-only by default. Scope it to one project with ?project_ref=<id>.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "blender-mcp",
+      "kind": "mcp",
+      "name": "Blender MCP",
+      "summary": "The agent drives Blender to build 3D scenes and assets.",
+      "source": {
+        "repo": "https://github.com/ahujasid/mcp-for-blender",
+        "sha": "7a0373ec9199183cb460068c4f96aed9c579fb4f"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["3d", "blender", "3d assets"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "uvx",
+          "args": ["mcp-for-blender"],
+          "env": {
+            "DISABLE_TELEMETRY": "true"
+          }
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "Needs Blender 3.0+ and uv; install the add-on with `uvx mcp-for-blender install-addon`."
+        ]
+      }
+    },
+    {
+      "id": "stripe",
+      "kind": "connector",
+      "name": "Stripe",
+      "summary": "Customers, products, invoices and refunds through Stripe's hosted MCP.",
+      "source": {
+        "repo": "https://github.com/stripe/ai",
+        "sha": "a8813a705651eaa68fab38943527a786ea5b411a"
+      },
+      "license": "MIT (stripe/ai); hosted terms",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": [
+        "stripe",
+        "payments",
+        "payment",
+        "checkout",
+        "subscription",
+        "billing"
+      ],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.stripe.com"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["stripe"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Has write tools including refunds and payouts; some writes need human approval.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install. Full-access and restricted keys stop working in December 2026."
+        ]
+      }
+    },
+    {
+      "id": "vercel",
+      "kind": "connector",
+      "name": "Vercel",
+      "summary": "Deployments, projects and logs.",
+      "source": {},
+      "license": "Hosted (Vercel terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["shipping"],
+      "tags": ["vercel"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.vercel.com"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["vercel"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Can deploy and make purchases; confirm every write. No read-only mode.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "cloudflare",
+      "kind": "connector",
+      "name": "Cloudflare",
+      "summary": "Workers, DNS, R2 and other account resources.",
+      "source": {
+        "repo": "https://github.com/cloudflare/mcp-server-cloudflare",
+        "sha": "45384abd61dfbe098c3107ce11cfffd8135a3bfa"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["shipping"],
+      "tags": ["cloudflare", "workers", "r2"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.cloudflare.com/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["cloudflare"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Can change account resources; some features need a paid Workers plan.",
+          "Authenticates with OAuth (or an API token). The exact Claude Code command is not in Cloudflare's docs; check it after install."
+        ]
+      }
+    },
+    {
+      "id": "aws",
+      "kind": "mcp",
+      "name": "AWS API MCP",
+      "summary": "Runs AWS CLI commands for the agent (AWS Labs).",
+      "source": {
+        "repo": "https://github.com/awslabs/mcp",
+        "sha": "788d9642d20f0638d485219df64c49b26329589d"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["shipping"],
+      "tags": ["aws", "s3", "lambda", "dynamodb", "ec2"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "uvx",
+          "args": ["awslabs.aws-api-mcp-server@latest"],
+          "env": {
+            "READ_OPERATIONS_ONLY": "true",
+            "REQUIRE_MUTATION_CONSENT": "true"
+          }
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "variants": [
+        {
+          "id": "read-write",
+          "label": "Allow changes (mutations still ask for consent)",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "command": "uvx",
+              "args": ["awslabs.aws-api-mcp-server@latest"],
+              "env": {
+                "READ_OPERATIONS_ONLY": "false",
+                "REQUIRE_MUTATION_CONSENT": "true"
+              }
+            }
+          }
+        }
+      ],
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Read-only by default. Use a ReadOnly IAM role as well.",
+          "Uses your own AWS credentials/profile. Experimental \"labs\" tier.",
+          "On Windows the docs use args [\"--from\",\"awslabs.aws-api-mcp-server@latest\",\"awslabs.aws-api-mcp-server.exe\"]."
+        ]
+      }
+    },
+    {
+      "id": "firebase",
+      "kind": "mcp",
+      "name": "Firebase",
+      "summary": "Firebase projects, Firestore, Auth and deploy through the Firebase CLI.",
+      "source": {
+        "repo": "https://github.com/firebase/firebase-tools",
+        "sha": "1d5f141720cb6e7e453a6cdca9d7dcc56faa4cbc"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["firebase", "firestore"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "npx",
+          "args": ["-y", "firebase-tools@latest", "mcp"]
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Has deploy and data-write tools. Uses your Firebase CLI login."
+        ]
+      }
+    },
+    {
+      "id": "sentry",
+      "kind": "connector",
+      "name": "Sentry",
+      "summary": "Errors, issues and releases from Sentry's hosted MCP.",
+      "source": {
+        "repo": "https://github.com/getsentry/toolkit",
+        "sha": "44a8c1cf900f09d7a50744f9ce4a602cb1979cd3"
+      },
+      "license": "Hosted (Sentry terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["testing", "shipping"],
+      "tags": ["sentry", "error tracking"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.sentry.dev/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["sentry"]
+      },
+      "flags": {
+        "notes": [
+          "Hosted only: the local npm package is under the FSL source-available license.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install. Scope it with /mcp/<org>/<project>."
+        ]
+      }
+    },
+    {
+      "id": "linear",
+      "kind": "connector",
+      "name": "Linear",
+      "summary": "Issues and projects from Linear's hosted MCP.",
+      "source": {},
+      "license": "Hosted (Linear terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["linear"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.linear.app/mcp/readonly"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "variants": [
+        {
+          "id": "write",
+          "label": "Read and write",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "type": "http",
+              "url": "https://mcp.linear.app/mcp"
+            }
+          }
+        }
+      ],
+      "requires": {
+        "accounts": ["linear"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Read-only by default.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "atlassian",
+      "kind": "connector",
+      "name": "Atlassian (Jira and Confluence)",
+      "summary": "Jira and Confluence through Atlassian's hosted MCP.",
+      "source": {
+        "repo": "https://github.com/atlassian/atlassian-mcp-server",
+        "sha": "b74220d41142fae52b4f680c805b2ab81050991a"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["jira", "confluence", "atlassian"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.atlassian.com/v2/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["atlassian"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Authenticates with OAuth: run /mcp in Claude Code after install. Probably Atlassian Cloud only."
+        ]
+      }
+    },
+    {
+      "id": "slack",
+      "kind": "plugin",
+      "name": "Slack",
+      "summary": "Read and post in Slack through the official Slack plugin.",
+      "source": {
+        "repo": "https://github.com/slackapi/slack-skills-plugin"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["slack"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/claude-plugins-official",
+        "plugin": "slack@claude-plugins-official"
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["slack"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": ["A workspace admin must approve the MCP integration."]
+      }
+    },
+    {
+      "id": "gitlab",
+      "kind": "connector",
+      "name": "GitLab",
+      "summary": "Repos, merge requests, issues and pipelines through GitLab's built-in MCP.",
+      "source": {},
+      "license": "Hosted (GitLab terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["gitlab"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://gitlab.com/api/v4/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["gitlab"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "For self-hosted GitLab change the URL to https://<your-host>/api/v4/mcp.",
+          "Authenticates with OAuth (mcp scope) or a fine-grained token. GitLab warns about prompt injection."
+        ]
+      }
+    },
+    {
+      "id": "neon",
+      "kind": "connector",
+      "name": "Neon",
+      "summary": "Serverless Postgres: projects, branches and SQL.",
+      "source": {
+        "repo": "https://github.com/neondatabase/mcp-server-neon",
+        "sha": "1f341ee896f7838690e35fb47cba5d306f2e29ea"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["neon", "postgres"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.neon.tech/mcp?readonly=true"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "variants": [
+        {
+          "id": "write",
+          "label": "Allow writes (can delete projects and branches)",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "type": "http",
+              "url": "https://mcp.neon.tech/mcp"
+            }
+          }
+        }
+      ],
+      "requires": {
+        "accounts": ["neon"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Read-only by default. Neon's docs say to use it for dev and test.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "mongodb",
+      "kind": "mcp",
+      "name": "MongoDB",
+      "summary": "MongoDB and Atlas through the official MCP server.",
+      "source": {
+        "repo": "https://github.com/mongodb-js/mongodb-mcp-server",
+        "sha": "0cfe62abc53865ec6707ada2686ebf905c3f563e"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["mongodb", "atlas"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mongodb-mcp-server",
+            "--readOnly",
+            "--telemetry",
+            "disabled"
+          ],
+          "env": {
+            "MDB_MCP_CONNECTION_STRING": "${MDB_MCP_CONNECTION_STRING}"
+          }
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "variants": [
+        {
+          "id": "read-write",
+          "label": "Allow writes",
+          "safe": false,
+          "install": {
+            "type": "mcp",
+            "entry": {
+              "command": "npx",
+              "args": ["-y", "mongodb-mcp-server", "--telemetry", "disabled"],
+              "env": {
+                "MDB_MCP_CONNECTION_STRING": "${MDB_MCP_CONNECTION_STRING}"
+              }
+            }
+          }
+        }
+      ],
+      "requires": {
+        "env": [
+          {
+            "name": "MDB_MCP_CONNECTION_STRING",
+            "secretKey": "awp/mongodb/default",
+            "optional": false,
+            "help": "Your MongoDB or Atlas connection string."
+          }
+        ]
+      },
+      "flags": {
+        "writes": true,
+        "notes": ["Read-only and telemetry off by default."]
+      }
+    },
+    {
+      "id": "planetscale",
+      "kind": "connector",
+      "name": "PlanetScale",
+      "summary": "MySQL and Postgres on PlanetScale through its hosted MCP.",
+      "source": {},
+      "license": "Hosted (PlanetScale terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["planetscale"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.pscale.dev/mcp/planetscale"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["planetscale"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Blocks UPDATE/DELETE without WHERE and TRUNCATE, and prompts for DDL. Read-only is an org setting (\"MCP query access\") or OAuth scopes.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "upstash",
+      "kind": "connector",
+      "name": "Upstash",
+      "summary": "Redis, QStash and Vector through Upstash's hosted MCP.",
+      "source": {
+        "repo": "https://github.com/upstash/mcp-server",
+        "sha": "f85a67bccc7b759c451d63a367fd8e071d0e4c65"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["upstash", "redis"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.upstash.com/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["upstash"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Read-only keys are supported and preferred.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "prisma",
+      "kind": "connector",
+      "name": "Prisma Postgres",
+      "summary": "Create and manage Prisma Postgres databases.",
+      "source": {},
+      "license": "Hosted (Prisma terms)",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["prisma"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "type": "http",
+          "url": "https://mcp.prisma.io/mcp"
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "requires": {
+        "accounts": ["prisma"]
+      },
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Can delete databases and restore backups, and the CLI guardrails do not apply to MCP calls. No read-only mode.",
+          "Authenticates with OAuth: run /mcp in Claude Code after install."
+        ]
+      }
+    },
+    {
+      "id": "turso",
+      "kind": "mcp",
+      "name": "Turso (libSQL)",
+      "summary": "Local libSQL/SQLite database through the MCP server built into tursodb.",
+      "source": {
+        "repo": "https://github.com/tursodatabase/turso",
+        "sha": "a504787ec407801d6dd6080d31d0c0df8c64c245"
+      },
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["turso", "libsql"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "tursodb <your-database>.db --mcp"
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Needs the path to your database file, so add it to .mcp.json yourself. Has write and schema-change tools; a read-only flag is unverified."
+        ]
+      }
+    },
+    {
+      "id": "convex",
+      "kind": "mcp",
+      "name": "Convex",
+      "summary": "Convex deployments, data and functions.",
+      "source": {},
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["convex"],
+      "default": false,
+      "install": {
+        "type": "mcp",
+        "entry": {
+          "command": "npx",
+          "args": ["-y", "convex@latest", "mcp", "start"]
+        }
+      },
+      "group": "G10",
+      "groupMode": "complementary",
+      "flags": {
+        "writes": true,
+        "notes": [
+          "Production deployments are off by default; never pass --dangerously-enable-production-deployments.",
+          "No read-only flag; --disable-tools can switch tool groups off."
+        ]
+      }
+    },
+    {
+      "id": "claude-code-setup",
+      "kind": "plugin",
+      "name": "Claude Code Setup",
+      "summary": "Recommends project-specific automations (read-only). Used by AWP's discovery step, not suggested to users.",
+      "source": {
+        "repo": "https://github.com/anthropics/claude-plugins-official",
+        "sha": "ea10b213686c90bb1984b2016937310e05336cf3"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": [],
+      "tags": ["internal"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/claude-plugins-official",
+        "plugin": "claude-code-setup@claude-plugins-official"
+      },
+      "group": "G11",
+      "groupMode": "complementary"
+    },
+    {
+      "id": "skill-creator",
+      "kind": "plugin",
+      "name": "Skill Creator",
+      "summary": "Create, edit, evaluate and tune skills (Anthropic official).",
+      "source": {
+        "repo": "https://github.com/anthropics/claude-plugins-official",
+        "sha": "ea10b213686c90bb1984b2016937310e05336cf3"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": [],
+      "tags": ["custom skill", "write a skill"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/claude-plugins-official",
+        "plugin": "skill-creator@claude-plugins-official"
+      },
+      "group": "G11",
+      "groupMode": "complementary"
+    },
+    {
+      "id": "task-observer",
+      "kind": "skill",
+      "name": "Task Observer",
+      "summary": "Watches sessions, flags corrections and skill gaps, and proposes skill updates.",
+      "source": {
+        "repo": "https://github.com/rebelytics/one-skill-to-rule-them-all",
+        "sha": "56e890712273ce231b478adc56ee2eb81101c3d6"
+      },
+      "license": "CC-BY-4.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": [],
+      "tags": ["skill gaps", "learning from corrections"],
+      "default": false,
+      "install": {
+        "type": "doc",
+        "command": "npx skills add rebelytics/one-skill-to-rule-them-all --skill task-observer"
+      },
+      "group": "G11",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "Credit: Eoghan Henn / rebelytics (CC-BY-4.0).",
+          "Run it yourself: its non-interactive behaviour is unverified, and it needs an activation line in CLAUDE.md or a session-start hook."
+        ]
+      }
+    },
+    {
+      "id": "anthropic-skills",
+      "kind": "plugin",
+      "name": "Anthropic Example Skills",
+      "summary": "Anthropic's example skills: webapp-testing, mcp-builder, frontend-design, skill-creator and more.",
+      "source": {
+        "repo": "https://github.com/anthropics/skills",
+        "sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44"
+      },
+      "license": "Apache-2.0",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["webapp testing", "mcp server", "build an mcp"],
+      "default": false,
+      "install": {
+        "type": "plugin",
+        "marketplace": "anthropics/skills",
+        "plugin": "example-skills@anthropic-agent-skills"
+      },
+      "group": "G11",
+      "groupMode": "complementary",
+      "flags": {
+        "notes": [
+          "The docx/pdf/pptx/xlsx skills (in the separate document-skills plugin) are source-available, not open source; they are tools only and never bundled."
+        ]
+      }
+    }
+  ]
+}

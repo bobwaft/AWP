@@ -208,7 +208,7 @@
 **Goal:** suggest, approve, and install skills, MCPs, libraries, tools.
 **Blocked by:** owner-verified registry seed list.
 
-- [ ] `registry/registry.json` schema + seed entries (each with source, pinned SHA, license, verified by the owner).
+- [x] `registry/registry.json` schema + seed entries (each with source, pinned SHA, license, verified by the owner).
 - [ ] Fetch + cache + bundled fallback; install by pinned SHA with tree-hash check and file preview.
 - [ ] Writers: `.claude/skills/`, `.mcp.json` (with `${VAR}`).
 - [ ] On Planning completion, run `claude-code-setup`'s recommender (headless) against the specs and scaffold; parse its recommendations into registry-shaped items.

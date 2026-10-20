@@ -780,3 +780,25 @@ test('a lost preview is reloaded with a note to check the files again', async ()
   for (const x of within(d2).getAllByRole('checkbox'))
     expect((x as HTMLInputElement).checked).toBe(false);
 });
+
+test('a stale engine is explained, with what to do about it', async () => {
+  call.mockReset();
+  call.mockImplementation(async () => {
+    throw Object.assign(
+      new Error(
+        'The engine does not know "registry.suggest" (it may be out of date).',
+      ),
+      {
+        code: 'METHOD_NOT_FOUND',
+        hint: 'Fully restart AWP (close the window and run `bun run dev` again).',
+      },
+    );
+  });
+  render(
+    <ToastProvider>
+      <ConnectorsView />
+    </ToastProvider>,
+  );
+  await screen.findByText(/may be out of date/);
+  await screen.findByText(/Fully restart AWP/);
+});

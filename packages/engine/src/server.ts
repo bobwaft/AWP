@@ -18,7 +18,12 @@ const fail = (
   code: number,
   stable: string,
   message: string,
-) => reply({ id, error: { code, message, data: { code: stable } } });
+  hint?: string,
+) =>
+  reply({
+    id,
+    error: { code, message, data: { code: stable, ...(hint ? { hint } : {}) } },
+  });
 
 /** Takes one NDJSON line, returns the response line (or undefined for notifications). */
 export function createHandler(
@@ -70,7 +75,13 @@ function handleLine(handlers: Handlers, log: (msg: string) => void) {
     const schema = methods[method as MethodName];
     const handler = handlers[method as MethodName];
     if (!schema || !handler)
-      return fail(id, ErrorCode.methodNotFound, 'METHOD_NOT_FOUND', method);
+      return fail(
+        id,
+        ErrorCode.methodNotFound,
+        'METHOD_NOT_FOUND',
+        `The engine does not know "${method}" (it may be out of date).`,
+        'Fully restart AWP: close the window and run `bun run dev` again.',
+      );
     // The Rust bridge sends `params: null` for calls without params.
     const parsed = schema.params.safeParse(params ?? undefined);
     if (!parsed.success) {

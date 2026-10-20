@@ -20,7 +20,10 @@ export function useRegistry() {
       );
       setError(undefined);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const hint = (e as { hint?: string }).hint;
+      setError(
+        `${e instanceof Error ? e.message : String(e)}${hint ? ` ${hint}` : ''}`,
+      );
     }
   }, []);
 

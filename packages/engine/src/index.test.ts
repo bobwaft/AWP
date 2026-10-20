@@ -95,3 +95,11 @@ test('failed requests are logged without params', async () => {
   expect(lines[0]).toContain('METHOD_NOT_FOUND');
   expect(lines.join()).not.toContain('hunter2');
 });
+
+test('an unknown method says the engine may be out of date and what to do', async () => {
+  const e = (await call(req('registry.nope'))).error;
+  expect(e.data.code).toBe('METHOD_NOT_FOUND');
+  expect(e.message).toMatch(/registry\.nope/);
+  expect(e.message).toMatch(/out of date|does not know/i);
+  expect(e.data.hint).toMatch(/restart/i);
+});

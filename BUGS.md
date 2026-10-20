@@ -176,3 +176,11 @@
 - Actual: edits autosave about 0.6 s after typing stops, with no "Saving… / Saved" indicator, so users don't know whether or how to save.
 - Severity: low
 - Status: open
+
+## BUG-023
+- Phase: 9
+- Steps: open Connectors (stage 05) in an AWP session whose engine was started before the Phase 9 code existed (the engine is a separate process and only reloads on a full restart of `bun run dev`).
+- Expected: the screen loads suggestions, or says what is wrong and what to do.
+- Actual: "Could not load suggestions: registry.suggest". An engine that does not know a method answered with just the method name, so nothing hinted at a stale engine. (The engine in use, PID 380, had started the day before.)
+- Severity: medium (confusing; blocked the Phase 9 test pass)
+- Status: fixed (METHOD_NOT_FOUND now says the engine may be out of date and to fully restart AWP; the UI shows the hint); awaiting re-test after a full restart

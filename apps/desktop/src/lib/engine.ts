@@ -14,6 +14,8 @@ export class EngineError extends Error {
   constructor(
     message: string,
     readonly code: string,
+    /** What the user can do about it, when the engine knows. */
+    readonly hint?: string,
   ) {
     super(message);
   }
@@ -34,7 +36,11 @@ async function call<M extends MethodName>(
     throw new EngineError('Malformed engine response', 'BAD_RESPONSE');
   const { error, result } = res.data;
   if (error)
-    throw new EngineError(error.message, error.data?.code ?? 'UNKNOWN');
+    throw new EngineError(
+      error.message,
+      error.data?.code ?? 'UNKNOWN',
+      error.data?.hint,
+    );
   const parsed = methods[method].result.safeParse(result);
   if (!parsed.success)
     throw new EngineError('Malformed engine result', 'BAD_RESPONSE');

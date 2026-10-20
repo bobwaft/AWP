@@ -90,12 +90,12 @@ test('stage rail switches by click and by keys 1-0', async () => {
 test('rifle hotspots: 10 labelled, clickable and keyboard-operable', async () => {
   render(<App />);
   await loaded();
-  fireEvent.keyDown(window, { key: '5' }); // Connectors is still a placeholder screen
+  fireEvent.keyDown(window, { key: '6' }); // Implementation is the first stage that is still a placeholder screen
   const diagram = screen.getByRole('group', { name: 'Rifle diagram' });
   const spots = diagram.querySelectorAll('[role=button]');
   expect(spots).toHaveLength(10);
-  fireEvent.click(spots[5]);
-  expect(current()).toBe('Stage 6, Implementation, locked');
+  fireEvent.click(spots[6]);
+  expect(current()).toBe('Stage 7, Testing, locked');
   fireEvent.keyDown(spots[0], { key: 'Enter' });
   expect(current()).toBe('Stage 1, Setup, done');
 });

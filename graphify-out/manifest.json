@@ -138,15 +138,15 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/App.tsx": {
-    "mtime": 1792174476.0444863,
-    "seen": 1792188873.077002,
-    "ast_hash": "c2a6ee8a185c3b21671939081c8ae01a",
+    "mtime": 1792455924.7297955,
+    "seen": 1792456076.5170128,
+    "ast_hash": "4a4e5a9c5d1a26f808e04b86f6acd680",
     "semantic_hash": ""
   },
   "apps/desktop/src/app.test.tsx": {
-    "mtime": 1792174476.0444863,
-    "seen": 1792188873.0770056,
-    "ast_hash": "dd2f816d79b8cc3d75b79b32bcd87704",
+    "mtime": 1792455944.5976484,
+    "seen": 1792456076.5170171,
+    "ast_hash": "74d632436c8946231d15734d57c9d244",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/Button.tsx": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/Dialog.tsx": {
-    "mtime": 1792174476.0485067,
-    "seen": 1792188873.077034,
-    "ast_hash": "ad8de101294c9009c075a11d7750f26d",
+    "mtime": 1792455853.9392104,
+    "seen": 1792456076.518143,
+    "ast_hash": "9cd353310bea920488e127d4563f3e87",
     "semantic_hash": ""
   },
   "apps/desktop/src/components/Input.tsx": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "IMPLEMENTATION.md": {
-    "mtime": 1792455631.2054856,
-    "seen": 1792455734.19344,
-    "ast_hash": "777df4daae970d884ee6adc8b91672b9",
+    "mtime": 1792455959.5834723,
+    "seen": 1792456076.5496693,
+    "ast_hash": "d02177006e5e224e55f6f58fafd9d3cb",
     "semantic_hash": ""
   },
   "MEMORY.md": {
@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/engine.ts": {
-    "mtime": 1792174476.0605373,
-    "seen": 1792188873.0771344,
-    "ast_hash": "1a8de57543c8363d01d7152d9b6554b3",
+    "mtime": 1792455853.9382143,
+    "seen": 1792456076.5219688,
+    "ast_hash": "f88c5f03326a6b80e1eac393f7797db5",
     "semantic_hash": ""
   },
   "packages/engine/src/main.ts": {
@@ -2259,6 +2259,36 @@
     "mtime": 1792455340.2330537,
     "seen": 1792455734.1851723,
     "ast_hash": "274fb35f6461e1bd2d2070b9dcfe131e",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/components/InstallPreviewDialog.tsx": {
+    "mtime": 1792455911.3293023,
+    "seen": 1792456076.5185356,
+    "ast_hash": "e9ab2ba2b5f2b4038cd29cebd8bb0125",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/components/SuggestionCard.tsx": {
+    "mtime": 1792455911.3773038,
+    "seen": 1792456076.5199163,
+    "ast_hash": "2878da705eac3e3e6da88b96ada1216e",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/lib/registry.ts": {
+    "mtime": 1792455911.3515205,
+    "seen": 1792456076.522539,
+    "ast_hash": "dff24a63f9e79dbb343dd532fcf2d78d",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/stages/ConnectorsView.tsx": {
+    "mtime": 1792455911.3743055,
+    "seen": 1792456076.5235593,
+    "ast_hash": "c365dff28e9eecef108cb62e8d69e03a",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/stages/connectors.test.tsx": {
+    "mtime": 1792455911.3830295,
+    "seen": 1792456076.5243936,
+    "ast_hash": "6e073ede931fc781a0edf111c29d5117",
     "semantic_hash": ""
   }
 }

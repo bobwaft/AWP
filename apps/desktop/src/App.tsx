@@ -13,6 +13,7 @@ import { loadSettings, saveSettings } from './lib/settings';
 import { STAGES, stageForKey } from './lib/stages';
 import { TerminalProvider } from './lib/terminal';
 import { applyTheme } from './lib/theme';
+import { ConnectorsView } from './stages/ConnectorsView';
 import { Dashboard } from './stages/Dashboard';
 import { DesignView } from './stages/DesignView';
 import { DevRun } from './stages/DevRun';
@@ -149,6 +150,8 @@ function Shell() {
                 <DesignView />
               ) : stage === 4 ? (
                 <PlanningView />
+              ) : stage === 5 ? (
+                <ConnectorsView />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
                   <p className="hud">

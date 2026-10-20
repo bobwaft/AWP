@@ -4,10 +4,12 @@ type Props = {
   open: boolean;
   onClose: () => void;
   label: string;
+  /** A wider panel for content such as a file review. */
+  wide?: boolean;
   children: ReactNode;
 };
 
-export function Dialog({ open, onClose, label, children }: Props) {
+export function Dialog({ open, onClose, label, wide, children }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function Dialog({ open, onClose, label, children }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={label}
-        className="w-full max-w-lg rounded-md border border-line-strong bg-bg-1 shadow-[0_8px_32px_#00000080]"
+        className={`w-full ${wide ? 'max-w-3xl' : 'max-w-lg'} rounded-md border border-line-strong bg-bg-1 shadow-[0_8px_32px_#00000080]`}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === 'Escape') return onClose();

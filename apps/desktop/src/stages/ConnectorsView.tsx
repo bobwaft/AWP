@@ -12,7 +12,7 @@ import { currentOs } from '../lib/os';
 import { useProject } from '../lib/project';
 import { useRegistry } from '../lib/registry';
 import { useTerminal } from '../lib/terminal';
-import { buildTerminalLine, readExitCode } from '../lib/terminalCommand';
+import { buildTerminalLine, interpretRun } from '../lib/terminalCommand';
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -107,9 +107,10 @@ export function ConnectorsView() {
     let stopData: () => void = () => {};
     stopData = term.attach(id, (chunk) => {
       if (done) return;
-      seen = (seen + chunk).slice(-8192);
-      const code = readExitCode(seen);
-      if (code === null) return;
+      seen = (seen + chunk).slice(-16384);
+      const run = interpretRun(seen, s.terminal?.commands.length ?? 1);
+      if (!run) return;
+      const { code, alreadyInstalled } = run;
       done = true;
       stopData();
       finish();
@@ -118,7 +119,9 @@ export function ConnectorsView() {
         .then(() =>
           toast(
             code === 0
-              ? `${s.item.name} installed.`
+              ? alreadyInstalled
+                ? `${s.item.name} was already installed.`
+                : `${s.item.name} installed.`
               : `${s.item.name} failed (exit ${code}). See the terminal.`,
           ),
         )

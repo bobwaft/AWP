@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "BUGS.md": {
-    "mtime": 1792468014.0354898,
-    "seen": 1792468075.5020018,
-    "ast_hash": "6649bee2e18705849a65b33b31feea00",
+    "mtime": 1792472540.2767663,
+    "seen": 1792472553.9006214,
+    "ast_hash": "59f3ca23be4b384a6bf20903be701256",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -2274,9 +2274,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/ConnectorsView.tsx": {
-    "mtime": 1792470131.020554,
-    "seen": 1792470385.736414,
-    "ast_hash": "b2ce2c671cf13386a8557c7f91c305ea",
+    "mtime": 1792472401.5989408,
+    "seen": 1792472553.869519,
+    "ast_hash": "a658ec1bb374562ca0c3699ac1ccc234",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/connectors.test.tsx": {
@@ -2322,15 +2322,15 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/terminalCommand.test.ts": {
-    "mtime": 1792470211.183664,
-    "seen": 1792470385.7361042,
-    "ast_hash": "c82fe5b6b2b82449ad7a68b72ca2fbeb",
+    "mtime": 1792472459.9188447,
+    "seen": 1792472553.8690703,
+    "ast_hash": "f5524649ccb9b45353f6bbe004cdbc1b",
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/terminalCommand.ts": {
-    "mtime": 1792470234.4792688,
-    "seen": 1792470385.7361054,
-    "ast_hash": "1c8cd162c71c34c2f299b8a5907e3452",
+    "mtime": 1792472396.7488816,
+    "seen": 1792472553.8690753,
+    "ast_hash": "db49d123b6f574d01f64add86717e202",
     "semantic_hash": ""
   }
 }

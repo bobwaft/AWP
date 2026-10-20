@@ -191,4 +191,4 @@
 - Expected: the card ends as Installed (the plugin is available).
 - Actual: the card shows "Could not install: The command exited with code 1". `claude plugin install skill-creator@claude-plugins-official --scope project -y` prints `"skill-creator" is already installed from Anthropic Directory…` and exits 1 (reproduced with the real CLI); the exit code alone was treated as a failure. The engine-side plugin install had the same gap (it only tolerated "already" on the marketplace-add step).
 - Severity: medium
-- Status: fixed — a terminal run now prints a marker after each step; if the step that failed is the last one and its own output says "already installed/added/exists/on disk", the card ends as Installed ("was already installed"). Earlier steps and non-matching failures still fail. Needs a re-test.
+- Status: fixed — a terminal run now prints a marker after each step; if the step that failed is the last one and its own output says "already installed/added/exists/on disk", the card ends as Installed ("was already installed"). Earlier steps and non-matching failures still fail. Re-tested: pass.

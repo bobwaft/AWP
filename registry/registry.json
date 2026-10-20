@@ -19,7 +19,7 @@
       "install": {
         "type": "installer",
         "commands": [
-          ["uv", "tool", "install", "graphifyy"],
+          ["uv", "tool", "install", "graphifyy==0.9.91"],
           ["graphify", "install", "--project"]
         ]
       },
@@ -189,7 +189,7 @@
         "commands": [
           [
             "npx",
-            "impeccable",
+            "impeccable@4.6.0",
             "install",
             "--providers=claude",
             "--scope=project"

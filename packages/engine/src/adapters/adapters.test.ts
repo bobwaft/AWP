@@ -80,6 +80,23 @@ test('buildArgs passes plugin dirs and disallowed tools without swallowing the p
   expect(a[a.indexOf('/p/two') - 1]).toBe('--plugin-dir');
 });
 
+test('buildArgs can ignore project settings and project MCP servers for one run', () => {
+  const a = buildArgs({
+    runId: 'r',
+    cwd: '/x',
+    prompt: 'go',
+    settingSources: ['user'],
+    strictMcpConfig: true,
+    mcpConfigPath: '/m.json',
+  });
+  expect(a[a.indexOf('--setting-sources') + 1]).toBe('user');
+  expect(a).toContain('--strict-mcp-config');
+  expect(a.slice(-2)).toEqual(['--', 'go']);
+  const plain = buildArgs({ runId: 'r', cwd: '/x', prompt: 'go' });
+  expect(plain).not.toContain('--setting-sources');
+  expect(plain).not.toContain('--strict-mcp-config');
+});
+
 test('buildArgs puts prompt after -- and includes options', () => {
   const a = buildArgs(
     {

@@ -1,9 +1,15 @@
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test, vi } from 'vitest';
 import { EngineError } from '../errors';
-import { customFromLocal, customFromRepo } from './custom';
+import { customFromLocal, customFromRepo, localSource } from './custom';
 import { detectLicense } from './license';
 import { buildPreview } from './preview';
 import { makeRepo } from './test-repo';
@@ -191,4 +197,41 @@ test('a symbolic link in a local folder is refused by the preview', async () => 
   expect(await code(buildPreview((await customFromLocal(d)).src))).toBe(
     'SYMLINK_NOT_ALLOWED',
   );
+});
+
+test('a commit the user typed in is flagged: it may not be on the main branch', async () => {
+  const r = makeRepo({ 'skills/demo/SKILL.md': SKILL, LICENSE: MIT });
+  const typed = await customFromRepo({
+    repoUrl: r.url,
+    sha: r.sha,
+    path: 'skills/demo',
+    cacheDir: tmp(),
+    allowAnyUrl: true,
+  });
+  expect(typed.item.flags.notes.join(' ')).toMatch(/commit you chose/i);
+  const head = await customFromRepo({
+    repoUrl: r.url,
+    path: 'skills/demo',
+    cacheDir: tmp(),
+    allowAnyUrl: true,
+  });
+  expect(head.item.flags.notes.join(' ')).not.toMatch(/commit you chose/i);
+});
+
+test('a file swapped for a link after the folder was listed is not followed out of the folder', async () => {
+  const d = tmp();
+  const outside = tmp();
+  writeFileSync(join(outside, 'secret.txt'), 'top secret');
+  writeFileSync(join(d, 'SKILL.md'), SKILL);
+  writeFileSync(join(d, 'a.md'), 'plain');
+  const src = await localSource(d);
+  rmSync(join(d, 'a.md'));
+  try {
+    symlinkSync(outside, join(d, 'a.md'), 'junction');
+  } catch {
+    return; // links cannot be created in this environment
+  }
+  await expect(src.read('a.md')).rejects.toBeInstanceOf(EngineError);
+  // ordinary files still read fine
+  expect((await src.read('SKILL.md')).toString()).toBe(SKILL);
 });

@@ -8,16 +8,22 @@ import {
 } from './recommender-parse';
 
 export type DiscoveryRun = {
+  /** The project the run belongs to (it may no longer be the open one when the run starts). */
+  root?: string;
   prompt: string;
   pluginDirs: string[];
   allowedTools: string[];
   disallowedTools: string[];
+  /** Project settings, hooks and MCP servers must not apply to this run. */
+  settingSources: string[];
+  strictMcpConfig: boolean;
 };
 
 export type DiscoverDeps = {
   registry: RegistryFile;
   specs: Specs;
   rejected: Rejected;
+  root?: string;
   /** Directory of the claude-code-setup plugin for this run only, or null when unavailable. */
   ensurePlugin: () => Promise<string | null>;
   /** Runs the agent once; `submitted` is what it passed to submit_suggestions (null if it never did). */
@@ -67,6 +73,7 @@ export async function discover(d: DiscoverDeps): Promise<DiscoverResult> {
   if (plugin) {
     try {
       const run = await d.runAgent({
+        root: d.root,
         prompt: render(loadPrompt('connectors.suggester').body, {
           prd: d.specs.prd || '(none)',
           design: d.specs.design || '(none)',
@@ -84,7 +91,19 @@ export async function discover(d: DiscoverDeps): Promise<DiscoverResult> {
           'WebSearch',
           'mcp__awp__submit_suggestions',
         ],
-        disallowedTools: ['Bash', 'Write', 'Edit'],
+        disallowedTools: [
+          'Bash',
+          'Write',
+          'Edit',
+          'NotebookEdit',
+          'WebFetch',
+          'Task',
+          'Agent',
+          'PowerShell',
+        ],
+        // the project is untrusted input here: only the user's own settings apply
+        settingSources: ['user'],
+        strictMcpConfig: true,
       });
       if (run.submitted) {
         recommender = fromSubmitted(run.submitted, d.registry);
@@ -142,7 +161,11 @@ function fromSubmitted(
     }
     out.push({
       name: x.name as string,
-      kind: (x.kind ? KINDS[x.kind] : 'other') as RecommenderKind,
+      kind: (x.kind
+        ? x.kind in KINDS
+          ? KINDS[x.kind as Kind]
+          : x.kind
+        : 'other') as RecommenderKind,
       category: x.category ?? '',
       why: x.why,
       install: x.installCommand,

@@ -167,3 +167,33 @@ test('items needing a secret declare it so Approve becomes Connect account', () 
   );
   expect(c7?.optional).toBe(true);
 });
+
+test('auto-run installers are pinned to an exact version', () => {
+  const commands = (id: string) => {
+    const i = item(id).install;
+    if (i.type !== 'installer') throw new Error(`${id} is not an installer`);
+    return i.commands;
+  };
+  // impeccable 4.6.0 = the package.json version of the owner-verified commit; graphifyy 0.9.91 = the tag at that commit
+  expect(commands('impeccable')).toEqual([
+    [
+      'npx',
+      'impeccable@4.6.0',
+      'install',
+      '--providers=claude',
+      '--scope=project',
+    ],
+  ]);
+  expect(commands('graphify')).toEqual([
+    ['uv', 'tool', 'install', 'graphifyy==0.9.91'],
+    ['graphify', 'install', '--project'],
+  ]);
+  for (const i of reg.items) {
+    if (i.install.type !== 'installer') continue;
+    for (const c of i.install.commands) {
+      if (c[0] === 'npx') expect(c[1], i.id).toMatch(/@\d+\.\d+\.\d+$/);
+      if (c[0] === 'uv' && c[1] === 'tool')
+        expect(c[3], i.id).toMatch(/==\d+\.\d+\.\d+$/);
+    }
+  }
+});

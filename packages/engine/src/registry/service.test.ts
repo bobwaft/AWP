@@ -157,7 +157,7 @@ const registry = RegistryFile.parse({
 });
 
 const make = (over: Partial<ServiceDeps> = {}) => {
-  const root = tmp();
+  let root = tmp();
   mkdirSync(join(root, '.claude'), { recursive: true });
   const calls: string[][] = [];
   const exec: Exec = async (argv) => {
@@ -182,7 +182,18 @@ const make = (over: Partial<ServiceDeps> = {}) => {
     allowAnyUrl: true,
     ...over,
   };
-  return { svc: new RegistryService(deps), root, calls, notes };
+  return {
+    svc: new RegistryService(deps),
+    get root() {
+      return root;
+    },
+    switchTo: (r: string) => {
+      root = r;
+    },
+    calls,
+    notes,
+    deps,
+  };
 };
 const row = (s: { items: { id: string }[] }, id: string) =>
   s.items.find((i) => i.id === id) as never as {
@@ -561,4 +572,269 @@ test('exactly one of a repository URL or a local folder is required, and bad inp
   expect(await code(svc.addCustom({ repoUrl: noSkill.url }))).toBe(
     'NOT_A_SKILL',
   );
+});
+
+// ---- hardening from the Phase 9 reviews ----
+
+import { writeFileSync as writeFile2 } from 'node:fs';
+
+const fileOf = (root: string) => join(root, '.awp', 'suggestions.json');
+const tamper = (root: string, fn: (items: any[]) => any[]) => {
+  const j = JSON.parse(readFileSync(fileOf(root), 'utf8'));
+  j.items = fn(j.items);
+  writeFile2(fileOf(root), JSON.stringify(j));
+};
+
+test('a committed suggestions file cannot change what an installer runs: registry rows come from the registry', async () => {
+  const a = make();
+  await a.svc.runDiscovery();
+  tamper(a.root, (items) =>
+    items.map((i) =>
+      i.id === 'gfy'
+        ? {
+            ...i,
+            status: 'approved',
+            verified: true,
+            source: 'registry',
+            item: {
+              ...registry.items.find((x) => x.id === 'gfy'),
+              install: {
+                type: 'installer',
+                commands: [['npx', '-y', 'evil-pkg']],
+              },
+            },
+          }
+        : i,
+    ),
+  );
+  // a fresh service (as after a restart or a clone) reads the tampered file
+  const b = make({ root: () => a.root });
+  const st = await b.svc.state();
+  expect((st.items.find((i) => i.id === 'gfy') as any).command).toBe(
+    'uv tool install graphifyy',
+  );
+  await b.svc.install({ id: 'gfy' });
+  expect(b.calls).toEqual([['uv', 'tool', 'install', 'graphifyy']]);
+});
+
+test('rows that claim to be from the registry but are not in it are ignored', async () => {
+  const a = make();
+  await a.svc.runDiscovery();
+  tamper(a.root, (items) => [
+    ...items,
+    {
+      id: 'evil-pkg',
+      source: 'registry',
+      verified: true,
+      idea: false,
+      alternatives: [],
+      status: 'approved',
+      reason: 'x',
+      at: 'x',
+      item: {
+        ...registry.items[0],
+        id: 'evil-pkg',
+        install: { type: 'installer', commands: [['npx', 'evil']] },
+      },
+    },
+  ]);
+  const b = make({ root: () => a.root });
+  expect((await b.svc.state()).items.some((i) => i.id === 'evil-pkg')).toBe(
+    false,
+  );
+  expect(await code(b.svc.install({ id: 'evil-pkg' }))).toBe('NOT_FOUND');
+  expect(b.calls.length).toBe(0);
+});
+
+test('a recommender row is forced to a record-only item whatever the file says', async () => {
+  const a = make();
+  await a.svc.runDiscovery();
+  tamper(a.root, (items) => [
+    ...items,
+    {
+      id: 'sneaky',
+      source: 'recommender',
+      verified: true,
+      idea: false,
+      alternatives: [],
+      status: 'approved',
+      reason: 'x',
+      at: 'x',
+      item: {
+        ...registry.items[0],
+        id: 'sneaky',
+        verified: true,
+        install: { type: 'installer', commands: [['npx', 'evil']] },
+      },
+    },
+  ]);
+  const b = make({ root: () => a.root });
+  const v = (await b.svc.state()).items.find((i) => i.id === 'sneaky') as any;
+  expect(v).toMatchObject({ action: 'doc', verified: false });
+  const r = await b.svc.install({ id: 'sneaky', acknowledged: true });
+  expect(r.result.status).toBe('recorded');
+  expect(b.calls.length).toBe(0);
+});
+
+test('a user row may only be a skill from a repo or a folder, and is never verified', async () => {
+  const a = make();
+  await a.svc.runDiscovery();
+  tamper(a.root, (items) => [
+    ...items,
+    {
+      id: 'bad-user',
+      source: 'user',
+      verified: true,
+      idea: false,
+      alternatives: [],
+      status: 'approved',
+      reason: 'x',
+      at: 'x',
+      item: {
+        ...registry.items[0],
+        id: 'bad-user',
+        install: { type: 'installer', commands: [['npx', 'evil']] },
+      },
+    },
+    {
+      id: 'ok-user',
+      source: 'user',
+      verified: true,
+      idea: false,
+      alternatives: [],
+      status: 'approved',
+      reason: 'x',
+      at: 'x',
+      item: {
+        ...registry.items.find((x) => x.id === 'skl'),
+        id: 'ok-user',
+        verified: true,
+      },
+    },
+  ]);
+  const b = make({ root: () => a.root });
+  const st = await b.svc.state();
+  expect(st.items.some((i) => i.id === 'bad-user')).toBe(false);
+  expect((st.items.find((i) => i.id === 'ok-user') as any).verified).toBe(
+    false,
+  );
+});
+
+test('retrying after an .mcp.json name clash never overwrites the user own server', async () => {
+  const { svc, root } = make();
+  writeFile2(
+    join(root, '.mcp.json'),
+    JSON.stringify({ mcpServers: { ctx: { command: 'theirs', args: [] } } }),
+  );
+  await svc.runDiscovery();
+  await svc.decide({ id: 'ctx', decision: 'approve' });
+  expect(await code(svc.install({ id: 'ctx' }))).toBe('MCP_NAME_CLASH');
+  expect(row(await svc.state(), 'ctx').status).toBe('failed');
+  expect(await code(svc.install({ id: 'ctx' }))).toBe('MCP_NAME_CLASH');
+  expect(
+    JSON.parse(readFileSync(join(root, '.mcp.json'), 'utf8')).mcpServers.ctx
+      .command,
+  ).toBe('theirs');
+});
+
+test('two installs of the same item at once: one wins, the other is refused, and the row stays installed', async () => {
+  const { svc } = make();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'ctx', decision: 'approve' });
+  const [a, b] = await Promise.allSettled([
+    svc.install({ id: 'ctx' }),
+    svc.install({ id: 'ctx' }),
+  ]);
+  expect([a.status, b.status].sort()).toEqual(['fulfilled', 'rejected']);
+  const err = (
+    a.status === 'rejected' ? a.reason : (b as PromiseRejectedResult).reason
+  ) as EngineError;
+  expect(err.code).toBe('ALREADY_INSTALLED');
+  expect(row(await svc.state(), 'ctx').status).toBe('installed');
+});
+
+test('an installed item cannot be rejected or undone behind the installer back', async () => {
+  const { svc } = make();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'ctx', decision: 'approve' });
+  await svc.install({ id: 'ctx' });
+  expect(await code(svc.decide({ id: 'ctx', decision: 'reject' }))).toBe(
+    'ALREADY_INSTALLED',
+  );
+  expect(await code(svc.decide({ id: 'ctx', decision: 'undo' }))).toBe(
+    'ALREADY_INSTALLED',
+  );
+  expect(row(await svc.state(), 'ctx').status).toBe('installed');
+});
+
+test('switching projects while discovery runs keeps the results with the project that asked', async () => {
+  let release: () => void = () => {};
+  const gate = new Promise<void>((r) => (release = r));
+  const h = make({
+    ensurePlugin: async () => '/p',
+    runAgent: async () => {
+      await gate;
+      return {
+        status: 'success',
+        text: '',
+        submitted: { suggestions: [{ id: 'ctx', why: 'for A' }] },
+      };
+    },
+  });
+  const rootA = h.root;
+  const rootB = tmp();
+  mkdirSync(join(rootB, 'docs'), { recursive: true });
+  await h.svc.beginDiscovery();
+  const doneA = h.svc.idle();
+  h.switchTo(rootB);
+  h.notes.length = 0;
+  release();
+  await doneA;
+  const a = JSON.parse(readFileSync(fileOf(rootA), 'utf8'));
+  expect(a.discovery.status).toBe('done');
+  expect(a.items.length).toBeGreaterThan(0);
+  expect(existsSync(fileOf(rootB))).toBe(false);
+  expect(existsSync(join(rootB, 'docs', 'TOOLING.md'))).toBe(false);
+  // nothing about project A was pushed to the UI that is now showing B
+  expect(h.notes.filter((n) => n.method === 'registry.state').length).toBe(0);
+  // and B's own state is untouched by A's run
+  expect((await h.svc.state()).items.length).toBe(0);
+});
+
+test('a preview made in one project cannot be installed into another', async () => {
+  const h = make();
+  await h.svc.runDiscovery();
+  await h.svc.decide({ id: 'skl', decision: 'approve' });
+  const p = await h.svc.preview('skl');
+  const rootB = tmp();
+  mkdirSync(join(rootB, '.claude'), { recursive: true });
+  h.switchTo(rootB);
+  await h.svc.runDiscovery();
+  await h.svc.decide({ id: 'skl', decision: 'approve' });
+  expect(
+    await code(
+      h.svc.install({
+        id: 'skl',
+        previewId: p.previewId,
+        confirmScripts: true,
+      }),
+    ),
+  ).toBe('PREVIEW_UNKNOWN');
+});
+
+test('an unexpected install error is stored without any secret in it', async () => {
+  const secret = 'mongodb://user:hunter2secret@host/db';
+  const exec: Exec = async () => {
+    throw new Error(`spawn blew up with token=abcd1234efgh and ${secret}`);
+  };
+  const { svc, root } = make({ exec, getSecret: async () => secret });
+  await svc.runDiscovery();
+  await svc.decide({ id: 'gfy', decision: 'approve' });
+  await svc.install({ id: 'gfy' }).catch(() => {});
+  const stored =
+    readFileSync(fileOf(root), 'utf8') +
+    readFileSync(join(root, 'docs', 'TOOLING.md'), 'utf8');
+  expect(stored).not.toContain('hunter2secret');
+  expect(stored).not.toContain('abcd1234efgh');
+  expect(stored).toContain('[redacted]');
 });

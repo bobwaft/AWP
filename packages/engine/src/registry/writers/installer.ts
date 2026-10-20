@@ -10,6 +10,17 @@ import {
 /** The only programs an installer may start; registry data cannot widen this list. */
 const ALLOWED = new Set(['npx', 'uv', 'uvx', 'graphify']);
 
+/**
+ * Installers run in the project folder, which is untrusted: its .npmrc, node_modules and uv config must
+ * not redirect where code is downloaded from.
+ */
+const INSTALLER_ENV: Record<string, string> = {
+  npm_config_registry: 'https://registry.npmjs.org/',
+  npm_config_yes: 'true',
+  UV_NO_CONFIG: '1',
+  UV_INDEX_URL: 'https://pypi.org/simple',
+};
+
 const INSTALL_HINT: Record<string, string> = {
   uv: 'Install uv from https://docs.astral.sh/uv/ and try again.',
   uvx: 'Install uv from https://docs.astral.sh/uv/ and try again.',
@@ -41,7 +52,7 @@ export async function runInstaller(
   for (const argv of i.commands) {
     let r: ExecResult;
     try {
-      r = await exec(argv, { cwd: i.root });
+      r = await exec(argv, { cwd: i.root, extraEnv: INSTALLER_ENV });
     } catch (e) {
       if ((e as NodeJS.ErrnoException)?.code === 'ENOENT')
         throw new EngineError(

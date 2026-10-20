@@ -1,6 +1,6 @@
 import type { InstallPreview, SuggestionView } from '@awp/protocol';
 import { open as pickFolder } from '@tauri-apps/plugin-dialog';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Dialog } from '../components/Dialog';
 import { Input } from '../components/Input';
@@ -24,6 +24,10 @@ export function ConnectorsView() {
   const [reviewError, setReviewError] = useState('');
   const [busy, setBusy] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [loadingReview, setLoadingReview] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const reviewReq = useRef(0);
+  const reviewing = useRef(false);
 
   const items = state?.items ?? [];
   const idea = (i: SuggestionView) => i.idea && i.status !== 'rejected';
@@ -36,14 +40,26 @@ export function ConnectorsView() {
   const d = state?.discovery;
 
   const openReview = async (s: SuggestionView, variant?: string) => {
+    if (reviewing.current) return;
+    reviewing.current = true;
+    const req = ++reviewReq.current;
     setReviewError('');
-    setReview({ s, variant, preview: null });
+    setLoadingReview(s.id);
     try {
-      setReview({ s, variant, preview: await api.preview(s.id) });
+      const preview = await api.preview(s.id);
+      if (req === reviewReq.current) setReview({ s, variant, preview });
     } catch (e) {
-      setReview(null);
-      toast(`Could not load the files: ${msg(e)}`);
+      if (req === reviewReq.current)
+        toast(`Could not load the files: ${msg(e)}`);
+    } finally {
+      reviewing.current = false;
+      if (req === reviewReq.current) setLoadingReview(null);
     }
+  };
+
+  const closeReview = () => {
+    reviewReq.current++;
+    setReview(null);
   };
 
   const installFromReview = async (a: {
@@ -62,9 +78,20 @@ export function ConnectorsView() {
           variant: review.variant,
         });
       await api.install({ id: review.s.id, ...a });
-      setReview(null);
+      closeReview();
     } catch (e) {
-      setReviewError(msg(e));
+      if ((e as { code?: string }).code === 'PREVIEW_UNKNOWN') {
+        // The engine lost the preview (e.g. after a restart): load it again and ask again.
+        try {
+          const preview = await api.preview(review.s.id);
+          setReview({ ...review, preview });
+          setReviewError(
+            'The files were reloaded. Check them and confirm again.',
+          );
+        } catch (e2) {
+          setReviewError(msg(e2));
+        }
+      } else setReviewError(msg(e));
     } finally {
       setBusy(false);
     }
@@ -84,10 +111,16 @@ export function ConnectorsView() {
         s={s}
         api={api}
         onReview={openReview}
+        reviewBusy={loadingReview !== null}
+        reviewLoading={loadingReview === s.id}
         onTokenSaved={() => void api.refresh()}
-        onInstalled={(name, r) =>
-          toast(r.note ? `${name} installed. ${r.note}` : `${name} installed.`)
-        }
+        onInstalled={(name, r) => {
+          const done =
+            r.status === 'recorded'
+              ? `${name} recorded in docs/TOOLING.md.`
+              : `${name} installed.`;
+          toast(r.note ? `${done} ${r.note}` : done);
+        }}
       />
     </li>
   );
@@ -99,8 +132,15 @@ export function ConnectorsView() {
           <h1 className="text-xl font-semibold">Connectors</h1>
           <span className="flex-1" />
           <Button
-            disabled={d?.status === 'running'}
-            onClick={() => void api.refresh(true)}
+            disabled={d?.status === 'running' || refreshing}
+            onClick={async () => {
+              setRefreshing(true);
+              try {
+                await api.refresh(true);
+              } finally {
+                setRefreshing(false);
+              }
+            }}
           >
             Run discovery again
           </Button>
@@ -175,7 +215,7 @@ export function ConnectorsView() {
         unverified={!!review && !review.s.verified}
         error={reviewError}
         busy={busy}
-        onClose={() => setReview(null)}
+        onClose={closeReview}
         onInstall={installFromReview}
       />
       <AddCustomDialog
@@ -210,14 +250,23 @@ function AddCustomDialog({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const reset = () => {
+    setUrl('');
+    setPath('');
+    setSha('');
+    setError('');
+  };
+  const close = () => {
+    if (busy) return;
+    reset();
+    onClose();
+  };
   const go = async (a: Parameters<typeof onAdd>[0]) => {
     setBusy(true);
     setError('');
     try {
       await onAdd(a);
-      setUrl('');
-      setPath('');
-      setSha('');
+      reset();
     } catch (e) {
       setError(msg(e));
     } finally {
@@ -230,7 +279,7 @@ function AddCustomDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} label="Add your own">
+    <Dialog open={open} onClose={close} label="Add your own">
       <div className="flex flex-col gap-3 p-4">
         <h2 className="text-lg font-semibold">Add your own</h2>
         <p className="text-sm text-text-2">
@@ -265,7 +314,7 @@ function AddCustomDialog({
             Choose a folder on this computer…
           </Button>
           <span className="flex-1" />
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="ghost" disabled={busy} onClick={close}>
             Cancel
           </Button>
           <Button

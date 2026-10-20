@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
@@ -94,4 +94,44 @@ test('a tampered cache that fails the schema is ignored', async () => {
   );
   const r = await loadRegistry({ dataDir: d, bundled });
   expect(r.source).toBe('bundled');
+});
+
+test('a version the app has accepted becomes a floor: later copies below it are ignored, even with the cache gone', async () => {
+  const d = dir();
+  await loadRegistry({ dataDir: d, bundled, fetchRemote: async () => at(8) });
+  // an attacker or a stale mirror offers an older-but-newer-than-bundled copy
+  const r = await loadRegistry({
+    dataDir: d,
+    bundled,
+    fetchRemote: async () => at(6),
+  });
+  expect(r.source).toBe('cache');
+  expect(r.registry.version).toBe(8);
+  // delete the cache file: the floor is kept separately, so v6 still cannot come back
+  rmSync(join(d, 'registry-cache.json'));
+  const r2 = await loadRegistry({
+    dataDir: d,
+    bundled,
+    fetchRemote: async () => at(6),
+  });
+  expect(r2.source).toBe('bundled');
+  expect(r2.registry.version).toBe(5);
+  // a newer version is still accepted and raises the floor
+  const r3 = await loadRegistry({
+    dataDir: d,
+    bundled,
+    fetchRemote: async () => at(9),
+  });
+  expect(r3.source).toBe('remote');
+});
+
+test('a corrupt floor file does not lock the registry out', async () => {
+  const d = dir();
+  writeFileSync(join(d, 'registry-floor.json'), '{ nope');
+  const r = await loadRegistry({
+    dataDir: d,
+    bundled,
+    fetchRemote: async () => at(6),
+  });
+  expect(r.source).toBe('remote');
 });

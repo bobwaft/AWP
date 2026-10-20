@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, vi } from 'vitest';
+import { toolList } from '../mcp';
 import { type DiscoverDeps, type DiscoveryRun, discover } from './discover';
 import { bundledRegistry } from './load';
 
@@ -157,4 +158,82 @@ test('rejected items stay rejected even when the agent suggests them again', asy
     }),
   );
   expect(ids(r)).not.toContain('supabase');
+});
+
+test('every awp MCP tool the discovery run is allowed to call is exposed by the MCP proxy', async () => {
+  const runAgent = vi.fn(async (_req: DiscoveryRun) => ({
+    status: 'success' as const,
+    text: '',
+    submitted: null,
+  }));
+  await discover(base({ runAgent }));
+  const req = runAgent.mock.calls[0]?.[0] as DiscoveryRun;
+  const exposed = new Set<string>(toolList().map((t) => t.name));
+  const wanted = req.allowedTools
+    .filter((t) => t.startsWith('mcp__awp__'))
+    .map((t) => t.slice('mcp__awp__'.length));
+  expect(wanted.length).toBeGreaterThan(0);
+  for (const name of wanted) expect(exposed.has(name), name).toBe(true);
+  // the proxy's schema for it is a real object schema with the suggestions array
+  const tool = toolList().find((t) => t.name === 'submit_suggestions');
+  expect(JSON.stringify(tool?.inputSchema)).toContain('suggestions');
+});
+
+test('the discovery run ignores project settings, hooks and MCP servers, and has no way to write, fetch or spawn', async () => {
+  const runAgent = vi.fn(async (_req: DiscoveryRun) => ({
+    status: 'success' as const,
+    text: '',
+    submitted: null,
+  }));
+  await discover(base({ runAgent }));
+  const req = runAgent.mock.calls[0]?.[0] as DiscoveryRun;
+  expect(req.settingSources).toEqual(['user']);
+  expect(req.strictMcpConfig).toBe(true);
+  for (const t of [
+    'Bash',
+    'Write',
+    'Edit',
+    'NotebookEdit',
+    'WebFetch',
+    'Task',
+    'Agent',
+    'PowerShell',
+  ])
+    expect(req.disallowedTools, t).toContain(t);
+});
+
+test('a hook or subagent the agent submits becomes an unverified idea, not an install', async () => {
+  const r = await discover(
+    base({
+      runAgent: async () => ({
+        status: 'success',
+        text: '',
+        submitted: {
+          suggestions: [
+            {
+              name: 'Block .env edits',
+              kind: 'hook' as const,
+              category: 'Hooks',
+              why: 'Keeps secrets out of commits.',
+            },
+            {
+              name: 'security-reviewer',
+              kind: 'subagent' as const,
+              category: 'Subagents',
+              why: 'Reviews auth code.',
+            },
+          ],
+        },
+      }),
+    }),
+  );
+  const hook = r.candidates.find((c) => c.id === 'block-env-edits');
+  expect(hook).toMatchObject({
+    verified: false,
+    idea: true,
+    source: 'recommender',
+  });
+  expect(r.candidates.find((c) => c.id === 'security-reviewer')).toMatchObject({
+    idea: true,
+  });
 });

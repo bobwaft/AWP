@@ -57,6 +57,10 @@ export const RunRequest = z.object({
   disallowedTools: z.array(z.string()).optional(),
   /** Plugins loaded for this run only (`--plugin-dir`). */
   pluginDirs: z.array(z.string()).optional(),
+  /** Which Claude Code settings to load (`--setting-sources`), e.g. only the user's. */
+  settingSources: z.array(z.string()).optional(),
+  /** Use only the MCP servers in `mcpConfigPath` (`--strict-mcp-config`). */
+  strictMcpConfig: z.boolean().optional(),
   mcpConfigPath: z.string().optional(),
   env: z.record(z.string(), z.string()).optional(),
   maxTurns: z.number().int().positive().optional(),

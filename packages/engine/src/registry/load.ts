@@ -20,6 +20,17 @@ export type LoadOpts = {
 };
 
 const cacheFile = (dir: string) => join(dir, 'registry-cache.json');
+const floorFile = (dir: string) => join(dir, 'registry-floor.json');
+
+/** The highest registry version this app has accepted; kept apart from the cache so deleting the cache cannot lower it. */
+async function readFloor(dir: string): Promise<number> {
+  try {
+    const v = JSON.parse(await readFile(floorFile(dir), 'utf8'))?.version;
+    return Number.isInteger(v) && v > 0 ? v : 0;
+  } catch {
+    return 0;
+  }
+}
 
 /** A copy is trusted only if it parses and is not older than what shipped with the app. */
 function accept(raw: unknown, floor: number): RegistryFile | null {
@@ -36,12 +47,14 @@ export async function loadRegistry(
   opts: LoadOpts,
 ): Promise<{ registry: RegistryFile; source: RegistrySource }> {
   const bundled = opts.bundled ?? bundledRegistry();
+  const floor = Math.max(bundled.version, await readFloor(opts.dataDir));
 
   if (opts.fetchRemote) {
     try {
-      const remote = accept(await opts.fetchRemote(), bundled.version);
+      const remote = accept(await opts.fetchRemote(), floor);
       if (remote) {
         await writeCache(opts.dataDir, remote);
+        await writeFloor(opts.dataDir, remote.version);
         return { registry: remote, source: 'remote' };
       }
     } catch {
@@ -51,7 +64,7 @@ export async function loadRegistry(
 
   try {
     const c = JSON.parse(await readFile(cacheFile(opts.dataDir), 'utf8'));
-    const cached = accept(c?.registry, bundled.version);
+    const cached = accept(c?.registry, floor);
     if (cached) return { registry: cached, source: 'cache' };
   } catch {
     // no cache or unreadable
@@ -67,4 +80,11 @@ async function writeCache(dir: string, registry: RegistryFile) {
     JSON.stringify({ fetchedAt: new Date().toISOString(), registry }),
   );
   await rename(tmp, cacheFile(dir));
+}
+
+async function writeFloor(dir: string, version: number) {
+  await mkdir(dir, { recursive: true });
+  const tmp = `${floorFile(dir)}.${process.pid}.tmp`;
+  await writeFile(tmp, JSON.stringify({ version }));
+  await rename(tmp, floorFile(dir));
 }

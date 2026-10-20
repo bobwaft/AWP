@@ -463,6 +463,7 @@ test('mcp tool list exposes the active tools with object schemas; permission fla
     'submit_themes',
     'submit_stack_options',
     'submit_phase_plan',
+    'submit_suggestions',
   ]);
   for (const t of tools) expect(t.inputSchema.type).toBe('object');
   expect(

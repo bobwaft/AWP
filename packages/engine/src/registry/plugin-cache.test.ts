@@ -101,3 +101,28 @@ test('a source without a pinned commit is not used', async () => {
     }),
   ).toBeNull();
 });
+
+test('a pinned plugin may carry a screenshot over the skill file cap, but not an enormous file', async () => {
+  // the real claude-code-setup plugin ships a 545 KB png; its tree hash is owner-reviewed
+  const big = makeRepo({
+    ...files,
+    'plugins/setup/example.png': 'x'.repeat(600 * 1024),
+  });
+  const dir = await ensurePluginDir({
+    dataDir: tmp(),
+    source: item(big),
+    allowAnyUrl: true,
+  });
+  expect(dir).not.toBeNull();
+  const huge = makeRepo({
+    ...files,
+    'plugins/setup/huge.bin': 'x'.repeat(3 * 1024 * 1024),
+  });
+  expect(
+    await ensurePluginDir({
+      dataDir: tmp(),
+      source: item(huge),
+      allowAnyUrl: true,
+    }),
+  ).toBeNull();
+});

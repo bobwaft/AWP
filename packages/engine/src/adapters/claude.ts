@@ -22,6 +22,9 @@ export function buildArgs(req: RunRequest, resume?: string): string[] {
   if (req.disallowedTools?.length)
     a.push('--disallowedTools', ...req.disallowedTools);
   for (const d of req.pluginDirs ?? []) a.push('--plugin-dir', d);
+  if (req.settingSources?.length)
+    a.push('--setting-sources', req.settingSources.join(','));
+  if (req.strictMcpConfig) a.push('--strict-mcp-config');
   if (req.systemAppend) a.push('--append-system-prompt', req.systemAppend);
   if (req.mcpConfigPath) a.push('--mcp-config', req.mcpConfigPath);
   if (req.maxTurns) a.push('--max-turns', String(req.maxTurns));

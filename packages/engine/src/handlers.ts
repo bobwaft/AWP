@@ -84,8 +84,8 @@ export function createHandlers(
           }
         : undefined,
     }).then((r) => r.registry);
-  const readDoc = (name: string) =>
-    readFile(join(projects.root, 'docs', name), 'utf8').catch(() => '');
+  const readDoc = (root: string, name: string) =>
+    readFile(join(root, 'docs', name), 'utf8').catch(() => '');
   let registrySvc: RegistryService | undefined;
   const getRegistry = () => {
     registrySvc ??= new RegistryService({
@@ -93,10 +93,10 @@ export function createHandlers(
       cacheDir: join(dataDir, 'registry-git'),
       notify,
       registry: registryFile,
-      readSpecs: async () => ({
-        prd: await readDoc('PRD.md'),
-        design: await readDoc('DESIGN.md'),
-        architecture: await readDoc('ARCHITECTURE.md'),
+      readSpecs: async (root) => ({
+        prd: await readDoc(root, 'PRD.md'),
+        design: await readDoc(root, 'DESIGN.md'),
+        architecture: await readDoc(root, 'ARCHITECTURE.md'),
       }),
       ensurePlugin:
         opts.ensurePlugin ??
@@ -135,12 +135,14 @@ export function createHandlers(
           const { done } = runs.exec({
             adapter: spec.adapter,
             runId,
-            cwd: projects.root,
+            cwd: req.root ?? projects.root,
             prompt: req.prompt,
             model: spec.model ?? 'sonnet', // dev default until routing (Phase 10)
             allowedTools: req.allowedTools,
             disallowedTools: req.disallowedTools,
             pluginDirs: req.pluginDirs,
+            settingSources: req.settingSources,
+            strictMcpConfig: req.strictMcpConfig,
             mcpConfigPath: mcp?.path,
             env: mcp?.env,
             maxTurns: 30,

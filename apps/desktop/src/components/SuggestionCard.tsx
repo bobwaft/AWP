@@ -19,9 +19,13 @@ type Props = {
   api: RegistryApi;
   /** Opens the file review for skills. */
   onReview: (s: SuggestionView, variant?: string) => void;
+  /** True while a file review is loading: all "Review files" buttons wait. */
+  reviewBusy?: boolean;
+  /** This card's own review is the one loading. */
+  reviewLoading?: boolean;
   /** After a token is stored, the engine is asked again what is still missing. */
   onTokenSaved: () => void;
-  onInstalled?: (name: string, r: { note?: string }) => void;
+  onInstalled?: (name: string, r: { status?: string; note?: string }) => void;
 };
 
 /** Why it fits, what it costs, where it comes from; Approve and Reject (DESIGN.md §4.2). */
@@ -29,11 +33,14 @@ export function SuggestionCard({
   s,
   api,
   onReview,
+  reviewBusy,
+  reviewLoading,
   onTokenSaved,
   onInstalled,
 }: Props) {
   const it = s.item;
-  const [variant, setVariant] = useState('');
+  const [variant, setVariant] = useState(s.variant ?? '');
+  const [ack, setAck] = useState(false);
   const [tokens, setTokens] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -50,28 +57,20 @@ export function SuggestionCard({
     }
   };
 
+  /** Approve (when needed, or when the shown variant differs from the stored one), then install. */
   const approveAndInstall = () =>
     run(async () => {
-      if (s.status !== 'approved' && s.status !== 'failed')
+      const already = s.status === 'approved' || s.status === 'failed';
+      if (!already || variant !== (s.variant ?? ''))
         await api.decide({
           id: s.id,
           decision: 'approve',
           variant: variant || undefined,
         });
-      const r = await api.install({ id: s.id });
-      onInstalled?.(it.name, r);
-    });
-  const approveOnly = () =>
-    run(() =>
-      api.decide({
+      const r = await api.install({
         id: s.id,
-        decision: 'approve',
-        variant: variant || undefined,
-      }),
-    );
-  const installNow = () =>
-    run(async () => {
-      const r = await api.install({ id: s.id });
+        ...(needsAck ? { acknowledged: true } : {}),
+      });
       onInstalled?.(it.name, r);
     });
   const reject = () => run(() => api.decide({ id: s.id, decision: 'reject' }));
@@ -93,6 +92,8 @@ export function SuggestionCard({
   const needsAccount = s.missingSecrets.length > 0;
   const decided = s.status === 'approved' || s.status === 'failed';
   const isPreview = s.action === 'preview';
+  const needsAck = !s.verified && !isPreview;
+  const ackMissing = needsAck && !ack;
 
   if (s.idea)
     return (
@@ -257,40 +258,56 @@ export function SuggestionCard({
         </p>
       )}
 
+      {needsAck && s.status !== 'installed' && s.status !== 'rejected' && (
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={ack}
+            onChange={(e) => setAck(e.target.checked)}
+            className="mt-1"
+          />
+          I understand AWP has not reviewed this item.
+        </label>
+      )}
+
       {s.status !== 'installed' && s.status !== 'rejected' && (
         <div className="flex flex-wrap items-center gap-2">
           {isPreview ? (
             <Button
               variant="primary"
-              disabled={busy || blocked}
+              disabled={busy || blocked || reviewBusy}
               onClick={() => onReview(s, variant || undefined)}
             >
-              Review files
+              {reviewLoading ? 'Loading files…' : 'Review files'}
             </Button>
           ) : s.status === 'failed' ? (
-            <Button variant="primary" disabled={busy} onClick={installNow}>
+            <Button
+              variant="primary"
+              disabled={busy || ackMissing}
+              onClick={approveAndInstall}
+            >
               Retry
             </Button>
           ) : s.action === 'doc' ? (
             <Button
               variant="primary"
-              disabled={busy || blocked || decided}
-              onClick={approveOnly}
+              disabled={busy || blocked || ackMissing}
+              onClick={approveAndInstall}
             >
               Approve
             </Button>
           ) : decided ? (
             <Button
               variant="primary"
-              disabled={busy || needsAccount}
-              onClick={installNow}
+              disabled={busy || needsAccount || ackMissing}
+              onClick={approveAndInstall}
             >
               Install
             </Button>
           ) : (
             <Button
               variant="primary"
-              disabled={busy || blocked || needsAccount}
+              disabled={busy || blocked || needsAccount || ackMissing}
               onClick={approveAndInstall}
             >
               Approve and install

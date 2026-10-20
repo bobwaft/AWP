@@ -536,3 +536,247 @@ test('state pushed by the engine updates the list live', async () => {
   push({ method: 'registry.state', params: state([view('context7')]) });
   await screen.findByRole('article', { name: 'CONTEXT7' });
 });
+
+const skillPreview = (id: string, previewId: string, over = {}) => ({
+  id,
+  previewId,
+  tree: 'c'.repeat(40),
+  license: 'MIT',
+  target: `.claude/skills/${id}`,
+  files: [{ path: 'SKILL.md', size: 10, mode: '100644', flags: [] }],
+  skillMd: 'x',
+  scripts: [{ path: 'run.sh', text: 'echo hi' }],
+  needsScriptConfirm: true,
+  ...over,
+});
+const skillView = (id: string, over: Record<string, unknown> = {}) =>
+  view(
+    id,
+    { action: 'preview', verified: false, ...over },
+    { kind: 'skill', verified: false, install: { type: 'skill' } },
+  );
+
+test('a doc item is approved and recorded in one click', async () => {
+  mount([
+    view(
+      'lenis',
+      { action: 'doc', command: 'npm i lenis' },
+      { kind: 'library', install: { type: 'doc', command: 'npm i lenis' } },
+    ),
+  ]);
+  respond({
+    'registry.decide': () => current,
+    'registry.install': () => ({
+      result: { status: 'recorded', note: 'Saved to docs/TOOLING.md.' },
+      state: current,
+    }),
+  });
+  fireEvent.click(await screen.findByRole('button', { name: 'Approve' }));
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith(
+      'registry.install',
+      expect.objectContaining({ id: 'lenis' }),
+    ),
+  );
+  const order = call.mock.calls.map((c) => c[0]);
+  expect(order.indexOf('registry.decide')).toBeLessThan(
+    order.indexOf('registry.install'),
+  );
+  await screen.findByText(/Saved to docs\/TOOLING\.md/);
+});
+
+test('an unverified non-file item needs a ticked acknowledgement and installs with it', async () => {
+  mount([view('acme', { source: 'recommender', verified: false })]);
+  respond({
+    'registry.decide': () => current,
+    'registry.install': () => ({
+      result: { status: 'installed' },
+      state: current,
+    }),
+  });
+  const card = await screen.findByRole('article', { name: 'ACME' });
+  const btn = within(card).getByRole('button', {
+    name: 'Approve and install',
+  }) as HTMLButtonElement;
+  expect(btn.disabled).toBe(true);
+  fireEvent.click(
+    within(card).getByRole('checkbox', {
+      name: 'I understand AWP has not reviewed this item.',
+    }),
+  );
+  expect(btn.disabled).toBe(false);
+  fireEvent.click(btn);
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith(
+      'registry.install',
+      expect.objectContaining({ id: 'acme', acknowledged: true }),
+    ),
+  );
+});
+
+test('the stored variant is shown, and a changed choice is re-approved before install', async () => {
+  mount([
+    view(
+      'linear',
+      { status: 'approved', variant: 'write' },
+      {
+        variants: [
+          {
+            id: 'write',
+            label: 'Read and write',
+            safe: false,
+            install: {
+              type: 'mcp',
+              entry: { type: 'http', url: 'https://x.test/mcp' },
+            },
+          },
+        ],
+      },
+    ),
+  ]);
+  respond({
+    'registry.decide': () => current,
+    'registry.install': () => ({
+      result: { status: 'installed' },
+      state: current,
+    }),
+  });
+  const card = await screen.findByRole('article', { name: 'LINEAR' });
+  expect(
+    (within(card).getByRole('radio', { name: 'Read and write' }) as any)
+      .checked,
+  ).toBe(true);
+  fireEvent.click(within(card).getByRole('radio', { name: /Default/ }));
+  fireEvent.click(within(card).getByRole('button', { name: 'Install' }));
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith(
+      'registry.install',
+      expect.objectContaining({ id: 'linear' }),
+    ),
+  );
+  const decide = call.mock.calls.find((c) => c[0] === 'registry.decide');
+  expect(decide?.[1]).toEqual({ id: 'linear', decision: 'approve' });
+  const order = call.mock.calls.map((c) => c[0]);
+  expect(order.indexOf('registry.decide')).toBeLessThan(
+    order.indexOf('registry.install'),
+  );
+});
+
+test('consent checkboxes do not carry over to the next review', async () => {
+  mount([skillView('a'), skillView('b')]);
+  respond({
+    'registry.preview': (p) => skillPreview(p.id, `p-${p.id}`),
+  });
+  const open = async (name: string) => {
+    const card = await screen.findByRole('article', { name });
+    fireEvent.click(within(card).getByRole('button', { name: 'Review files' }));
+    return screen.findByRole('dialog', { name: `Review ${name}` });
+  };
+  const a = await open('A');
+  const boxes = within(a).getAllByRole('checkbox');
+  expect(boxes.length).toBe(2);
+  for (const b of boxes) fireEvent.click(b);
+  expect(
+    (within(a).getByRole('button', { name: 'Install' }) as any).disabled,
+  ).toBe(false);
+  fireEvent.click(within(a).getByRole('button', { name: 'Cancel' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  const b = await open('B');
+  for (const x of within(b).getAllByRole('checkbox'))
+    expect((x as HTMLInputElement).checked).toBe(false);
+  expect(
+    (within(b).getByRole('button', { name: 'Install' }) as any).disabled,
+  ).toBe(true);
+});
+
+test('Review files is guarded while the files load', async () => {
+  mount([skillView('a')]);
+  let release: (v: unknown) => void = () => {};
+  respond({
+    'registry.preview': () =>
+      new Promise((r) => {
+        release = r;
+      }),
+  });
+  const btn = await screen.findByRole('button', { name: 'Review files' });
+  fireEvent.click(btn);
+  const loading = (await screen.findByRole('button', {
+    name: 'Loading files…',
+  })) as HTMLButtonElement;
+  expect(loading.disabled).toBe(true);
+  fireEvent.click(loading);
+  expect(
+    call.mock.calls.filter((c) => c[0] === 'registry.preview').length,
+  ).toBe(1);
+  release(skillPreview('a', 'p-a'));
+  await screen.findByRole('dialog', { name: /Review A/ });
+});
+
+test('Add your own clears its error and fields when closed', async () => {
+  mount([]);
+  respond({
+    'registry.addCustom': () => {
+      throw new Error('Not a repository.');
+    },
+  });
+  fireEvent.click(await screen.findByRole('button', { name: 'Add your own…' }));
+  let dialog = await screen.findByRole('dialog', { name: 'Add your own' });
+  fireEvent.change(within(dialog).getByLabelText('Repository URL'), {
+    target: { value: 'https://github.com/acme/x' },
+  });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }));
+  await screen.findByText(/Not a repository/);
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  fireEvent.click(screen.getByRole('button', { name: 'Add your own…' }));
+  dialog = await screen.findByRole('dialog', { name: 'Add your own' });
+  expect(within(dialog).queryByText(/Not a repository/)).toBeNull();
+  expect(
+    (within(dialog).getByLabelText('Repository URL') as HTMLInputElement).value,
+  ).toBe('');
+});
+
+test('Run discovery again is disabled right after the click', async () => {
+  mount([]);
+  let release: (v: unknown) => void = () => {};
+  const btn = (await screen.findByRole('button', {
+    name: 'Run discovery again',
+  })) as HTMLButtonElement;
+  respond({
+    'registry.suggest': () =>
+      new Promise((r) => {
+        release = r;
+      }),
+  });
+  fireEvent.click(btn);
+  await waitFor(() => expect(btn.disabled).toBe(true));
+  release(current);
+  await waitFor(() => expect(btn.disabled).toBe(false));
+});
+
+test('a lost preview is reloaded with a note to check the files again', async () => {
+  mount([skillView('a')]);
+  let n = 0;
+  respond({
+    'registry.preview': (p) => skillPreview(p.id, `p-${++n}`),
+    'registry.decide': () => current,
+    'registry.install': () => {
+      throw Object.assign(new Error('Preview expired.'), {
+        code: 'PREVIEW_UNKNOWN',
+      });
+    },
+  });
+  fireEvent.click(await screen.findByRole('button', { name: 'Review files' }));
+  const dialog = await screen.findByRole('dialog', { name: /Review A/ });
+  for (const b of within(dialog).getAllByRole('checkbox')) fireEvent.click(b);
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Install' }));
+  await screen.findByText(
+    'The files were reloaded. Check them and confirm again.',
+  );
+  expect(
+    call.mock.calls.filter((c) => c[0] === 'registry.preview').length,
+  ).toBe(2);
+  const d2 = await screen.findByRole('dialog', { name: /Review A/ });
+  for (const x of within(d2).getAllByRole('checkbox'))
+    expect((x as HTMLInputElement).checked).toBe(false);
+});

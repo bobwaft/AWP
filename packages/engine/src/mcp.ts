@@ -17,6 +17,7 @@ export const ACTIVE_TOOLS: ToolName[] = [
   'submit_themes',
   'submit_stack_options',
   'submit_phase_plan',
+  'submit_suggestions',
 ];
 
 export function toolList() {

@@ -72,9 +72,13 @@ export const Install = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('plugin'),
     /** `/plugin marketplace add <this>`: owner/repo or a URL. */
-    marketplace: z.string().min(1),
+    marketplace: z
+      .string()
+      .regex(/^[A-Za-z0-9][\w.-]*\/[\w.-]+$/, 'Use owner/repo'),
     /** `<plugin>@<marketplace-name>` */
-    plugin: z.string().regex(/^[\w.-]+@[\w.-]+$/),
+    plugin: z
+      .string()
+      .regex(/^[A-Za-z0-9][\w.-]*@[A-Za-z0-9][\w.-]*$/, 'Use name@marketplace'),
     /** Commit to pin the marketplace to, only when Claude Code is known to honour it. */
     ref: z.string().optional(),
   }),
@@ -209,13 +213,21 @@ export type RegistryFile = z.infer<typeof RegistryFile>;
 // ---- suggestions (what the agent reports, what the engine stores) ----
 
 const Why = z.string().min(1);
+/** What the agent may call an item: a registry kind, or a recommender kind AWP cannot install. */
+export const SubmittedKind = z.enum([
+  ...KINDS,
+  'hook',
+  'subagent',
+  'command',
+  'other',
+]);
 export const SuggestionInputItem = z
   .object({
     /** A registry id... */
     id: Id.optional(),
     /** ...or a recommender item with no id. */
     name: z.string().min(1).optional(),
-    kind: Kind.optional(),
+    kind: SubmittedKind.optional(),
     repoUrl: z.string().url().optional(),
     installCommand: z.string().optional(),
     category: z.string().optional(),

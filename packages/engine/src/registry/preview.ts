@@ -44,7 +44,8 @@ export type Preview = {
   blobs: Map<string, Buffer>;
 };
 
-const RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+const RESERVED =
+  /^(con|prn|aux|nul|conin\$|conout\$|clock\$|com[0-9\u00b9\u00b2\u00b3]|lpt[0-9\u00b9\u00b2\u00b3])$/i;
 const SCRIPT_EXT = new Set([
   '.sh',
   '.bash',
@@ -64,6 +65,25 @@ const SCRIPT_EXT = new Set([
   '.exe',
   '.dll',
   '.com',
+  '.psm1',
+  '.psd1',
+  '.wsf',
+  '.hta',
+  '.jar',
+  '.msi',
+  '.scr',
+  '.lnk',
+  '.reg',
+  '.vbe',
+  '.jse',
+  '.mts',
+  '.cts',
+  '.tsx',
+  '.jsx',
+  '.bat',
+  '.cmd',
+  '.ps1',
+  '.sh',
 ]);
 const SCRIPT_TEXT_LIMIT = 64 * 1024;
 
@@ -88,8 +108,9 @@ export function checkPath(p: string): void {
       seg === '.' ||
       seg === '..' ||
       seg.toLowerCase() === '.git' ||
-      RESERVED.test(seg.split('.')[0]) ||
-      /[. ]$/.test(seg)
+      RESERVED.test(seg.split('.')[0].trim()) ||
+      /[. ]$/.test(seg) ||
+      /~\d/.test(seg) // 8.3 short-name alias, e.g. LONGNA~1.MD
     )
       throw bad('UNSAFE_PATH', `Unsafe file path: ${p}`);
   }
@@ -114,10 +135,11 @@ function flagsFor(path: string, mode: string, body: Buffer): string[] {
   if (body.subarray(0, 2).toString('latin1') === '#!') flags.push('shebang');
   if (body.subarray(0, 8000).includes(0)) flags.push('binary');
   if (path === 'SKILL.md') {
-    const fm =
-      /^---\r?\n([\s\S]*?)\r?\n---/.exec(body.toString('utf8'))?.[1] ?? '';
-    if (/^allowed-tools\s*:/m.test(fm)) flags.push('allowed-tools');
-    if (/^hooks\s*:/m.test(fm)) flags.push('hooks');
+    const text = body.toString('utf8').replace(/^\uFEFF/, '');
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text)?.[1] ?? '';
+    if (/^[ \t]*['"]?allowed[-_]tools['"]?[ \t]*:/im.test(fm))
+      flags.push('allowed-tools');
+    if (/^[ \t]*['"]?hooks['"]?[ \t]*:/im.test(fm)) flags.push('hooks');
   }
   return flags;
 }
@@ -172,8 +194,21 @@ export async function buildPreview(
   const files: PreviewFile[] = [];
   const scripts: { path: string; text: string }[] = [];
   let confirm = false;
+  let actual = 0;
   for (const f of [...src.files].sort((a, b) => cmp(a.path, b.path))) {
     const body = Buffer.from(await src.read(f.path)); // own copy
+    // the listing can be stale or wrong (a swapped local file): the caps apply to what was read
+    if (body.length > c.maxFileBytes)
+      throw bad(
+        'FILE_TOO_LARGE',
+        `${f.path} is larger than ${c.maxFileBytes} bytes.`,
+      );
+    actual += body.length;
+    if (actual > c.maxTotalBytes)
+      throw bad(
+        'SKILL_TOO_LARGE',
+        `The folder is larger than ${c.maxTotalBytes} bytes.`,
+      );
     blobs.set(f.path, body);
     manifest.push({
       path: f.path,

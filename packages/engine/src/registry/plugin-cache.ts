@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fetchSource } from './git-fetch';
-import { checkPath, DEFAULT_CAPS } from './preview';
+import { type Caps, checkPath } from './preview';
 
 export type PluginSource = {
   repo?: string;
@@ -13,6 +13,16 @@ export type PluginSource = {
 };
 
 const DONE = '.awp-complete';
+
+/**
+ * Roomier than the skill caps: this folder is pinned to a commit and tree hash the owner reviewed
+ * (the real plugin ships a 545 KB screenshot). Symlinks and unsafe paths are still refused.
+ */
+const PLUGIN_CAPS: Caps = {
+  maxFiles: 200,
+  maxFileBytes: 2 * 1024 * 1024,
+  maxTotalBytes: 8 * 1024 * 1024,
+};
 
 /**
  * Makes the plugin folder available for one `--plugin-dir` run: fetched at its pinned commit,
@@ -40,15 +50,15 @@ export async function ensurePluginDir(opts: {
       allowAnyUrl: opts.allowAnyUrl,
     });
     let total = 0;
-    if (src.files.length > DEFAULT_CAPS.maxFiles) return null;
+    if (src.files.length > PLUGIN_CAPS.maxFiles) return null;
     for (const f of src.files) {
       if (f.mode === '120000' || f.mode === '160000' || f.type === 'commit')
         return null;
       checkPath(f.path);
-      if (f.size > DEFAULT_CAPS.maxFileBytes) return null;
+      if (f.size > PLUGIN_CAPS.maxFileBytes) return null;
       total += f.size;
     }
-    if (total > DEFAULT_CAPS.maxTotalBytes) return null;
+    if (total > PLUGIN_CAPS.maxTotalBytes) return null;
 
     const tmp = `${dest}.${randomBytes(4).toString('hex')}.tmp`;
     try {

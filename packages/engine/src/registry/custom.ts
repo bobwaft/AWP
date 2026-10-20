@@ -1,8 +1,8 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import type { Stats } from 'node:fs';
-import { lstat, readdir, readFile, stat } from 'node:fs/promises';
-import { basename, isAbsolute, join, posix } from 'node:path';
+import { lstat, open, readdir, realpath, stat } from 'node:fs/promises';
+import { basename, isAbsolute, join, posix, relative } from 'node:path';
 import { RegistryItem } from '@awp/protocol';
 import { EngineError } from '../errors';
 import { assertAllowedRepo, fetchSource, type Source } from './git-fetch';
@@ -102,7 +102,16 @@ export async function customFromRepo(o: {
     license,
     verified: false,
     install: { type: 'skill' },
-    flags: { notes: [UNREVIEWED] },
+    flags: {
+      notes: [
+        UNREVIEWED,
+        ...(o.sha
+          ? [
+              "This is a commit you chose. It may not be on the repository's main branch (GitHub also serves commits from forks), so check the owner and the files.",
+            ]
+          : []),
+      ],
+    },
   });
   return { item, src };
 }
@@ -150,7 +159,27 @@ export async function localSource(dir: string): Promise<Source> {
   const tree = createHash('sha256')
     .update(JSON.stringify(files.map((f) => [f.path, f.size])))
     .digest('hex');
-  return { tree, files, read: (p) => readFile(join(dir, p)) };
+  const base = await realpath(dir);
+  return {
+    tree,
+    files,
+    // read through the resolved path and the open handle, so a file swapped for a link after the
+    // listing cannot pull in something from outside the folder
+    read: async (p) => {
+      const real = await realpath(join(dir, p));
+      const rel = relative(base, real);
+      if (rel.startsWith('..') || isAbsolute(rel))
+        throw new EngineError('UNSAFE_PATH', `${p} points outside the folder.`);
+      const h = await open(real, 'r');
+      try {
+        if (!(await h.stat()).isFile())
+          throw new EngineError('UNSAFE_PATH', `${p} is not a regular file.`);
+        return await h.readFile();
+      } finally {
+        await h.close();
+      }
+    },
+  };
 }
 
 export async function customFromLocal(dir: string): Promise<Custom> {

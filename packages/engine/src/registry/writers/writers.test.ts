@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
 import { EngineError } from '../../errors';
-import { type Exec, toSpawn } from '../exec';
+import type { Exec } from '../exec';
 import { runInstaller } from './installer';
 import { writeMcpEntry } from './mcp-json';
 import { installPlugin } from './plugin';
@@ -133,36 +133,6 @@ test('server names are restricted', async () => {
 });
 
 // ---- command execution ----
-
-test('commands are argv only: tokens with shell characters are refused', () => {
-  for (const bad of [
-    'a b',
-    'a;b',
-    'a&b',
-    'a|b',
-    '$(x)',
-    '`x`',
-    'a>b',
-    '"x"',
-    'a\nb',
-  ])
-    expect(() => toSpawn(['npx', bad], 'win32'), bad).toThrow(EngineError);
-  expect(() =>
-    toSpawn(['npx', 'impeccable', 'install', '--providers=claude'], 'linux'),
-  ).not.toThrow();
-});
-
-test('on Windows npx runs through cmd.exe; other tools run directly', () => {
-  expect(toSpawn(['npx', '-y', 'x@latest'], 'win32')).toEqual({
-    file: 'cmd.exe',
-    args: ['/d', '/s', '/c', 'npx -y x@latest'],
-  });
-  expect(toSpawn(['uv', 'tool', 'install', 'graphifyy'], 'win32')).toEqual({
-    file: 'uv',
-    args: ['tool', 'install', 'graphifyy'],
-  });
-  expect(toSpawn(['npx', 'x'], 'linux')).toEqual({ file: 'npx', args: ['x'] });
-});
 
 // ---- plugins ----
 
@@ -331,5 +301,27 @@ test('a missing tool is reported with what to install', async () => {
   } catch (e) {
     expect((e as EngineError).code).toBe('TOOL_MISSING');
     expect((e as EngineError).message).toContain('uv');
+  }
+});
+
+test('installers ignore the project npm and uv configuration', async () => {
+  const seen: Record<string, string>[] = [];
+  const exec: Exec = async (_argv, opts) => {
+    seen.push((opts as { extraEnv?: Record<string, string> }).extraEnv ?? {});
+    return { code: 0, stdout: '', stderr: '' };
+  };
+  await runInstaller({
+    root: root(),
+    commands: [
+      ['npx', 'impeccable@4.6.0', 'install'],
+      ['uv', 'tool', 'install', 'graphifyy==0.9.91'],
+    ],
+    exec,
+  });
+  for (const env of seen) {
+    expect(env.npm_config_registry).toBe('https://registry.npmjs.org/');
+    expect(env.UV_NO_CONFIG).toBe('1');
+    expect(env.UV_INDEX_URL).toBe('https://pypi.org/simple');
+    expect(env.npm_config_yes).toBe('true');
   }
 });

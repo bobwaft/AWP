@@ -233,3 +233,59 @@ test('a registry file can never point at a folder on the local computer', () => 
     RegistryFile.safeParse({ version: 1, items: [viaVariant] }).success,
   ).toBe(false);
 });
+
+test('suggestions accept the recommender kinds the prompt offers (hook, subagent, command, other)', () => {
+  for (const kind of [
+    'mcp',
+    'plugin',
+    'skill',
+    'hook',
+    'subagent',
+    'command',
+    'other',
+  ])
+    expect(
+      SuggestionsInput.safeParse({
+        suggestions: [{ name: 'x', kind, why: 'y' }],
+      }).success,
+      kind,
+    ).toBe(true);
+  expect(
+    SuggestionsInput.safeParse({
+      suggestions: [{ name: 'x', kind: 'rocket', why: 'y' }],
+    }).success,
+  ).toBe(false);
+});
+
+test('plugin marketplace and plugin values cannot smuggle flags, URLs or paths', () => {
+  const mk = (marketplace: string, plugin: string) => ({
+    ...base,
+    install: { type: 'plugin', marketplace, plugin },
+  });
+  expect(
+    RegistryItem.safeParse(mk('DietrichGebert/ponytail', 'ponytail@ponytail'))
+      .success,
+  ).toBe(true);
+  for (const bad of [
+    '--scope=user',
+    '-x/y',
+    'C:/x',
+    'https://evil.example/x.git',
+    'a/b/c',
+    'a b/c',
+    '../x',
+    'a/b;c',
+    'noslash',
+  ])
+    expect(RegistryItem.safeParse(mk(bad, 'p@m')).success, bad).toBe(false);
+  for (const bad of [
+    '--scope=user@m',
+    '-p@m',
+    'p@-m',
+    'p',
+    'p@m@n',
+    'p q@m',
+    'p@m/x',
+  ])
+    expect(RegistryItem.safeParse(mk('a/b', bad)).success, bad).toBe(false);
+});

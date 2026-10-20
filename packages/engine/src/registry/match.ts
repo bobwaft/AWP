@@ -115,14 +115,17 @@ export function suggest(input: {
       item.default &&
       (!item.defaultWhen?.length ||
         item.defaultWhen.some((w) => mentions(text, w)));
-    if (!defaultOn && !rec && !hit) continue;
+    const awp = item.tags.includes('awp-native');
+    if (!defaultOn && !rec && !hit && !awp) continue;
     if (licenseStatus(item).status === 'blocked') continue;
 
     const reason = rec?.why
       ? rec.why
       : hit
         ? `Your specs mention "${hit}".`
-        : 'Default for new projects.';
+        : awp
+          ? 'Built for projects made with AWP.'
+          : 'Default for new projects.';
     scored.push({
       item,
       reason,

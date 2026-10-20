@@ -8,6 +8,8 @@ import type {
   SuggestionView,
 } from '@awp/protocol';
 import { EngineError } from '../errors';
+import { bundledSource } from './bundled';
+import { customFromLocal, customFromRepo, localSource } from './custom';
 import { type DiscoverDeps, discover } from './discover';
 import type { Exec } from './exec';
 import { fetchSource } from './git-fetch';
@@ -15,6 +17,7 @@ import { licenseStatus } from './license';
 import { type Candidate, repoKey, type Specs } from './match';
 import { buildPreview, type Preview } from './preview';
 import { rejectedFrom, SuggestionStore } from './state';
+import { writeTooling } from './tooling-md';
 import { runInstaller } from './writers/installer';
 import { writeMcpEntry } from './writers/mcp-json';
 import { installPlugin } from './writers/plugin';
@@ -183,14 +186,23 @@ export class RegistryService {
       item,
       license: licenseStatus(item),
       missingSecrets: missing,
-      action: inst.type === 'skill' ? 'preview' : inst.type,
+      action:
+        inst.type === 'skill' ||
+        inst.type === 'bundled' ||
+        inst.type === 'local'
+          ? 'preview'
+          : inst.type,
       command: commandText(inst),
       notPinned: inst.type === 'plugin' && !inst.ref,
     };
   }
 
   private async push() {
-    this.d.notify('registry.state', await this.state());
+    const st = await this.state();
+    this.d.notify('registry.state', st);
+    // docs/TOOLING.md follows the decisions (not the bare suggestions, to keep the tree quiet)
+    if (st.items.some((i) => i.status !== 'suggested'))
+      await writeTooling(this.d.root(), st.items).catch(() => {});
   }
 
   // ---- decisions ----
@@ -232,10 +244,108 @@ export class RegistryService {
     return this.state();
   }
 
+  // ---- items the user adds themselves ----
+
+  /** Adds a skill from a GitHub repo or a local folder. Always unverified, never auto-approved for install. */
+  async addCustom(a: {
+    repoUrl?: string;
+    sha?: string;
+    path?: string;
+    localPath?: string;
+  }): Promise<SuggestionsState> {
+    if (!!a.repoUrl === !!a.localPath)
+      throw new EngineError(
+        'INVALID_ARGS',
+        'Give a repository URL or a local folder, not both.',
+      );
+    const c = a.repoUrl
+      ? await customFromRepo({
+          repoUrl: a.repoUrl.trim(),
+          sha: a.sha?.trim() || undefined,
+          path: a.path,
+          cacheDir: this.d.cacheDir,
+          allowAnyUrl: this.d.allowAnyUrl,
+        })
+      : await customFromLocal((a.localPath as string).trim());
+    const registry = await this.d.registry();
+    await this.store().mutate((s) => {
+      const same = (i: Suggestion) =>
+        i.source === 'user' &&
+        i.item &&
+        JSON.stringify([i.item.source, i.item.install]) ===
+          JSON.stringify([c.item.source, c.item.install]);
+      const prior = s.items.find(same);
+      const taken = new Set([
+        ...registry.items.map((i) => i.id),
+        ...s.items.filter((i) => i !== prior).map((i) => i.id),
+      ]);
+      let id = prior?.id ?? c.item.id;
+      for (let n = 2; !prior && taken.has(id); n++) id = `${c.item.id}-${n}`;
+      const item = { ...c.item, id };
+      const key = repoKey(item.source.repo);
+      // adding something yourself overrides an earlier rejection of the same repository
+      s.items = s.items.filter(
+        (i) =>
+          i !== prior && !(i.status === 'rejected' && key && i.repoKey === key),
+      );
+      s.items.push({
+        id,
+        repoKey: key,
+        source: 'user',
+        verified: false,
+        idea: false,
+        alternatives: [],
+        status: 'approved',
+        reason: 'Added by you.',
+        item,
+        at: new Date().toISOString(),
+      });
+    });
+    await this.push();
+    return this.state();
+  }
+
   // ---- preview and install ----
 
   async preview(id: string): Promise<InstallPreview> {
-    const { item } = await this.find(id);
+    const { row, item } = await this.find(id);
+    if (item.install.type === 'local') {
+      if (row.source !== 'user')
+        throw new EngineError(
+          'INSTALL_NOT_ALLOWED',
+          'Only folders you added yourself can be installed from disk.',
+        );
+      const preview = await buildPreview(await localSource(item.install.dir));
+      this.previews.set(preview.previewId, { id, preview });
+      return {
+        id,
+        previewId: preview.previewId,
+        tree: preview.tree,
+        license: item.license,
+        target: `.claude/skills/${id}`,
+        files: preview.files,
+        skillMd: preview.skillMd,
+        scripts: preview.scripts,
+        needsScriptConfirm: preview.needsScriptConfirm,
+      };
+    }
+    if (item.install.type === 'bundled') {
+      const src = bundledSource(id);
+      if (!src) throw new EngineError('NOT_FOUND', `No bundled skill "${id}"`);
+      const preview = await buildPreview(src);
+      this.previews.set(preview.previewId, { id, preview });
+      return {
+        id,
+        previewId: preview.previewId,
+        tree: preview.tree,
+        license: item.license,
+        target: `.claude/skills/${id}`,
+        files: preview.files,
+        skillMd: preview.skillMd,
+        scripts: preview.scripts,
+        needsScriptConfirm: preview.needsScriptConfirm,
+      };
+    }
     if (item.install.type !== 'skill')
       throw new EngineError(
         'NOT_PREVIEWABLE',
@@ -309,7 +419,16 @@ export class RegistryService {
       );
 
     let preview: Preview | undefined;
-    if (install.type === 'skill') {
+    if (install.type === 'local' && row.source !== 'user')
+      throw new EngineError(
+        'INSTALL_NOT_ALLOWED',
+        'Only folders you added yourself can be installed from disk.',
+      );
+    if (
+      install.type === 'skill' ||
+      install.type === 'bundled' ||
+      install.type === 'local'
+    ) {
       if (!a.previewId)
         throw new EngineError(
           'PREVIEW_REQUIRED',
@@ -418,6 +537,8 @@ export class RegistryService {
         });
         return { status: 'installed', output: r.output };
       }
+      case 'local':
+      case 'bundled':
       case 'skill': {
         await installSkill({
           root: c.root,

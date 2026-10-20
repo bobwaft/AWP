@@ -19,6 +19,8 @@ export const INSTALL_KINDS = [
   'skill', // copy a folder from the pinned commit into .claude/skills/<id>/
   'plugin', // .claude/settings.json marketplace + enabledPlugins (config only)
   'mcp', // entry in .mcp.json (stdio or remote)
+  'local', // a skill folder on this computer, added by the user (never in a registry file)
+  'bundled', // a skill folder that ships inside AWP (previewed like a fetched skill)
   'installer', // a remote installer the user's own tooling runs (argv only)
   'doc', // recorded in docs/TOOLING.md; the executor installs it
 ] as const;
@@ -65,6 +67,8 @@ export type McpEntry = z.infer<typeof McpEntry>;
 
 export const Install = z.discriminatedUnion('type', [
   z.object({ type: z.literal('skill') }),
+  z.object({ type: z.literal('bundled') }),
+  z.object({ type: z.literal('local'), dir: z.string().min(1) }),
   z.object({
     type: z.literal('plugin'),
     /** `/plugin marketplace add <this>`: owner/repo or a URL. */
@@ -182,6 +186,15 @@ export const RegistryFile = z
   .superRefine((f, ctx) => {
     const seen = new Set<string>();
     f.items.forEach((it, i) => {
+      if (
+        it.install.type === 'local' ||
+        it.variants.some((v) => v.install.type === 'local')
+      )
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A registry file cannot point at a local folder',
+          path: ['items', i, 'install'],
+        });
       if (seen.has(it.id))
         ctx.addIssue({
           code: 'custom',

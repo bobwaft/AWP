@@ -40,3 +40,29 @@ export function licenseStatus(item: RegistryItem): LicenseStatus {
     };
   return { status: 'review', note: `${l}. Not reviewed by AWP.` };
 }
+
+/** Names a license from the start of its text; "unknown" when it is not one AWP recognises. */
+export function detectLicense(text: string): string {
+  const t = text.slice(0, 4000);
+  if (/GNU AFFERO GENERAL PUBLIC LICENSE/i.test(t)) return 'AGPL-3.0';
+  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(t)) return 'LGPL-3.0';
+  if (/GNU GENERAL PUBLIC LICENSE/i.test(t))
+    return /Version 2/i.test(t) ? 'GPL-2.0' : 'GPL-3.0';
+  if (/Mozilla Public License/i.test(t)) return 'MPL-2.0';
+  if (/Apache License/i.test(t) && /Version 2\.0/i.test(t)) return 'Apache-2.0';
+  if (
+    /\bMIT License\b/i.test(t) ||
+    /Permission is hereby granted, free of charge/i.test(t)
+  )
+    return 'MIT';
+  if (
+    /\bISC License\b/i.test(t) ||
+    /Permission to use, copy, modify, and\/or distribute this software/i.test(t)
+  )
+    return 'ISC';
+  if (/free and unencumbered software released into the public domain/i.test(t))
+    return 'Unlicense';
+  if (/Redistribution and use in source and binary forms/i.test(t))
+    return /Neither the name/i.test(t) ? 'BSD-3-Clause' : 'BSD-2-Clause';
+  return 'unknown';
+}

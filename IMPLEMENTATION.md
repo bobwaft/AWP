@@ -214,8 +214,8 @@
 - [x] On Planning completion, run `claude-code-setup`'s recommender (headless) against the specs and scaffold; parse its recommendations into registry-shaped items.
 - [x] Merge recommender output with registry matches: registry items verified, recommender-only items "unverified"; at most one suggestion per overlap group by default.
 - [ ] `submit_suggestions` tool + `connectors.suggester` prompt; `SuggestionCard` approve/reject; account prompts for items needing tokens.
-- [ ] `docs/TOOLING.md` generation; AWP-native skills (`awp-interview`, `awp-phase-runner`, `awp-test-checklist`, `awp-security-review`) in `registry/skills/`.
-- [ ] User-added items by repo URL or local folder, flagged "unverified".
+- [x] `docs/TOOLING.md` generation; AWP-native skills (`awp-interview`, `awp-phase-runner`, `awp-test-checklist`, `awp-security-review`) in `registry/skills/`.
+- [x] User-added items by repo URL or local folder, flagged "unverified".
 
 **Done when:** approved items land in the right folders; rejected items are recorded and not re-suggested.
 

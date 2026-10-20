@@ -227,3 +227,23 @@ test('license policy: copyleft or source-available code in the product is blocke
   }).items[0];
   expect(licenseStatus(tool).status).toBe('review');
 });
+
+test('AWP-native skills are always offered but never pre-checked, even for an unrelated project', () => {
+  const c = run({
+    prd: 'A command line tool that renames files.',
+    design: '',
+    architecture: 'Rust.',
+  });
+  for (const id of [
+    'awp-interview',
+    'awp-phase-runner',
+    'awp-test-checklist',
+    'awp-security-review',
+  ]) {
+    const x = c.find((y) => y.id === id);
+    expect(x, id).toBeDefined();
+    expect(x?.preChecked).toBe(false);
+    expect(x?.verified).toBe(true);
+    expect(x?.reason).toMatch(/AWP/);
+  }
+});

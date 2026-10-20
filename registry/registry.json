@@ -1323,6 +1323,74 @@
       }
     },
     {
+      "id": "awp-interview",
+      "kind": "skill",
+      "name": "AWP Interview",
+      "summary": "How to interview someone about their app and collect what the spec needs.",
+      "source": {},
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["ideation", "design", "planning"],
+      "tags": ["awp-native"],
+      "default": false,
+      "install": {
+        "type": "bundled"
+      },
+      "groupMode": "complementary"
+    },
+    {
+      "id": "awp-phase-runner",
+      "kind": "skill",
+      "name": "AWP Phase Runner",
+      "summary": "Build one phase from PHASES.md test-first, run the verify commands, commit once, then stop.",
+      "source": {},
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["implementation"],
+      "tags": ["awp-native"],
+      "default": false,
+      "install": {
+        "type": "bundled"
+      },
+      "groupMode": "complementary"
+    },
+    {
+      "id": "awp-test-checklist",
+      "kind": "skill",
+      "name": "AWP Test Checklist",
+      "summary": "Write the \"You test\" checklist a person runs by hand, and hand it over one check at a time.",
+      "source": {},
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["testing"],
+      "tags": ["awp-native"],
+      "default": false,
+      "install": {
+        "type": "bundled"
+      },
+      "groupMode": "complementary"
+    },
+    {
+      "id": "awp-security-review",
+      "kind": "skill",
+      "name": "AWP Security Review",
+      "summary": "Review a project for security problems and report findings by severity.",
+      "source": {},
+      "license": "MIT",
+      "verified": true,
+      "agents": ["claude"],
+      "stages": ["security"],
+      "tags": ["awp-native"],
+      "default": false,
+      "install": {
+        "type": "bundled"
+      },
+      "groupMode": "complementary"
+    },
+    {
       "id": "claude-code-setup",
       "kind": "plugin",
       "name": "Claude Code Setup",

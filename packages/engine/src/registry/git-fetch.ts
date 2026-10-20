@@ -68,12 +68,17 @@ const ok = async (cwd: string, args: string[]) => {
   }
 };
 
-export async function fetchSource(opts: FetchOpts): Promise<Source> {
-  if (!opts.allowAnyUrl && !GITHUB.test(opts.repo))
+/** Only https://github.com repositories (tests may allow file:// URLs). */
+export function assertAllowedRepo(repo: string, allowAny = false): void {
+  if (!allowAny && !GITHUB.test(repo))
     throw new EngineError(
       'SOURCE_NOT_ALLOWED',
       'Only https://github.com repositories can be installed from.',
     );
+}
+
+export async function fetchSource(opts: FetchOpts): Promise<Source> {
+  assertAllowedRepo(opts.repo, opts.allowAnyUrl);
   if (!/^[0-9a-f]{40}$/.test(opts.sha))
     throw new EngineError(
       'SOURCE_NOT_ALLOWED',

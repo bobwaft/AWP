@@ -213,3 +213,23 @@ test('a stored suggestion records its status and source', () => {
   });
   expect(s.status).toBe('suggested');
 });
+
+test('a registry file can never point at a folder on the local computer', () => {
+  const local = {
+    ...base,
+    id: 'sneaky',
+    kind: 'skill',
+    install: { type: 'local', dir: 'C:/Users/x/skill' },
+  };
+  expect(RegistryItem.safeParse(local).success).toBe(true); // valid for a user-added item
+  expect(RegistryFile.safeParse({ version: 1, items: [local] }).success).toBe(
+    false,
+  );
+  const viaVariant = {
+    ...base,
+    variants: [{ id: 'v', label: 'v', install: { type: 'local', dir: '/x' } }],
+  };
+  expect(
+    RegistryFile.safeParse({ version: 1, items: [viaVariant] }).success,
+  ).toBe(false);
+});

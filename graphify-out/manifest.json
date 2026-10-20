@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "IMPLEMENTATION.md": {
-    "mtime": 1792448653.425549,
-    "seen": 1792448774.8959208,
-    "ast_hash": "f4673c3531537ed08e0af484842088a0",
+    "mtime": 1792455631.2054856,
+    "seen": 1792455734.19344,
+    "ast_hash": "777df4daae970d884ee6adc8b91672b9",
     "semantic_hash": ""
   },
   "MEMORY.md": {
@@ -1656,9 +1656,9 @@
     "semantic_hash": ""
   },
   "packages/engine/src/handlers.ts": {
-    "mtime": 1792448583.5243714,
-    "seen": 1792448774.841247,
-    "ast_hash": "71761caff76e28827be58b673e1bb34b",
+    "mtime": 1792455615.6884117,
+    "seen": 1792455734.1770182,
+    "ast_hash": "02400e9060712b09d74f4aabbb56c460",
     "semantic_hash": ""
   },
   "packages/engine/src/mcp-tools.ts": {
@@ -2016,9 +2016,9 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/git-fetch.ts": {
-    "mtime": 1792447137.499785,
-    "seen": 1792448774.8438156,
-    "ast_hash": "a1c59df4b6b2a01a0a5873f0988ba1a9",
+    "mtime": 1792455571.8715954,
+    "seen": 1792455734.178314,
+    "ast_hash": "ad9d54ec23fbb31125cc10a0676788fb",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/handlers.test.ts": {
@@ -2028,9 +2028,9 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/license.ts": {
-    "mtime": 1792447831.1880383,
-    "seen": 1792448774.8438249,
-    "ast_hash": "ed1bb695c411de3ca8b73295325bfdac",
+    "mtime": 1792455572.060806,
+    "seen": 1792455734.178395,
+    "ast_hash": "774593448da8376ebf05317dd522b6e8",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/load.test.ts": {
@@ -2046,15 +2046,15 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/match.test.ts": {
-    "mtime": 1792447831.2770162,
-    "seen": 1792448774.8438382,
-    "ast_hash": "7fc2d96e6df1099926c54e451e8636f9",
+    "mtime": 1792455486.553535,
+    "seen": 1792455734.178584,
+    "ast_hash": "afadce11f0ce84a40f3f22ae31d6838d",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/match.ts": {
-    "mtime": 1792447831.2596958,
-    "seen": 1792448774.8438964,
-    "ast_hash": "78cd53ef28ef1f4e680d5800019bb450",
+    "mtime": 1792455374.7423246,
+    "seen": 1792455734.1785877,
+    "ast_hash": "2e9b92659508ddc015e45a9ca5a77c39",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/plugin-cache.test.ts": {
@@ -2088,15 +2088,15 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/service.test.ts": {
-    "mtime": 1792448309.0605824,
-    "seen": 1792448774.8439217,
-    "ast_hash": "68acd147beb877751f8cd7b81585d626",
+    "mtime": 1792455615.7238696,
+    "seen": 1792455734.1792135,
+    "ast_hash": "3b1e79340f65efd81b4acb387cfa2e86",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/service.ts": {
-    "mtime": 1792448675.8916588,
-    "seen": 1792448774.843926,
-    "ast_hash": "690c2de0e05b4836a23f44eff95ef760",
+    "mtime": 1792455615.7116642,
+    "seen": 1792455734.1792161,
+    "ast_hash": "99352353c4158d227353002a90e8d71c",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/skill-install.test.ts": {
@@ -2160,21 +2160,21 @@
     "semantic_hash": ""
   },
   "packages/protocol/src/registry.test.ts": {
-    "mtime": 1792446543.8081045,
-    "seen": 1792448774.8569677,
-    "ast_hash": "53582f8ecb1db04bf65de9a5cc16eaa7",
+    "mtime": 1792455653.2179005,
+    "seen": 1792455734.1847813,
+    "ast_hash": "61c9eecb01449d61a8441994d63e0a44",
     "semantic_hash": ""
   },
   "packages/protocol/src/registry.ts": {
-    "mtime": 1792448159.5940154,
-    "seen": 1792448774.8569715,
-    "ast_hash": "93040a6cdd617a75929e99f56882aa75",
+    "mtime": 1792455572.08219,
+    "seen": 1792455734.1847832,
+    "ast_hash": "b0c023022a58bd67b683f588528047d2",
     "semantic_hash": ""
   },
   "registry/registry.json": {
-    "mtime": 1792448445.0052648,
-    "seen": 1792448774.8579686,
-    "ast_hash": "69d443ed31eb4155b94fe004a18aa1cf",
+    "mtime": 1792455434.8965816,
+    "seen": 1792455734.1850908,
+    "ast_hash": "cb9f7162591d6815b607e8338808639e",
     "semantic_hash": ""
   },
   "registry/registry.test.ts": {
@@ -2193,6 +2193,72 @@
     "mtime": 1792447599.346421,
     "seen": 1792448774.8964303,
     "ast_hash": "3d867c1c2b5e01cef56586bca994922b",
+    "semantic_hash": ""
+  },
+  "packages/engine/src/registry/bundled.ts": {
+    "mtime": 1792455372.6958206,
+    "seen": 1792455734.1780503,
+    "ast_hash": "9961ba931a9b8a3d5b540edda8205526",
+    "semantic_hash": ""
+  },
+  "packages/engine/src/registry/custom.test.ts": {
+    "mtime": 1792455572.0264,
+    "seen": 1792455734.1780524,
+    "ast_hash": "3007778621492dd3dc0c52dce067aea5",
+    "semantic_hash": ""
+  },
+  "packages/engine/src/registry/custom.ts": {
+    "mtime": 1792455643.7140303,
+    "seen": 1792455734.1780534,
+    "ast_hash": "69e66958d58afeb09c8b631945bf66fb",
+    "semantic_hash": ""
+  },
+  "packages/engine/src/registry/tooling-md.test.ts": {
+    "mtime": 1792449066.954588,
+    "seen": 1792455734.1796172,
+    "ast_hash": "1eb26dc963672ed1214d8dab79f4b149",
+    "semantic_hash": ""
+  },
+  "packages/engine/src/registry/tooling-md.ts": {
+    "mtime": 1792448982.690799,
+    "seen": 1792455734.1796186,
+    "ast_hash": "cb7d9d2ef7b7a5831441bf8ee36f7f04",
+    "semantic_hash": ""
+  },
+  "registry/skills.test.ts": {
+    "mtime": 1792455425.1206152,
+    "seen": 1792455734.1851661,
+    "ast_hash": "e8f4456b60f0b27ca21b31a4d2c4373f",
+    "semantic_hash": ""
+  },
+  "registry/skills/awp-interview.ts": {
+    "mtime": 1792455335.4292705,
+    "seen": 1792455734.1851673,
+    "ast_hash": "ad07950175853f54fca45293f58e7175",
+    "semantic_hash": ""
+  },
+  "registry/skills/awp-phase-runner.ts": {
+    "mtime": 1792455336.8833554,
+    "seen": 1792455734.1851687,
+    "ast_hash": "2dd6abd9a4e505c30f5cd6624caeeca8",
+    "semantic_hash": ""
+  },
+  "registry/skills/awp-security-review.ts": {
+    "mtime": 1792455339.1244388,
+    "seen": 1792455734.18517,
+    "ast_hash": "f5f04c5e4f0224cba125f159c5b8d99b",
+    "semantic_hash": ""
+  },
+  "registry/skills/awp-test-checklist.ts": {
+    "mtime": 1792455338.0345302,
+    "seen": 1792455734.185171,
+    "ast_hash": "600151c4f2a540ae7a1455f7f8cf1d1e",
+    "semantic_hash": ""
+  },
+  "registry/skills/index.ts": {
+    "mtime": 1792455340.2330537,
+    "seen": 1792455734.1851723,
+    "ast_hash": "274fb35f6461e1bd2d2070b9dcfe131e",
     "semantic_hash": ""
   }
 }

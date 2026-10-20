@@ -1,8 +1,15 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RegistryFile } from '@awp/protocol';
 import { expect, test, vi } from 'vitest';
+import { BUNDLED_SKILLS } from '../../../../registry/skills/index';
 import { EngineError } from '../errors';
 import type { Exec } from './exec';
 import { RegistryService, type ServiceDeps } from './service';
@@ -119,6 +126,16 @@ const registry = RegistryFile.parse({
       default: true,
       source: {},
       install: { type: 'doc', command: 'npm i gpl' },
+    },
+    {
+      id: 'awp-interview',
+      kind: 'skill',
+      name: 'AWP Interview',
+      summary: 's',
+      license: 'MIT',
+      source: {},
+      tags: ['awp-native'],
+      install: { type: 'bundled' },
     },
     {
       id: 'skl',
@@ -406,4 +423,142 @@ test('a failing discovery marks the state failed and keeps what was there', asyn
     status: 'failed',
     note: expect.stringContaining('no specs'),
   });
+});
+
+test('docs/TOOLING.md follows the decisions and never holds a secret', async () => {
+  const { svc, root } = make({
+    getSecret: async () => 'mongodb://u:hunter2secret@host/db',
+  });
+  await svc.runDiscovery();
+  // bare suggestions do not create the file
+  expect(existsSync(join(root, 'docs', 'TOOLING.md'))).toBe(false);
+  await svc.decide({ id: 'ctx', decision: 'approve' });
+  await svc.install({ id: 'ctx' });
+  await svc.decide({ id: 'mongo', decision: 'approve' });
+  await svc.install({ id: 'mongo' });
+  await svc.decide({ id: 'pony', decision: 'reject', reason: 'not needed' });
+  const md = readFileSync(join(root, 'docs', 'TOOLING.md'), 'utf8');
+  expect(md).toContain('## Installed');
+  expect(md).toContain('Ctx');
+  expect(md).toContain('## Rejected');
+  expect(md).toContain('not needed');
+  expect(md).not.toContain('hunter2secret');
+});
+
+test('a bundled AWP skill is previewed and installed from the app, exactly as shipped', async () => {
+  const { svc, root } = make();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'awp-interview', decision: 'approve' });
+  expect(await code(svc.install({ id: 'awp-interview' }))).toBe(
+    'PREVIEW_REQUIRED',
+  );
+  const p = await svc.preview('awp-interview');
+  expect(p.needsScriptConfirm).toBe(false);
+  expect(p.files.map((f) => f.path)).toEqual(['SKILL.md']);
+  expect(p.skillMd).toBe(BUNDLED_SKILLS['awp-interview']['SKILL.md']);
+  const r = await svc.install({ id: 'awp-interview', previewId: p.previewId });
+  expect(r.result.status).toBe('installed');
+  expect(
+    readFileSync(
+      join(root, '.claude', 'skills', 'awp-interview', 'SKILL.md'),
+      'utf8',
+    ),
+  ).toBe(BUNDLED_SKILLS['awp-interview']['SKILL.md']);
+});
+
+// ---- items the user adds ----
+
+const MIT =
+  'MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy';
+
+test('adding a skill from a repo makes an unverified, approved row that needs an acknowledgement to install', async () => {
+  const mine = makeRepo({ 'skills/cool/SKILL.md': SKILL, LICENSE: MIT });
+  const { svc, root } = make();
+  const s = await svc.addCustom({ repoUrl: mine.url, path: 'skills/cool' });
+  const r = row(s, 'cool') as ReturnType<typeof row> & {
+    source: string;
+    verified: boolean;
+    license: { status: string; note: string };
+  };
+  expect(r).toMatchObject({
+    source: 'user',
+    verified: false,
+    status: 'approved',
+  });
+  expect(r.license.status).toBe('review');
+  const p = await svc.preview('cool');
+  expect(p.files.map((f) => f.path)).toEqual(['SKILL.md']);
+  expect(p.license).toBe('MIT');
+  expect(await code(svc.install({ id: 'cool', previewId: p.previewId }))).toBe(
+    'NOT_ACKNOWLEDGED',
+  );
+  const res = await svc.install({
+    id: 'cool',
+    previewId: p.previewId,
+    acknowledged: true,
+  });
+  expect(res.result.status).toBe('installed');
+  expect(
+    readFileSync(join(root, '.claude', 'skills', 'cool', 'SKILL.md'), 'utf8'),
+  ).toBe(SKILL);
+  // the added item is shown in docs/TOOLING.md as unverified
+  expect(readFileSync(join(root, 'docs', 'TOOLING.md'), 'utf8')).toMatch(
+    /unverified/i,
+  );
+});
+
+test('adding a local folder previews from disk and installs the previewed bytes', async () => {
+  const dir = tmp();
+  writeFileSync(join(dir, 'SKILL.md'), SKILL);
+  const { svc, root } = make();
+  const s = await svc.addCustom({ localPath: dir });
+  const id = s.items.find((i) => (i as { source: string }).source === 'user')
+    ?.id as string;
+  const p = await svc.preview(id);
+  // editing the folder after the preview cannot change what installs
+  writeFileSync(join(dir, 'SKILL.md'), 'CHANGED AFTER PREVIEW');
+  await svc.install({ id, previewId: p.previewId, acknowledged: true });
+  expect(
+    readFileSync(join(root, '.claude', 'skills', id, 'SKILL.md'), 'utf8'),
+  ).toBe(SKILL);
+});
+
+test('a user-added id never collides with a registry id, and adding the same source again replaces it', async () => {
+  const mine = makeRepo({ 'ctx/SKILL.md': SKILL });
+  const { svc } = make();
+  const a = await svc.addCustom({ repoUrl: mine.url, path: 'ctx' });
+  expect(a.items.some((i) => i.id === 'ctx-2')).toBe(true);
+  const again = await svc.addCustom({ repoUrl: mine.url, path: 'ctx' });
+  expect(again.items.filter((i) => i.id.startsWith('ctx-')).length).toBe(1);
+});
+
+test('adding something yourself overrides an earlier rejection of that repository', async () => {
+  const mine = makeRepo({ 'skills/cool/SKILL.md': SKILL });
+  const { svc } = make();
+  await svc.addCustom({ repoUrl: mine.url, path: 'skills/cool' });
+  await svc.decide({
+    id: 'cool',
+    decision: 'reject',
+    reason: 'changed my mind',
+  });
+  expect(row(await svc.state(), 'cool').status).toBe('rejected');
+  const s = await svc.addCustom({ repoUrl: mine.url, path: 'skills/cool' });
+  expect(row(s, 'cool').status).toBe('approved');
+});
+
+test('exactly one of a repository URL or a local folder is required, and bad input is refused', async () => {
+  const { svc } = make();
+  expect(await code(svc.addCustom({}))).toBe('INVALID_ARGS');
+  expect(
+    await code(
+      svc.addCustom({ repoUrl: 'https://x.test/a', localPath: tmp() }),
+    ),
+  ).toBe('INVALID_ARGS');
+  expect(await code(svc.addCustom({ localPath: 'relative' }))).toBe(
+    'INVALID_PATH',
+  );
+  const noSkill = makeRepo({ 'README.md': 'x' });
+  expect(await code(svc.addCustom({ repoUrl: noSkill.url }))).toBe(
+    'NOT_A_SKILL',
+  );
 });

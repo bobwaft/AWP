@@ -333,6 +333,15 @@ export function createHandlers(
           variant?: string;
         },
       ),
+    'registry.addCustom': (p) =>
+      getRegistry().addCustom(
+        p as {
+          repoUrl?: string;
+          sha?: string;
+          path?: string;
+          localPath?: string;
+        },
+      ),
     'registry.preview': (p) => getRegistry().preview((p as { id: string }).id),
     'registry.install': (p) =>
       getRegistry().install(

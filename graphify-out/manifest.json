@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "packages/protocol/src/index.ts": {
-    "mtime": 1792448183.3760197,
-    "seen": 1792448774.8564146,
-    "ast_hash": "f241a241fdc81536d1c3d9f6167ac2b9",
+    "mtime": 1792469797.5892756,
+    "seen": 1792470385.7490525,
+    "ast_hash": "87f45762ff92b2ce78de8e786aa37d6a",
     "semantic_hash": ""
   },
   "packages/protocol/tsconfig.json": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "ARCHITECTURE.md": {
-    "mtime": 1792446333.8858714,
-    "seen": 1792448774.895494,
-    "ast_hash": "3e30f0c03076446bcf7370df48c554b5",
+    "mtime": 1792469732.5575674,
+    "seen": 1792470385.7638433,
+    "ast_hash": "56d8a6e02937af06c631c82f93b4dae5",
     "semantic_hash": ""
   },
   "BUGS.md": {
@@ -1026,15 +1026,15 @@
     "semantic_hash": ""
   },
   "MEMORY.md": {
-    "mtime": 1792467454.234152,
-    "seen": 1792467477.503062,
-    "ast_hash": "aad4eb4f5ba9fd84fda1f5075e363196",
+    "mtime": 1792470317.8940127,
+    "seen": 1792470385.7642095,
+    "ast_hash": "d204948daed72bb98f74afb1c8498f79",
     "semantic_hash": ""
   },
   "PRD.md": {
-    "mtime": 1792439159.4104302,
-    "seen": 1792439523.4641933,
-    "ast_hash": "585a935d80f4b9bc35375f82437e6b35",
+    "mtime": 1792469732.5575674,
+    "seen": 1792470385.7642112,
+    "ast_hash": "b1e60bd965c9b66551f8def2c266d7d7",
     "semantic_hash": ""
   },
   "REGISTRY.md": {
@@ -1536,9 +1536,9 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/terminal.tsx": {
-    "mtime": 1792174476.0645359,
-    "seen": 1792188873.0771656,
-    "ast_hash": "8d9f2323b59910d342dd0c8dc5830915",
+    "mtime": 1792470131.0107005,
+    "seen": 1792470385.7361019,
+    "ast_hash": "04ee3d63d7dae0083a79ddde44a750c3",
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/themePreview.ts": {
@@ -1656,9 +1656,9 @@
     "semantic_hash": ""
   },
   "packages/engine/src/handlers.ts": {
-    "mtime": 1792456842.2631245,
-    "seen": 1792467477.4634137,
-    "ast_hash": "f097ed7bc2e68bd96f1c5280973334b4",
+    "mtime": 1792469797.5892756,
+    "seen": 1792470385.7388575,
+    "ast_hash": "d3772f17729c40880a423dd219708db3",
     "semantic_hash": ""
   },
   "packages/engine/src/mcp-tools.ts": {
@@ -2088,15 +2088,15 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/service.test.ts": {
-    "mtime": 1792456514.7261243,
-    "seen": 1792467477.4674108,
-    "ast_hash": "b7281c5a446b7c97f47b36cf8c05e907",
+    "mtime": 1792469762.7569473,
+    "seen": 1792470385.7429392,
+    "ast_hash": "750b173705215c4e45058076cfd5f473",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/service.ts": {
-    "mtime": 1792456588.0250669,
-    "seen": 1792467477.4674146,
-    "ast_hash": "217e28e1518ef446e45840123b601ddb",
+    "mtime": 1792469797.9244146,
+    "seen": 1792470385.7429411,
+    "ast_hash": "888848b0122baf6544010b099370ccef",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/skill-install.test.ts": {
@@ -2136,9 +2136,9 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/writers/plugin.ts": {
-    "mtime": 1792447420.5409784,
-    "seen": 1792448774.8439548,
-    "ast_hash": "3f7cbcc0b95dc33f36025e5f1c2ba14f",
+    "mtime": 1792469797.9264336,
+    "seen": 1792470385.7436392,
+    "ast_hash": "4bcdc74f6d427239fdaeb149d05f8c62",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/writers/skill.ts": {
@@ -2160,21 +2160,21 @@
     "semantic_hash": ""
   },
   "packages/protocol/src/registry.test.ts": {
-    "mtime": 1792467197.63125,
-    "seen": 1792467477.4771738,
-    "ast_hash": "a3c83cc27e560b75ab9404639adf3f40",
+    "mtime": 1792469762.7393272,
+    "seen": 1792470385.7494671,
+    "ast_hash": "2e665f8f31d6b14b69b2608f76bec431",
     "semantic_hash": ""
   },
   "packages/protocol/src/registry.ts": {
-    "mtime": 1792467197.643178,
-    "seen": 1792467477.4771788,
-    "ast_hash": "429de6c7c076210ad6fa2241844a4b36",
+    "mtime": 1792469797.5892756,
+    "seen": 1792470385.7494698,
+    "ast_hash": "632258e47ec76dedf1c405f607f76ab6",
     "semantic_hash": ""
   },
   "registry/registry.json": {
-    "mtime": 1792467197.6384945,
-    "seen": 1792467477.4780223,
-    "ast_hash": "c1902a64e36f3a6aa945e16b69242f05",
+    "mtime": 1792470318.1931653,
+    "seen": 1792470385.750039,
+    "ast_hash": "97c1865eff35e64432fb07b1c104108b",
     "semantic_hash": ""
   },
   "registry/registry.test.ts": {
@@ -2208,15 +2208,15 @@
     "semantic_hash": ""
   },
   "packages/engine/src/registry/tooling-md.test.ts": {
-    "mtime": 1792449066.954588,
-    "seen": 1792455734.1796172,
-    "ast_hash": "1eb26dc963672ed1214d8dab79f4b149",
+    "mtime": 1792469762.740383,
+    "seen": 1792470385.7434347,
+    "ast_hash": "b7db14fbd99465541d087178c3bf011d",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/tooling-md.ts": {
-    "mtime": 1792448982.690799,
-    "seen": 1792455734.1796186,
-    "ast_hash": "cb7d9d2ef7b7a5831441bf8ee36f7f04",
+    "mtime": 1792469797.8968785,
+    "seen": 1792470385.7434368,
+    "ast_hash": "f606be1e99e7198eba39c0ec7d3b7ac2",
     "semantic_hash": ""
   },
   "registry/skills.test.ts": {
@@ -2262,27 +2262,27 @@
     "semantic_hash": ""
   },
   "apps/desktop/src/components/SuggestionCard.tsx": {
-    "mtime": 1792456536.5011115,
-    "seen": 1792467477.4524257,
-    "ast_hash": "370c5023aa9011bf99d94bb70cf818b7",
+    "mtime": 1792470131.2558177,
+    "seen": 1792470385.7337036,
+    "ast_hash": "51071ce671d2bdc56328b970a5410346",
     "semantic_hash": ""
   },
   "apps/desktop/src/lib/registry.ts": {
-    "mtime": 1792467988.4940119,
-    "seen": 1792468075.4517448,
-    "ast_hash": "d704b3dd4dd8762e28061d28c1e05a5d",
+    "mtime": 1792470131.020554,
+    "seen": 1792470385.7357152,
+    "ast_hash": "25c101f39ff6bc6a16c354b621dced00",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/ConnectorsView.tsx": {
-    "mtime": 1792456545.724835,
-    "seen": 1792467477.4587631,
-    "ast_hash": "3a3be9f690156549901baadcf65cb841",
+    "mtime": 1792470131.020554,
+    "seen": 1792470385.736414,
+    "ast_hash": "b2ce2c671cf13386a8557c7f91c305ea",
     "semantic_hash": ""
   },
   "apps/desktop/src/stages/connectors.test.tsx": {
-    "mtime": 1792467988.5617006,
-    "seen": 1792468075.4544847,
-    "ast_hash": "538720c3d55d323309126be5907ad5c1",
+    "mtime": 1792470330.4242234,
+    "seen": 1792470385.7370095,
+    "ast_hash": "de8bc167e280c134292c823ce0207967",
     "semantic_hash": ""
   },
   "packages/engine/src/registry/exec.test.ts": {
@@ -2319,6 +2319,18 @@
     "mtime": 1792456842.2609808,
     "seen": 1792467477.4688988,
     "ast_hash": "4f0d39572e05bfc140a175dff2148a43",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/lib/terminalCommand.test.ts": {
+    "mtime": 1792470211.183664,
+    "seen": 1792470385.7361042,
+    "ast_hash": "c82fe5b6b2b82449ad7a68b72ca2fbeb",
+    "semantic_hash": ""
+  },
+  "apps/desktop/src/lib/terminalCommand.ts": {
+    "mtime": 1792470234.4792688,
+    "seen": 1792470385.7361054,
+    "ast_hash": "1c8cd162c71c34c2f299b8a5907e3452",
     "semantic_hash": ""
   }
 }

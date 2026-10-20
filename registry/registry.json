@@ -163,7 +163,7 @@
       "flags": {
         "telemetry": true,
         "notes": [
-          "Run it yourself: it edits your global ~/.claude/settings.json (hooks and statusline), and its non-interactive mode is unverified.",
+          "It runs in the terminal so you can watch it and answer prompts: it edits your global ~/.claude/settings.json (hooks and statusline).",
           "Needs Node 22.13+. Keep the cloud features off.",
           "AWP never enables it for interview or spec stages."
         ]
@@ -1462,7 +1462,7 @@
       "flags": {
         "notes": [
           "Credit: Eoghan Henn / rebelytics (CC-BY-4.0).",
-          "Run it yourself: its non-interactive behaviour is unverified, and it needs an activation line in CLAUDE.md or a session-start hook."
+          "It runs in the terminal so you can answer any prompt. Afterwards it still needs an activation line in CLAUDE.md or a session-start hook."
         ]
       }
     },

@@ -11,7 +11,7 @@ import { EngineError } from '../errors';
 import { bundledSource } from './bundled';
 import { customFromLocal, customFromRepo, localSource } from './custom';
 import { type DiscoverDeps, discover } from './discover';
-import type { Exec } from './exec';
+import { assertSafeArgv, type Exec } from './exec';
 import { fetchSource } from './git-fetch';
 import { licenseStatus } from './license';
 import { type Candidate, repoKey, type Specs } from './match';
@@ -21,7 +21,7 @@ import { rejectedFrom, SuggestionStore } from './state';
 import { writeTooling } from './tooling-md';
 import { runInstaller } from './writers/installer';
 import { writeMcpEntry } from './writers/mcp-json';
-import { installPlugin } from './writers/plugin';
+import { installPlugin, pluginCommands } from './writers/plugin';
 import { installSkill } from './writers/skill';
 
 export type ServiceDeps = {
@@ -70,6 +70,30 @@ function trusted(row: Suggestion, registry: RegistryFile): RegistryItem | null {
     };
   if (it.install.type !== 'skill' && it.install.type !== 'local') return null;
   return { ...it, ...clean, verified: false };
+}
+
+/**
+ * The commands the UI may type into a terminal tab (and press Enter) when the user approves: only
+ * owner-verified registry items, only plain tokens, nothing that needs input (`<placeholder>`).
+ */
+function terminalCommands(
+  item: RegistryItem,
+  row: Suggestion,
+): string[][] | undefined {
+  if (row.source !== 'registry' || !item.verified) return undefined;
+  const i = item.install;
+  let cmds: string[][];
+  if (i.type === 'installer') cmds = i.commands;
+  else if (i.type === 'plugin') cmds = pluginCommands(i.marketplace, i.plugin);
+  else if (i.type === 'doc' && i.command?.trim())
+    cmds = [i.command.trim().split(/\s+/)];
+  else return undefined;
+  try {
+    for (const c of cmds) assertSafeArgv(c);
+  } catch {
+    return undefined;
+  }
+  return cmds;
 }
 
 /** Connectors: discovery, decisions and installs. State is per project; one project at a time is open. */
@@ -262,6 +286,10 @@ export class RegistryService {
           : inst.type,
       command: commandText(inst),
       notPinned: inst.type === 'plugin' && !inst.ref,
+      terminal: (() => {
+        const commands = terminalCommands(item, row);
+        return commands ? { commands } : undefined;
+      })(),
     };
   }
 
@@ -317,6 +345,44 @@ export class RegistryService {
         } else {
           r.status = 'suggested';
           r.variant = undefined;
+        }
+        r.at = new Date().toISOString();
+      });
+      await this.push(root);
+      return this.state(root);
+    });
+  }
+
+  /**
+   * The UI ran the item's command in a terminal tab and saw it finish: record the result. The engine
+   * never types into a terminal itself; it only accepts a result for an item that qualifies.
+   */
+  report(a: { id: string; exitCode: number }): Promise<SuggestionsState> {
+    const root = this.d.root();
+    return this.lock(`${root}::${a.id}`, async () => {
+      const { row, item } = await this.find(root, a.id);
+      if (row.status === 'installed')
+        throw new EngineError(
+          'ALREADY_INSTALLED',
+          'This is already installed.',
+        );
+      if (!terminalCommands(item, row))
+        throw new EngineError(
+          'NOT_ALLOWED',
+          'This item is not installed through the terminal.',
+        );
+      if (row.status !== 'approved' && row.status !== 'failed')
+        throw new EngineError('NOT_APPROVED', 'Approve it first.');
+      await this.store(root).mutate((s) => {
+        const r = s.items.find((i) => i.id === a.id);
+        if (!r) return;
+        if (a.exitCode === 0) {
+          r.status = 'installed';
+          r.via = 'terminal';
+          r.error = undefined;
+        } else {
+          r.status = 'failed';
+          r.error = `The command exited with code ${a.exitCode}. See the terminal.`;
         }
         r.at = new Date().toISOString();
       });

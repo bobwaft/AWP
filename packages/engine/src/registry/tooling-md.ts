@@ -54,10 +54,12 @@ export function renderTooling(items: SuggestionView[]): string {
   ];
   const real = items.filter((v) => !v.idea);
   const installed = real.filter(
-    (v) => v.status === 'installed' && v.action !== 'doc',
+    (v) =>
+      v.status === 'installed' && (v.action !== 'doc' || v.via === 'terminal'),
   );
   const manual = real.filter(
-    (v) => v.status === 'installed' && v.action === 'doc',
+    (v) =>
+      v.status === 'installed' && v.action === 'doc' && v.via !== 'terminal',
   );
   const pending = real.filter(
     (v) => v.status === 'approved' || v.status === 'failed',

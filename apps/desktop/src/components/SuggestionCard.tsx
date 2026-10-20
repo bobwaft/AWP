@@ -23,6 +23,10 @@ type Props = {
   reviewBusy?: boolean;
   /** This card's own review is the one loading. */
   reviewLoading?: boolean;
+  /** Types the item's command into a terminal tab and presses Enter; resolves once it has been typed. */
+  onRunInTerminal?: (s: SuggestionView) => Promise<void>;
+  /** This item's command is running in a terminal tab. */
+  runningInTerminal?: boolean;
   /** After a token is stored, the engine is asked again what is still missing. */
   onTokenSaved: () => void;
   onInstalled?: (name: string, r: { status?: string; note?: string }) => void;
@@ -35,6 +39,8 @@ export function SuggestionCard({
   onReview,
   reviewBusy,
   reviewLoading,
+  onRunInTerminal,
+  runningInTerminal,
   onTokenSaved,
   onInstalled,
 }: Props) {
@@ -73,6 +79,13 @@ export function SuggestionCard({
       });
       onInstalled?.(it.name, r);
     });
+  /** Approve (if needed), then type the command in a terminal tab and press Enter. */
+  const approveAndRunInTerminal = () =>
+    run(async () => {
+      if (s.status !== 'approved' && s.status !== 'failed')
+        await api.decide({ id: s.id, decision: 'approve' });
+      await onRunInTerminal?.(s);
+    });
   const reject = () => run(() => api.decide({ id: s.id, decision: 'reject' }));
   const undo = () => run(() => api.decide({ id: s.id, decision: 'undo' }));
 
@@ -92,6 +105,7 @@ export function SuggestionCard({
   const needsAccount = s.missingSecrets.length > 0;
   const decided = s.status === 'approved' || s.status === 'failed';
   const isPreview = s.action === 'preview';
+  const viaTerminal = !!s.terminal && !!onRunInTerminal;
   const needsAck = !s.verified && !isPreview;
   const ackMissing = needsAck && !ack;
 
@@ -152,11 +166,13 @@ export function SuggestionCard({
       {s.command && (
         <div className="flex flex-col gap-1 text-sm">
           <p className="text-text-2">
-            {s.action === 'installer'
-              ? 'AWP will run this on your computer:'
-              : s.action === 'doc'
-                ? 'You run this yourself:'
-                : 'Command:'}
+            {viaTerminal
+              ? 'AWP will run this in the terminal:'
+              : s.action === 'installer'
+                ? 'AWP will run this on your computer:'
+                : s.action === 'doc'
+                  ? 'You run this yourself:'
+                  : 'Command:'}
           </p>
           <code className="overflow-x-auto rounded-sm bg-bg-2 px-2 py-1 font-mono text-xs">
             {s.command}
@@ -272,7 +288,21 @@ export function SuggestionCard({
 
       {s.status !== 'installed' && s.status !== 'rejected' && (
         <div className="flex flex-wrap items-center gap-2">
-          {isPreview ? (
+          {viaTerminal ? (
+            <Button
+              variant="primary"
+              disabled={busy || blocked || runningInTerminal}
+              onClick={approveAndRunInTerminal}
+            >
+              {runningInTerminal
+                ? 'Running in terminal…'
+                : s.status === 'failed'
+                  ? 'Retry in terminal'
+                  : s.status === 'approved'
+                    ? 'Run in terminal'
+                    : 'Approve and run in terminal'}
+            </Button>
+          ) : isPreview ? (
             <Button
               variant="primary"
               disabled={busy || blocked || reviewBusy}

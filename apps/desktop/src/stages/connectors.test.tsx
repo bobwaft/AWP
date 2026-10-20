@@ -8,6 +8,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { buildTerminalLine } from '../lib/terminalCommand';
 
 const call = vi.fn();
 let push: (e: { method: string; params: unknown }) => void = () => {};
@@ -31,6 +32,24 @@ vi.mock('../lib/engine', () => ({
   },
 }));
 vi.mock('@tauri-apps/api/core', () => ({ invoke }));
+let output: (chunk: string) => void = () => {};
+let exited: (tab: { id: string }, code: number) => void = () => {};
+const term = {
+  open: vi.fn(async (_o: unknown) => 'tab1' as string | undefined),
+  attach: vi.fn((_id: string, cb: (s: string) => void) => {
+    output = cb;
+    return () => {};
+  }),
+  onExit: vi.fn((cb: typeof exited) => {
+    exited = cb;
+    return () => {};
+  }),
+};
+vi.mock('../lib/terminal', () => ({ useTerminal: () => term }));
+vi.mock('../lib/project', () => ({
+  useProject: () => ({ project: { project: { path: 'C:/proj' } } }),
+}));
+vi.mock('../lib/os', () => ({ currentOs: () => 'win32' }));
 vi.mock('@tauri-apps/plugin-dialog', () => ({
   open: async () => 'C:/skills/mine',
 }));
@@ -102,6 +121,8 @@ const mount = (items: unknown[], discovery?: Record<string, unknown>) => {
 
 beforeEach(() => {
   invoke.mockClear();
+  term.open.mockClear();
+  term.attach.mockClear();
 });
 afterEach(() => {
   cleanup();
@@ -801,4 +822,248 @@ test('a stale engine is explained, with what to do about it', async () => {
   );
   await screen.findByText(/may be out of date/);
   await screen.findByText(/Fully restart AWP/);
+});
+
+// ---- running approved commands in the terminal ----
+
+const gfyTerminal = {
+  commands: [
+    ['uv', 'tool', 'install', 'graphifyy==0.9.91'],
+    ['graphify', 'install', '--project'],
+  ],
+};
+const gfy = (over: Record<string, unknown> = {}) =>
+  view(
+    'gfy',
+    {
+      action: 'installer',
+      command:
+        'uv tool install graphifyy==0.9.91 && graphify install --project',
+      terminal: gfyTerminal,
+      ...over,
+    },
+    {
+      kind: 'skill',
+      install: { type: 'installer', commands: gfyTerminal.commands },
+    },
+  );
+
+test('Approve on a verified installer approves it, opens a named terminal tab in the project and presses Enter', async () => {
+  mount([gfy()]);
+  respond({
+    'registry.decide': () => (current = state([gfy({ status: 'approved' })])),
+    'registry.report': () => current,
+  });
+  const card = await screen.findByRole('article', { name: 'GFY' });
+  expect(
+    within(card).getByText(/AWP will run this in the terminal/i),
+  ).toBeTruthy();
+  fireEvent.click(
+    within(card).getByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await waitFor(() => expect(term.open).toHaveBeenCalledTimes(1));
+  expect(call).toHaveBeenCalledWith(
+    'registry.decide',
+    expect.objectContaining({ id: 'gfy', decision: 'approve' }),
+  );
+  expect(term.open).toHaveBeenCalledWith({
+    title: 'Connectors · GFY',
+    cwd: 'C:/proj',
+    prefill: buildTerminalLine(gfyTerminal.commands, 'win32'),
+    run: true,
+  });
+  // the engine does not run it as well
+  expect(call).not.toHaveBeenCalledWith('registry.install', expect.anything());
+  // while it runs, the card says so
+  await screen.findByText('Running in terminal…');
+});
+
+test('when the exit marker appears with 0, the result is reported and the card turns installed', async () => {
+  mount([gfy()]);
+  respond({
+    'registry.decide': () => (current = state([gfy({ status: 'approved' })])),
+    'registry.report': () =>
+      (current = state([gfy({ status: 'installed', via: 'terminal' })])),
+  });
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await waitFor(() => expect(term.attach).toHaveBeenCalled());
+  // output arrives in pieces; the marker is split across two chunks
+  output('Resolved 3 packages\r\n[awp-ex');
+  expect(call).not.toHaveBeenCalledWith('registry.report', expect.anything());
+  output('it:0]\r\n');
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith('registry.report', {
+      id: 'gfy',
+      exitCode: 0,
+    }),
+  );
+  await screen.findByText('Installed');
+});
+
+test('a non-zero exit is reported as a failure, the card offers a retry in the terminal, and it is reported once', async () => {
+  mount([gfy()]);
+  respond({
+    'registry.decide': () => (current = state([gfy({ status: 'approved' })])),
+    'registry.report': () =>
+      (current = state([
+        gfy({
+          status: 'failed',
+          error: 'The command exited with code 2. See the terminal.',
+        }),
+      ])),
+  });
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await waitFor(() => expect(term.attach).toHaveBeenCalled());
+  output('uv: command not found\r\n[awp-exit:2]\r\n');
+  output('[awp-exit:2]'); // a repeated marker is ignored
+  await waitFor(() =>
+    expect(call).toHaveBeenCalledWith('registry.report', {
+      id: 'gfy',
+      exitCode: 2,
+    }),
+  );
+  expect(call.mock.calls.filter((c) => c[0] === 'registry.report').length).toBe(
+    1,
+  );
+  expect(await screen.findByText(/exited with code 2/)).toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Retry in terminal' }),
+  ).toBeTruthy();
+});
+
+test('a terminal that closes before the command finishes does not mark anything and lets you retry', async () => {
+  mount([gfy()]);
+  respond({
+    'registry.decide': () => (current = state([gfy({ status: 'approved' })])),
+  });
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await waitFor(() => expect(term.attach).toHaveBeenCalled());
+  exited({ id: 'tab1' }, 1);
+  await screen.findByText(/terminal closed before the command finished/i);
+  expect(call).not.toHaveBeenCalledWith('registry.report', expect.anything());
+  expect(screen.queryByText('Running in terminal…')).toBeNull();
+});
+
+test('an approved item that has not run yet offers Run in terminal', async () => {
+  mount([gfy({ status: 'approved' })]);
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Run in terminal' }),
+  );
+  await waitFor(() => expect(term.open).toHaveBeenCalledTimes(1));
+  // already approved: no second approval
+  expect(call).not.toHaveBeenCalledWith(
+    'registry.decide',
+    expect.objectContaining({ decision: 'approve' }),
+  );
+});
+
+test('plugins and runnable recorded commands go through the terminal too; items without commands keep the old flow', async () => {
+  mount([
+    view(
+      'ponytail',
+      {
+        action: 'plugin',
+        notPinned: true,
+        terminal: {
+          commands: [
+            [
+              'claude',
+              'plugin',
+              'marketplace',
+              'add',
+              'a/pony',
+              '--scope',
+              'project',
+            ],
+            [
+              'claude',
+              'plugin',
+              'install',
+              'pony@pony',
+              '--scope',
+              'project',
+              '-y',
+            ],
+          ],
+        },
+      },
+      { kind: 'plugin' },
+    ),
+    view(
+      'lenis',
+      {
+        action: 'doc',
+        command: 'npm i lenis',
+        terminal: { commands: [['npm', 'i', 'lenis']] },
+      },
+      { kind: 'library' },
+    ),
+    view(
+      'react-bits',
+      {
+        action: 'doc',
+        command: 'npx shadcn@latest add @react-bits/<Component>',
+      },
+      { kind: 'library' },
+    ),
+  ]);
+  respond({ 'registry.decide': () => current });
+  const pony = await screen.findByRole('article', { name: 'PONYTAIL' });
+  fireEvent.click(
+    within(pony).getByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await waitFor(() => expect(term.open).toHaveBeenCalledTimes(1));
+  const opened = term.open.mock.calls[0]?.[0] as { prefill: string };
+  expect(opened.prefill).toBe(
+    buildTerminalLine(
+      [
+        [
+          'claude',
+          'plugin',
+          'marketplace',
+          'add',
+          'a/pony',
+          '--scope',
+          'project',
+        ],
+        [
+          'claude',
+          'plugin',
+          'install',
+          'pony@pony',
+          '--scope',
+          'project',
+          '-y',
+        ],
+      ],
+      'win32',
+    ),
+  );
+  const lenis = screen.getByRole('article', { name: 'LENIS' });
+  expect(
+    within(lenis).getByRole('button', { name: 'Approve and run in terminal' }),
+  ).toBeTruthy();
+  // a command with a placeholder has no terminal: it keeps the record-only flow
+  const rb = screen.getByRole('article', { name: 'REACT-BITS' });
+  expect(within(rb).getByRole('button', { name: 'Approve' })).toBeTruthy();
+  expect(within(rb).getByText(/You run this yourself/i)).toBeTruthy();
+});
+
+test('if the terminal cannot be opened, nothing is reported and the card says so', async () => {
+  mount([gfy()]);
+  respond({
+    'registry.decide': () => (current = state([gfy({ status: 'approved' })])),
+  });
+  term.open.mockResolvedValueOnce(undefined);
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Approve and run in terminal' }),
+  );
+  await screen.findByText(/Could not open the terminal/i);
+  expect(call).not.toHaveBeenCalledWith('registry.report', expect.anything());
 });

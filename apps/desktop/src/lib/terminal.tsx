@@ -19,6 +19,8 @@ export type OpenOpts = {
   program?: string;
   /** Typed at the prompt without Enter (AWP's fix list only). */
   prefill?: string;
+  /** Also press Enter: only for an owner-verified Connectors command the user just approved. */
+  run?: boolean;
 };
 
 type Term = {
@@ -89,7 +91,11 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
     setTabs((ts) => [...ts, tab]);
     setActive(id);
     setExpanded(true);
-    if (o.prefill) await invoke('pty_write', { ptyId: id, data: o.prefill });
+    if (o.prefill)
+      await invoke('pty_write', {
+        ptyId: id,
+        data: o.run ? `${o.prefill}\r` : o.prefill,
+      });
     return id;
   }, []);
 

@@ -7,6 +7,15 @@ import {
   tail,
 } from '../exec';
 
+/** The two `claude` commands that install a plugin at project scope. */
+export const pluginCommands = (
+  marketplace: string,
+  plugin: string,
+): string[][] => [
+  ['claude', 'plugin', 'marketplace', 'add', marketplace, '--scope', 'project'],
+  ['claude', 'plugin', 'install', plugin, '--scope', 'project', '-y'],
+];
+
 export type PluginInstall = {
   root: string;
   /** `owner/repo` (or URL) for `claude plugin marketplace add`. */

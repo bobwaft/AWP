@@ -5,6 +5,7 @@ import {
   RegistryItem,
   Suggestion,
   SuggestionsInput,
+  SuggestionView,
 } from './registry';
 
 const base = {
@@ -288,4 +289,26 @@ test('plugin marketplace and plugin values cannot smuggle flags, URLs or paths',
     'p@m/x',
   ])
     expect(RegistryItem.safeParse(mk('a/b', bad)).success, bad).toBe(false);
+});
+
+test('a suggestion view can carry the commands to run in the terminal, and a stored row records how it was installed', () => {
+  const s = Suggestion.parse({
+    id: 'graphify',
+    source: 'registry',
+    verified: true,
+    status: 'installed',
+    via: 'terminal',
+    reason: 'x',
+    at: '2026-10-20T00:00:00.000Z',
+  });
+  expect(s.via).toBe('terminal');
+  expect(Suggestion.safeParse({ ...s, via: 'carrier-pigeon' }).success).toBe(
+    false,
+  );
+  expect(
+    SuggestionView.shape.terminal.safeParse({
+      commands: [['uv', 'tool', 'install', 'x']],
+    }).success,
+  ).toBe(true);
+  expect(SuggestionView.shape.terminal.safeParse(undefined).success).toBe(true);
 });

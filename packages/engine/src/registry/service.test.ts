@@ -838,3 +838,209 @@ test('an unexpected install error is stored without any secret in it', async () 
   expect(stored).not.toContain('abcd1234efgh');
   expect(stored).toContain('[redacted]');
 });
+
+// ---- running installs in the terminal (UI types the command; the engine records the exit code) ----
+
+const termRegistry = RegistryFile.parse({
+  version: 1,
+  items: [
+    {
+      id: 'gfy',
+      kind: 'skill',
+      name: 'Gfy',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: {
+        type: 'installer',
+        commands: [
+          ['uv', 'tool', 'install', 'graphifyy==0.9.91'],
+          ['graphify', 'install', '--project'],
+        ],
+      },
+    },
+    {
+      id: 'pony',
+      kind: 'plugin',
+      name: 'Pony',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: { type: 'plugin', marketplace: 'a/pony', plugin: 'pony@pony' },
+    },
+    {
+      id: 'lib',
+      kind: 'library',
+      name: 'Lib',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: { type: 'doc', command: 'npm i lib' },
+    },
+    {
+      id: 'needs-input',
+      kind: 'library',
+      name: 'Needs input',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: {
+        type: 'doc',
+        command: 'npx shadcn@latest add @react-bits/<Component>',
+      },
+    },
+    {
+      id: 'just-text',
+      kind: 'tool',
+      name: 'Just text',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: { type: 'doc' },
+    },
+    {
+      id: 'ctx',
+      kind: 'mcp',
+      name: 'Ctx',
+      summary: 's',
+      license: 'MIT',
+      default: true,
+      source: {},
+      install: {
+        type: 'mcp',
+        entry: { type: 'http', url: 'https://x.test/mcp' },
+      },
+    },
+  ],
+});
+const makeT = () => make({ registry: async () => termRegistry });
+const terminalOf = (s: { items: unknown[] }, id: string) =>
+  (s.items.find((i: any) => i.id === id) as any)?.terminal;
+
+test('verified installer, plugin and runnable-command items carry the commands the terminal will run', async () => {
+  const { svc } = makeT();
+  await svc.runDiscovery();
+  const s = await svc.state();
+  expect(terminalOf(s, 'gfy')).toEqual({
+    commands: [
+      ['uv', 'tool', 'install', 'graphifyy==0.9.91'],
+      ['graphify', 'install', '--project'],
+    ],
+  });
+  expect(terminalOf(s, 'pony')).toEqual({
+    commands: [
+      [
+        'claude',
+        'plugin',
+        'marketplace',
+        'add',
+        'a/pony',
+        '--scope',
+        'project',
+      ],
+      ['claude', 'plugin', 'install', 'pony@pony', '--scope', 'project', '-y'],
+    ],
+  });
+  expect(terminalOf(s, 'lib')).toEqual({ commands: [['npm', 'i', 'lib']] });
+});
+
+test('commands that need your input, items without a command, and mcp or skill items never go to the terminal', async () => {
+  const { svc } = makeT();
+  await svc.runDiscovery();
+  const s = await svc.state();
+  for (const id of ['needs-input', 'just-text', 'ctx'])
+    expect(terminalOf(s, id), id).toBeUndefined();
+});
+
+test('only owner-verified registry rows qualify: recommender and user rows never get a terminal command', async () => {
+  const a = makeT();
+  await a.svc.runDiscovery();
+  tamper(a.root, (items) => [
+    ...items,
+    {
+      id: 'rec-doc',
+      source: 'recommender',
+      verified: true,
+      idea: false,
+      alternatives: [],
+      status: 'approved',
+      reason: 'x',
+      at: 'x',
+      item: {
+        ...termRegistry.items[2],
+        id: 'rec-doc',
+        verified: true,
+        install: { type: 'doc', command: 'npm i evil' },
+      },
+    },
+  ]);
+  const b = make({ root: () => a.root, registry: async () => termRegistry });
+  const st = await b.svc.state();
+  expect(st.items.find((i) => i.id === 'rec-doc')).toBeDefined();
+  expect(terminalOf(st, 'rec-doc')).toBeUndefined();
+  expect(await code(b.svc.report({ id: 'rec-doc', exitCode: 0 }))).toBe(
+    'NOT_ALLOWED',
+  );
+});
+
+test('a successful terminal run is recorded as installed (via the terminal) without the engine running anything', async () => {
+  const { svc, root, calls } = makeT();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'gfy', decision: 'approve' });
+  const s = await svc.report({ id: 'gfy', exitCode: 0 });
+  expect(row(s, 'gfy').status).toBe('installed');
+  expect((s.items.find((i) => i.id === 'gfy') as any).via).toBe('terminal');
+  expect(calls.length).toBe(0);
+  expect(readFileSync(join(root, 'docs', 'TOOLING.md'), 'utf8')).toContain(
+    'Gfy',
+  );
+});
+
+test('a failed terminal run is recorded with its exit code, blocks the stage, and a retry can succeed', async () => {
+  const { svc } = makeT();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'pony', decision: 'approve' });
+  const s = await svc.report({ id: 'pony', exitCode: 3 });
+  expect(row(s, 'pony')).toMatchObject({
+    status: 'failed',
+    error: 'The command exited with code 3. See the terminal.',
+  });
+  expect(await svc.gateProblem()).toMatch(/not installed/);
+  const again = await svc.report({ id: 'pony', exitCode: 0 });
+  expect(row(again, 'pony').status).toBe('installed');
+  expect(await svc.gateProblem()).toBeNull();
+});
+
+test('a recorded command (library) run in the terminal counts as installed', async () => {
+  const { svc, root } = makeT();
+  await svc.runDiscovery();
+  await svc.decide({ id: 'lib', decision: 'approve' });
+  await svc.report({ id: 'lib', exitCode: 0 });
+  const md = readFileSync(join(root, 'docs', 'TOOLING.md'), 'utf8');
+  expect(md).toContain('### Libraries');
+  expect(md).not.toContain('## To install yourself');
+});
+
+test('reporting needs an approved item, and cannot be used on mcp, unknown or already installed items', async () => {
+  const { svc } = makeT();
+  await svc.runDiscovery();
+  expect(await code(svc.report({ id: 'gfy', exitCode: 0 }))).toBe(
+    'NOT_APPROVED',
+  );
+  await svc.decide({ id: 'ctx', decision: 'approve' });
+  expect(await code(svc.report({ id: 'ctx', exitCode: 0 }))).toBe(
+    'NOT_ALLOWED',
+  );
+  expect(await code(svc.report({ id: 'nope', exitCode: 0 }))).toBe('NOT_FOUND');
+  await svc.decide({ id: 'gfy', decision: 'approve' });
+  await svc.report({ id: 'gfy', exitCode: 0 });
+  expect(await code(svc.report({ id: 'gfy', exitCode: 1 }))).toBe(
+    'ALREADY_INSTALLED',
+  );
+  expect(row(await svc.state(), 'gfy').status).toBe('installed');
+});

@@ -218,6 +218,10 @@ export const methods = {
     }),
     result: z.object({ result: InstallResult, state: SuggestionsState }),
   },
+  'registry.report': {
+    params: z.object({ id: z.string(), exitCode: z.number().int() }),
+    result: SuggestionsState,
+  },
   'registry.addCustom': {
     params: z.object({
       repoUrl: z.string().optional(),

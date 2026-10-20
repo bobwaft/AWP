@@ -177,7 +177,7 @@ The conversation column offers two ways to answer, and the agent picks the one t
 - AWP hosts a real terminal (full PTY: colors, interactive programs, resize). It opens in a bottom drawer from any screen (`` Ctrl+` ``) and as an inline panel in Setup.
 - The default shell is the user's own: PowerShell on Windows, the login shell on macOS. It starts in the project folder, or the home folder before a project exists. Multiple tabs are allowed.
 - Uses: installing and logging in to tools during Setup (§5.1), running the app being built during Testing, and running `claude` interactively inside AWP ("Open Claude Code here").
-- AWP may pre-type commands from its own built-in list (Fix-in-terminal, "run the app" hints) into a new tab, and never presses Enter for the user. **Agents cannot write to the terminal**, so a prompt-injected agent can't stage commands. Terminal sessions the user types into are not recorded in `.awp/runs/`, which holds agent runs only.
+- AWP may pre-type commands from its own built-in list (Fix-in-terminal, "run the app" hints) into a new tab, and never presses Enter for the user. Exception: when the user clicks Approve on a Connectors item whose install command is owner-verified (from the registry, shown on the card first), AWP types it AND presses Enter in a new, named tab. Nothing else is ever run for the user. **Agents cannot write to the terminal**, so a prompt-injected agent can't stage commands. Terminal sessions the user types into are not recorded in `.awp/runs/`, which holds agent runs only.
 
 ## 7. Functional requirements (summary)
 

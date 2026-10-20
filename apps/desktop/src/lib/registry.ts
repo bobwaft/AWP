@@ -56,6 +56,9 @@ export function useRegistry() {
       setState(r.state);
       return r.result;
     },
+    report: async (a: { id: string; exitCode: number }) => {
+      setState(await engine.call('registry.report', a));
+    },
     addCustom: async (a: {
       repoUrl?: string;
       sha?: string;

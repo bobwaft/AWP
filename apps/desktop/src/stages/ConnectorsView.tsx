@@ -1,6 +1,6 @@
 import type { InstallPreview, SuggestionView } from '@awp/protocol';
 import { open as pickFolder } from '@tauri-apps/plugin-dialog';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Dialog } from '../components/Dialog';
 import { Input } from '../components/Input';
@@ -8,7 +8,11 @@ import { InstallPreviewDialog } from '../components/InstallPreviewDialog';
 import { SuggestionCard } from '../components/SuggestionCard';
 import { useToast } from '../components/Toast';
 import { engine } from '../lib/engine';
+import { currentOs } from '../lib/os';
+import { useProject } from '../lib/project';
 import { useRegistry } from '../lib/registry';
+import { useTerminal } from '../lib/terminal';
+import { buildTerminalLine, readExitCode } from '../lib/terminalCommand';
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -28,6 +32,19 @@ export function ConnectorsView() {
   const [refreshing, setRefreshing] = useState(false);
   const reviewReq = useRef(0);
   const reviewing = useRef(false);
+  const term = useTerminal();
+  const { project } = useProject();
+  /** Items whose command is running in a terminal tab right now. */
+  const [running, setRunning] = useState<Set<string>>(new Set());
+  const watchers = useRef(new Map<string, () => void>());
+  // watchers belong to this screen: stop listening when it goes away
+  useEffect(() => {
+    const w = watchers.current;
+    return () => {
+      for (const stop of w.values()) stop();
+      w.clear();
+    };
+  }, []);
 
   const items = state?.items ?? [];
   const idea = (i: SuggestionView) => i.idea && i.status !== 'rejected';
@@ -55,6 +72,70 @@ export function ConnectorsView() {
       reviewing.current = false;
       if (req === reviewReq.current) setLoadingReview(null);
     }
+  };
+
+  /**
+   * Types the item's verified command into a new, named terminal tab and presses Enter (PRD §11:
+   * only for a command the card showed before the user approved). The typed line ends with an
+   * exit-code marker; when it appears the result goes to the engine, which records it.
+   */
+  const runInTerminal = async (s: SuggestionView) => {
+    const root = project?.project.path;
+    if (!s.terminal || !root) return;
+    const id = await term.open({
+      title: `Connectors · ${s.item.name}`,
+      cwd: root,
+      prefill: buildTerminalLine(s.terminal.commands, currentOs()),
+      run: true,
+    });
+    if (!id) {
+      toast('Could not open the terminal.');
+      return;
+    }
+    setRunning((r) => new Set(r).add(s.id));
+    const finish = () => {
+      watchers.current.get(s.id)?.();
+      watchers.current.delete(s.id);
+      setRunning((r) => {
+        const n = new Set(r);
+        n.delete(s.id);
+        return n;
+      });
+    };
+    let seen = '';
+    let done = false;
+    let stopData: () => void = () => {};
+    stopData = term.attach(id, (chunk) => {
+      if (done) return;
+      seen = (seen + chunk).slice(-8192);
+      const code = readExitCode(seen);
+      if (code === null) return;
+      done = true;
+      stopData();
+      finish();
+      api
+        .report({ id: s.id, exitCode: code })
+        .then(() =>
+          toast(
+            code === 0
+              ? `${s.item.name} installed.`
+              : `${s.item.name} failed (exit ${code}). See the terminal.`,
+          ),
+        )
+        .catch((e) => toast(msg(e)));
+    });
+    if (done) stopData();
+    const stopExit = term.onExit((tab) => {
+      if (tab.id !== id || done) return;
+      done = true;
+      stopData();
+      finish();
+      toast('The terminal closed before the command finished.');
+    });
+    watchers.current.set(s.id, () => {
+      stopData();
+      stopExit();
+    });
   };
 
   const closeReview = () => {
@@ -113,6 +194,8 @@ export function ConnectorsView() {
         onReview={openReview}
         reviewBusy={loadingReview !== null}
         reviewLoading={loadingReview === s.id}
+        onRunInTerminal={runInTerminal}
+        runningInTerminal={running.has(s.id)}
         onTokenSaved={() => void api.refresh()}
         onInstalled={(name, r) => {
           const done =

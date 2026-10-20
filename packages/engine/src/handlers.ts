@@ -335,6 +335,8 @@ export function createHandlers(
           variant?: string;
         },
       ),
+    'registry.report': (p) =>
+      getRegistry().report(p as { id: string; exitCode: number }),
     'registry.addCustom': (p) =>
       getRegistry().addCustom(
         p as {

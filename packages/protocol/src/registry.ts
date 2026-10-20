@@ -264,6 +264,8 @@ export const Suggestion = z.object({
   /** Display data for items that are not in the registry. */
   item: RegistryItem.optional(),
   variant: z.string().optional(),
+  /** How it was installed when the engine did not do it itself. */
+  via: z.enum(['terminal']).optional(),
   error: z.string().optional(),
   at: z.string(),
 });
@@ -302,6 +304,8 @@ export const SuggestionView = Suggestion.extend({
   command: z.string().optional(),
   /** Plugins: Claude Code installs the marketplace's latest commit. */
   notPinned: z.boolean(),
+  /** Present for owner-verified registry commands: the UI types them in a terminal tab and presses Enter. */
+  terminal: z.object({ commands: z.array(z.array(z.string())) }).optional(),
 });
 export type SuggestionView = z.infer<typeof SuggestionView>;
 
